@@ -1,10 +1,17 @@
 <template>
 	<div>
 		<div class="ml1 mt1 mb1">
-			<span class="btn button-narrow mxn2 muted">A</span>
+			<span class="btn button-narrow mxn2 muted" v-link="{ name: 'termsList' }">C</span>
 			<chevron-right></chevron-right>
-			<span class="btn button-narrow mxn1">
-				Hi
+			<span v-if="route.name === 'termsList'">
+				<span class="btn button-narrow mxn1">
+					Available Quarters
+				</span>
+			</span>
+			<span v-if="route.name === 'term'">
+				<span class="btn button-narrow mxn1">
+					Weekly Schedule for {{ termName }}
+				</span>
 			</span>
 		</div>
 		<div class="mt2 mb1">

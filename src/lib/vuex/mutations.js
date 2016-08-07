@@ -1,20 +1,27 @@
 module.exports = {
-	saveTerms: function(state, terms) {
+	setTitle: function(state, title) {
+		state.title = title;
+	},
+	setTermName: function(state, name) {
+		state.termName = name;
+	},
+	saveTermsList: function(state, terms) {
+		state.flatTermsList = terms;
 		terms.forEach(function(term) {
 			state.termsList[term.code] = term.name;
 		})
 	},
 	saveTermCourses: function(state, termId, courses) {
-		state.terms[termId] = courses;
-		if (typeof state.flatTerms[termId] === 'undefined') {
-			state.flatTerms[termId] = [];
+		state.courses[termId] = courses;
+		if (typeof state.flatCourses[termId] === 'undefined') {
+			state.flatCourses[termId] = [];
 		}
 		var obj;
 		Object.keys(courses).forEach(function(subject) {
 			courses[subject].forEach(function(course) {
 				obj = course;
 				obj.code = [subject, course.code].join(' ');
-				state.flatTerms[termId].push(obj);
+				state.flatCourses[termId].push(obj);
 			})
 		})
 	},

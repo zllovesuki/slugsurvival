@@ -7,7 +7,7 @@
 		</div>
 		<modal :show.sync="searchModal">
 			<h4 slot="header">
-				<input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="500">
+				<input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="250" placeholder="enter anything! ECON 197, Design, etc...">
 			</h4>
 			<span slot="body">
 					<ul class="list-reset block y-scrollable">
@@ -16,6 +16,7 @@
 							{{ result.code }} - {{ result.section }}  - {{ result.name }}
 						</a>
 					</li>
+					<li v-if="search.string.length > 0 && search.results.length === 0">No results.</li>
 				</ul>
 			</span>
 		</modal>
@@ -59,7 +60,7 @@ module.exports = {
 		bruteForceSearch: function(string) {
 			var results = [];
 			string = string.toLowerCase();
-			results = this.flatTerms[this.termId].filter(function(course) {
+			results = this.flatCourses[this.termId].filter(function(course) {
 				return course.code.toLowerCase().indexOf(string) !== -1 || course.name.toLowerCase().indexOf(string) !== -1;
 			});
 			return results;
@@ -67,9 +68,10 @@ module.exports = {
 		addToSource: function(course) {
 			var html = '';
 			var template = function(key, value) {
-				return ['<p>', '<span class="muted">', key, ': </span><b>', value, '</b>', '</p>'].join('');
+				return ['<p>', '<span class="muted h6">', key, ': </span><b>', value, '</b>', '</p>'].join('');
 			}
 			html += template('Course Number', course.number);
+			html += template('Instructor(s)', course.instructor.displayName.join(', '));
 			if (!!course.time) {
 				html += template('Location', course.location);
 				html += template('Meeting Day', course.time.day.join(', '));
@@ -94,12 +96,9 @@ module.exports = {
 		}
 	},
 	ready: function() {
-		this.fetchTerms().then(function() {
-			return this.fetchTermCourses()
-		}.bind(this)).then(function(courses) {
+		this.fetchTermCourses().then(function() {
 			return this.initializeCalendar()
 		}.bind(this))
-
 	}
 }
 </script>

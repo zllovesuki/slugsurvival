@@ -16,11 +16,19 @@ var router = new VueRouter({
 })
 
 router.map({
+	'/': {
+		name: 'index',
+		component: require('./views/index.vue')
+	},
 	'/calendar': {
 		name: 'calendar',
 		component: require('./views/calendar/index.vue'),
 		subRoutes: {
-			':termId': {
+			'/': {
+				name: 'termsList',
+				component: require('./views/calendar/termsList.vue')
+			},
+			'/:termId': {
 				name: 'term',
 				component: require('./views/calendar/term.vue')
 			}
@@ -30,6 +38,7 @@ router.map({
 
 require('./lib/registerIcons.js')(Vue)
 require('./lib/registerComponents.js')(Vue)
+require('./lib/registerTransistions.js')(Vue)
 
 window.App = App;
 

@@ -1,23 +1,24 @@
 <template>
-	<section id="container" class="container clearfix">
-		<div class="clearfix mt2">
-			<div class="mb2 sm-flex center nowrap">
-				<div class="flex-auto block">
-					<p class="inline h2">SlugSurvival | <small class="muted" >{{ title }}</small></p>
+	<div>
+		<section id="container" class="container clearfix">
+			<div class="clearfix mt3">
+				<div class="mb2 sm-flex center nowrap">
+					<div class="flex-auto block">
+						<p class="inline h2" @click="egg">SlugSurvival | <small class="muted" >{{ title }}</small></p>
+					</div>
+				</div>
+
+				<div class="p0 col col-12">
+					<router-view transition="fade"></router-view>
 				</div>
 			</div>
-
-			<!--<div class="mn1 center" v-if="authenticated">
-				<a class="btn button-narrow" v-link="{ name: 'accounts'}">Accounts</a>
-				<a class="btn button-narrow" v-link="{ name: 'settingIndex'}">Settings</a>
-				<a class="btn button-narrow" @click="doLogout">Logout</a>
-			</div>-->
-
-			<div class="p0 col col-12">
-				<router-view transition="fade"></router-view>
+		</section>
+		<div class="container mb2 clearfix">
+			<div class="sm-flex center nowrap mb2 h5">
+				<div class="flex-auto muted">version 1.0.0</div>
 			</div>
 		</div>
-	</section>
+	</div>
 </template>
 <script>
 
@@ -30,6 +31,14 @@ module.exports = {
 	vuex: {
 		getters: getters,
 		actions: actions
+	},
+	methods: {
+		egg: function() {
+			this.alert().alert('<img src="http://img.s3.fmt01.sdapi.net/16360519.gif" alt="" />');
+		}
+	},
+	ready: function() {
+		this.fetchTerms()
 	}
 }
 </script>
