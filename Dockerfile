@@ -16,4 +16,4 @@ EXPOSE 3001
 
 RUN npm run prod
 
-CMD ["pm2", "start", "app.json", "--env", "dev", "--no-daemon"]
+CMD ["pm2", "start", "app.json", "--no-daemon"]
