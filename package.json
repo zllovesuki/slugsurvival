@@ -1,0 +1,40 @@
+{
+  "name": "slugsurvival",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www",
+    "prod": "NODE_ENV=production browserify -t vueify -e src/main.js | uglifyjs -c -m > public/prod.js",
+    "watch": "watchify -t vueify -e src/main.js -o public/app.js -v"
+  },
+  "dependencies": {
+    "debug": "~2.2.0",
+    "express": "~4.14.0",
+    "localforage": "^1.4.2",
+    "ucsc": "git+https://git.fm/zllovesuki/ucsc",
+    "vuex": "^1.0.0-rc.2"
+  },
+  "devDependencies": {
+    "alertify.js": "^1.0.12",
+    "autosize": "^3.0.16",
+    "babel-core": "^6.10.4",
+    "babel-plugin-transform-runtime": "^6.9.0",
+    "babel-preset-es2015": "^6.9.0",
+    "babel-runtime": "^6.9.2",
+    "bluebird": "^3.4.1",
+    "marked": "^0.3.5",
+    "nanobar": "^0.4.2",
+    "socket.io-client": "^1.4.8",
+    "unicode-substring": "^0.1.0",
+    "validator": "^5.4.0",
+    "vue": "^1.0.26",
+    "vue-hot-reload-api": "^2.0.5",
+    "vue-moment": "^2.0.1",
+    "vue-resource": "^0.9.3",
+    "vue-router": "^0.7.13",
+    "vueify": "^8.7.0",
+    "vueify-insert-css": "^1.0.0",
+    "vuex": "^1.0.0-rc.2",
+    "vuex-router-sync": "git+https://github.com/zllovesuki/vuex-router-sync.git"
+  }
+}
