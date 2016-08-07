@@ -12,7 +12,7 @@ RUN npm install
 
 COPY . /usr/src/app
 
-EXPORT 3001
+EXPOSE 3001
 
 RUN npm run prod
 
