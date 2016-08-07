@@ -36,6 +36,7 @@ router.map({
 	}
 })
 
+require('./lib/init.js')(store, router)
 require('./lib/registerIcons.js')(Vue)
 require('./lib/registerComponents.js')(Vue)
 require('./lib/registerTransistions.js')(Vue)

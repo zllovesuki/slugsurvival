@@ -15,14 +15,18 @@ var self = module.exports = {
 	},
 	fetchTermCourses: function(_) {
 		var termId = _.state.route.params.termId;
-		return helper.getWithHeader(this.$http, _.state, '/public/db/' + termId + '.json')
-		.then(function(res) {
-			if (typeof res === 'undefined') return;
-			var data = res.json();
-			_.dispatch('saveTermCourses', termId, data);
-			_.dispatch('setTermName', _.state.termsList[termId])
-			return data;
-		})
+		_.dispatch('setTermName', _.state.termsList[termId])
+		if (typeof _.state.courses[termId] === 'undefined') {
+			return helper.getWithHeader(this.$http, _.state, '/public/db/' + termId + '.json')
+			.then(function(res) {
+				if (typeof res === 'undefined') return;
+				var data = res.json();
+				_.dispatch('saveTermCourses', termId, data);
+				return data;
+			})
+		}else{
+			return Promise.resolve(_.state.courses[termId])
+		}
 	},
 	initializeCalendar: function(_) {
 		// TODO: do not couple this tightly with views/calendar/term.vue
@@ -86,5 +90,7 @@ var self = module.exports = {
 			obj = {};
 		})
 		this.refreshCalendar();
+		this.alert().success(course.code + ' added to the planner!')
+		return Promise.resolve();
 	}
 }

@@ -4,7 +4,7 @@
 			<div class="clearfix mt3">
 				<div class="mb2 sm-flex center nowrap">
 					<div class="flex-auto block">
-						<p class="inline h2" @click="egg">SlugSurvival | <small class="muted" >{{ title }}</small></p>
+						<p class="inline h2 clickable" v-link="{ name: 'index' }">SlugSurvival | <small class="muted" >{{ title }}</small></p>
 					</div>
 				</div>
 
@@ -15,7 +15,7 @@
 		</section>
 		<div class="container mb2 clearfix">
 			<div class="sm-flex center nowrap mb2 h5">
-				<div class="flex-auto muted">version 1.0.0</div>
+				<div class="flex-auto muted" @click="egg">version 1.0.0</div>
 			</div>
 		</div>
 	</div>
@@ -36,9 +36,6 @@ module.exports = {
 		egg: function() {
 			this.alert().alert('<img src="http://img.s3.fmt01.sdapi.net/16360519.gif" alt="" />');
 		}
-	},
-	ready: function() {
-		this.fetchTerms()
 	}
 }
 </script>

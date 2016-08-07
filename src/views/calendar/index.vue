@@ -5,7 +5,7 @@
 			<chevron-right></chevron-right>
 			<span v-if="route.name === 'termsList'">
 				<span class="btn button-narrow mxn1">
-					Available Quarters
+					Terms List
 				</span>
 			</span>
 			<span v-if="route.name === 'term'">

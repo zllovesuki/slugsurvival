@@ -96,6 +96,7 @@ module.exports = {
 		}
 	},
 	ready: function() {
+		this.setTitle('Planner')
 		this.fetchTermCourses().then(function() {
 			return this.initializeCalendar()
 		}.bind(this))
