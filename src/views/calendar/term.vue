@@ -2,12 +2,31 @@
 	<div>
 		<div class="overflow-hidden bg-white rounded mb2 clearfix">
 			<div class="m0 p2">
+				<div class="clearfix">
+					<div class="left">
+						<a class="btn btn-outline h5 m0 {{ color }}" @click="showAllModal">
+							{{ show.calendar ? 'show all classes' : 'show planner' }}
+						</a>
+					</div>
+					<div class="right">
+						<a class="btn btn-outline h5 m0 {{ color }}" @click="showSearchModal" v-show="show.calendar">
+							add classes by search
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="overflow-hidden bg-white rounded mb2 clearfix" v-bind:class="{ 'hide': !show.calendar }">
+			<div class="m0 p2">
 				<div id="calendar"></div>
 			</div>
 		</div>
+		<div id="all" v-if="ready" v-bind:class="{ 'hide': !show.table }">
+			<v-client-table :data="dataForTable" :columns="allTable.columns" :options=allTable.options></v-client-table>
+		</div>
 		<modal :show.sync="searchModal">
 			<h4 slot="header">
-				<input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="250" placeholder="enter anything! ECON 197, Design, etc...">
+				<input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="250" placeholder="ECON 197, Design, Baskin, Mendes, etc...">
 			</h4>
 			<span slot="body">
 					<ul class="list-reset block y-scrollable">
@@ -35,11 +54,31 @@ module.exports = {
 	},
 	data: function() {
 		return {
+			ready: false,
 			searchModal: false,
 			search: {
 				string: '',
 				results: []
+			},
+			allTable: {
+				columns: ['code', 'name', 'type', 'location'],
+				options: {
+					perPage: 25,
+					perPageValues: [10, 25, 50, 100],
+					onRowClick: function(row) {
+						this.addToSource(row);
+					}.bind(this)
+				}
+			},
+			show: {
+				calendar: true,
+				table: false
 			}
+		}
+	},
+	computed: {
+		dataForTable: function() {
+			return this.flatCourses[this.route.params.termId];
 		}
 	},
 	watch: {
@@ -49,7 +88,11 @@ module.exports = {
 		}
 	},
 	methods: {
-		showModal: function() {
+		showAllModal: function() {
+			this.show.calendar = !this.show.calendar;
+			this.show.table = !this.show.table;
+		},
+		showSearchModal: function() {
 			this.searchModal = true;
 			this.search.string = '';
 			this.search.results = [];
@@ -61,7 +104,11 @@ module.exports = {
 			var results = [];
 			string = string.toLowerCase();
 			results = this.flatCourses[this.termId].filter(function(course) {
-				return course.code.toLowerCase().indexOf(string) !== -1 || course.name.toLowerCase().indexOf(string) !== -1;
+				return course.code.toLowerCase().indexOf(string) !== -1
+				|| course.name.toLowerCase().indexOf(string) !== -1
+				|| (!!!course.location ? false : course.location.toLowerCase().indexOf(string) !== -1)
+				|| (!!!course.instructor.firstName ? false : course.instructor.firstName.toLowerCase().indexOf(string) !== -1)
+				|| (!!!course.instructor.lastName ? false : course.instructor.lastName.toLowerCase().indexOf(string) !== -1);
 			});
 			return results;
 		},
@@ -98,7 +145,11 @@ module.exports = {
 	ready: function() {
 		this.setTitle('Planner')
 		this.fetchTermCourses().then(function() {
-			return this.initializeCalendar()
+			this.ready = true;
+			this.initializeCalendar();
+			$('[class*="fc-button"]').addClass('btn btn-outline');
+			$('[class*="fc-button"]').removeClass('fc-state-default');
+
 		}.bind(this))
 	}
 }

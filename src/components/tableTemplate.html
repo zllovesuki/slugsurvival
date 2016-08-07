@@ -1,0 +1,72 @@
+<div class="bg-white rounded mb2 VueTables VueTables--[[source]]">
+	<div class="m0 p1 border-bottom">
+		<div class="clearfix">
+			<div class="left black">
+				<div v-if="!options.filterByColumn" class="VueTables__search">
+					<label class="col col-12">filter:
+						<input class="inline-block field" type="text" placeholder="{{display('filterPlaceholder')}}" @keydown="search() | debounce options.delay" v-model="query" />
+					</label>
+				</div>
+			</div>
+			<div class="right black">
+				<label class="col col-12">per page:
+					<select class="inline-block field" v-model="limit" @change="setPage(1, true)">
+				    	<option v-for="value in options.perPageValues">{{value}}</option>
+				   </select>
+		   		</label>
+			</div>
+		</div>
+	</div>
+	<div class="m0 p1 border-bottom">
+		<div class="clearfix overflow-scroll">
+			<table class="VueTables__table table-light">
+				<thead class="bg-darken-1">
+					<tr>
+						<th @click="orderByColumn(column)" v-for="column in allColumns" v-bind:class="sortableClass(column)">
+							<span class="VueTables__heading">{{getHeading(column)}}</span>
+							<span v-if="sortable(column)" class="VueTables__sort-icon pull-right" v-bind:class="sortableChevronClass(column)"></span>
+						</th>
+					</tr>
+					<tr v-if="options.filterByColumn" class="VueTables__filters-row">
+						<th v-for="column in allColumns">
+							<div class="VueTables__column-filter VueTables__{{column}}-filter-wrapper" v-if="filterable(column)">
+								<input @keydown="search() | debounce options.delay" v-if="isTextFilter(column)" class="form-control" type="text" placeholder="{{display('filterBy',getHeading(column))}}" v-model="query[column]">
+
+								<div class="VueTables__date-filter" id="VueTables__{{column}}-filter" v-if="isDateFilter(column)">
+									<span class="VueTables__filter-placeholder">{{display('filterBy',getHeading(column))}}</span>
+								</div>
+
+								<div class="VueTables__list-filter" id="VueTables__{{column}}-filter" v-if="isListFilter(column)">
+									<select class='form-control' @change="search()" v-model="query[column]">
+								        <option value="">{{display('defaultOption',getHeading(column))}}</option>
+								        <option v-for="option in options.listColumns[column]" value="{{option.id}}">{{option.text}}</option>
+								    </select>
+								</div>
+							</div>
+						</th>
+					</tr>
+				</thead>
+				<tfoot v-if="options.footerHeadings">
+					<tr>
+						<th @click="orderByColumn(column)" v-for="column in allColumns" v-bind:class="sortableClass(column)">
+							<span class="VueTables__heading">{{getHeading(column)}}</span>
+							<span v-if="sortable(column)" class="VueTables__sort-icon pull-right" v-bind:class="sortableChevronClass(column)"></span>
+						</th>
+					</tr>
+				</tfoot>
+				<tbody v-el:tbody>
+					<tr v-for="row in data [[rowFilters]]" [[trackBy]] @click='options.onRowClick(row)'>
+						<td v-for="column in allColumns" v-html="row[column] | render row column [[columnFilters]]"></td>
+					</tr>
+
+					<tr v-if="count==0" class="VueTables__no-results">
+						<td class="text-center" colspan="{{allColumns.length}}">
+							{{display([[loading]]'noResults')}}
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<pagination class="mt3" v-ref:pagination v-if="options.pagination && !options.pagination.dropdown" :for="id" :records="count" :per-page="limit" :chunk="options.pagination.chunk" :count-text="options.texts.count"></pagination>
+	</div>
+</div>

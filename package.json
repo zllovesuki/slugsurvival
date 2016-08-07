@@ -5,13 +5,15 @@
   "scripts": {
     "start": "node ./bin/www",
     "prod": "NODE_ENV=production browserify -t vueify -e src/main.js | uglifyjs -c -m > public/prod.js",
-    "watch": "watchify -t vueify -e src/main.js -o public/app.js -v"
+    "watch": "watchify -t stringify -t vueify -e src/main.js -o public/app.js -v"
   },
   "dependencies": {
     "debug": "~2.2.0",
     "express": "~4.14.0",
     "localforage": "^1.4.2",
+    "stringify": "^5.1.0",
     "ucsc": "git+https://git.fm/zllovesuki/ucsc",
+    "vue-tables": "git+https://github.com/zllovesuki/vue-tables.git",
     "vuex": "^1.0.0-rc.2"
   },
   "devDependencies": {

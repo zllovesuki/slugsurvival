@@ -10,7 +10,7 @@
 			</span>
 			<span v-if="route.name === 'term'">
 				<span class="btn button-narrow mxn1">
-					Weekly Schedule for {{ termName }}
+					Schedule for {{ termName }}
 				</span>
 			</span>
 		</div>

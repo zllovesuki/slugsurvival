@@ -32,14 +32,6 @@ var self = module.exports = {
 		// TODO: do not couple this tightly with views/calendar/term.vue
 		var self = this;
 		$('#calendar').fullCalendar({
-			customButtons: {
-				clickToSearch: {
-					text: 'add classes',
-					click: function() {
-						self.showModal();
-					}
-				}
-			},
 			columnFormat: 'ddd',
 			minTime: '07:00',
 			maxTime: '23:00',
@@ -47,11 +39,7 @@ var self = module.exports = {
 			allDaySlot: false,
 			weekends: false,
 			defaultView: 'agendaWeek',
-			header: {
-				left: '',
-				center: '',
-				right: 'clickToSearch'
-			},
+			header: false,
 			contentHeight: 'auto',
 			eventSources: [
 				{
@@ -86,6 +74,7 @@ var self = module.exports = {
 			obj.number = course.number;
 			obj.start = _.state.dateMap[day] + ' ' + course.time.time.start;
 			obj.end = _.state.dateMap[day] + ' ' + course.time.time.end;
+			obj.course = course;
 			_.dispatch('pushToEventSource', obj);
 			obj = {};
 		})
