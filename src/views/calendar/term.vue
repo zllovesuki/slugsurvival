@@ -159,6 +159,7 @@ module.exports = {
 			html += template('Location', !!!course.location ? 'TBA': course.location);
 			html += template('Meeting Day', !!!course.time ? 'TBA' : course.time.day.join(', '));
 			html += template('Meeting Time', !!!course.time ? 'TBA' : course.time.time.start + '-' + course.time.time.end);
+			html += template('Capacity', course.capacity);
 
 			if (code !== false || code === null) {
 				alertHandle = function() {
