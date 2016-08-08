@@ -9,31 +9,31 @@ var self = module.exports = {
 	},
 	fetchTerms: function(_) {
 		return helper.getWithHeader(this.$http, _.state, '/db/terms.json')
-		.then(function(res) {
-			if (typeof res === 'undefined') return;
-			var data = res.json();
-			_.dispatch('saveTermsList', data);
-			return data;
-		})
+			.then(function(res) {
+				if (typeof res === 'undefined') return;
+				var data = res.json();
+				_.dispatch('saveTermsList', data);
+				return data;
+			})
 	},
 	fetchTermCourses: function(_) {
 		var termId = _.state.route.params.termId;
 		_.dispatch('setTermName', _.state.termsList[termId])
 		if (typeof _.state.courses[termId] === 'undefined') {
 			return helper.getWithHeader(this.$http, _.state, '/db/terms/' + termId + '.json')
-			.then(function(res) {
-				if (typeof res === 'undefined') return;
-				var coursesData = res.json();
-				_.dispatch('saveTermCourses', termId, coursesData);
-				return helper.getWithHeader(this.$http, _.state, '/db/courses/' + termId + '.json')
 				.then(function(res) {
 					if (typeof res === 'undefined') return;
-					var courseInfo = res.json();
-					_.dispatch('saveCourseInfo', termId, courseInfo);
-					return coursesData
+					var coursesData = res.json();
+					_.dispatch('saveTermCourses', termId, coursesData);
+					return helper.getWithHeader(this.$http, _.state, '/db/courses/' + termId + '.json')
+						.then(function(res) {
+							if (typeof res === 'undefined') return;
+							var courseInfo = res.json();
+							_.dispatch('saveCourseInfo', termId, courseInfo);
+							return coursesData
+						})
 				})
-			})
-		}else{
+		} else {
 			return Promise.resolve(_.state.courses[termId])
 		}
 	},
@@ -42,7 +42,7 @@ var self = module.exports = {
 		return _.state.courseInfo[termId][courseNumber].sections.length > 0;
 	},
 	refreshCalendar: function(_) {
-		$('#calendar-' + _.state.route.params.termId).fullCalendar( 'refetchEvents' )
+		$('#calendar-' + _.state.route.params.termId).fullCalendar('refetchEvents')
 	},
 	returnEventSourceSnapshot: function(_) {
 		var termId = _.state.route.params.termId;
@@ -65,7 +65,7 @@ var self = module.exports = {
 			obj.color = 'green';
 			_.dispatch('pushToEventSource', termId, obj);
 			obj = {};
-		}else{
+		} else {
 			course.time.day.forEach(function(day) {
 				obj.title = [course.code + ' - ' + course.section, courseInfo.type, course.name].join("\n");
 				obj.number = course.number;
@@ -80,7 +80,7 @@ var self = module.exports = {
 		this.refreshCalendar();
 		if (edit) {
 			this.alert().success(course.code + ' edited!')
-		}else{
+		} else {
 			this.alert().success(course.code + ' added to the planner!')
 		}
 		return Promise.resolve();
@@ -121,7 +121,7 @@ var self = module.exports = {
 			// TBA will be in the allDaySlot
 			obj.start = _.state.dateMap['Monday'];
 			obj.end = _.state.dateMap['Saturday'];
-		}else{
+		} else {
 			obj.start = _.state.dateMap[day] + ' ' + section.time.time.start;
 			obj.end = _.state.dateMap[day] + ' ' + section.time.time.end;
 		}
@@ -157,7 +157,7 @@ var self = module.exports = {
 			if (event.allDay) return;
 			if (typeof event.section !== 'undefined') {
 				existingDays.push(event.section.time.day);
-			}else{
+			} else {
 				existingDays.push(event.course.time.day);
 			}
 		})
@@ -185,7 +185,7 @@ var self = module.exports = {
 					if (event.section.time.day.indexOf(potentialConflictDay) !== -1) {
 						existingTimes[event.course.code + ' Section'] = event.section.time.time;
 					}
-				}else{
+				} else {
 					if (event.course.time.day.indexOf(potentialConflictDay) !== -1) {
 						existingTimes[event.course.code] = event.course.time.time;
 					}
@@ -195,63 +195,73 @@ var self = module.exports = {
 		keys = Object.keys(existingTimes);
 		if (keys.length === 0) return conflict;
 		comingTime = course.time.time;
+		var oldStart, newStart, oldEnd, newEnd;
 		keys.forEach(function(code) {
-			if ( (comingTime.end.replace(':', '') > existingTimes[code].start.replace(':', '')
-			&& comingTime.start.replace(':', '') < existingTimes[code].end.replace(':', '')) ) {
+			oldStart = existingTimes[code].start.replace(':', '');
+			oldEnd = existingTimes[code].end.replace(':', '');
+			newStart = comingTime.start.replace(':', '');
+			newEnd = comingTime.end.replace(':', '');
+
+			if ((newEnd > oldStart && newStart < oldEnd)) {
 				// new course is eating from behind
 				conflict = code;
 				return;
 			}
 
-			if ( (comingTime.end.replace(':', '') > existingTimes[code].start.replace(':', '')
-			&& comingTime.end.replace(':', '') < existingTimes[code].end.replace(':', '')) ) {
+			if ((newEnd > oldStart && newEnd < oldEnd)) {
 				// new course is eating from ahead
 				conflict = code;
 				return;
 			}
 
-			if ( (comingTime.end.replace(':', '') == existingTimes[code].start.replace(':', '')
-			|| comingTime.start.replace(':', '') == existingTimes[code].end.replace(':', '')) ) {
+			if ((newEnd == oldStart || newStart == oldEnd)) {
 				// piggy back
 				conflict = code;
 				return;
 			}
 
-			if ( (comingTime.end.replace(':', '') == existingTimes[code].end.replace(':', '')
-			&& comingTime.start.replace(':', '') == existingTimes[code].start.replace(':', '')) ) {
+			if ((newEnd == oldEnd && newStart == oldStart)) {
 				// overlap
 				conflict = code;
 				return;
 			}
 
-			if ( (comingTime.end.replace(':', '') >= existingTimes[code].end.replace(':', '')
-			&& comingTime.start.replace(':', '') < existingTimes[code].start.replace(':', '')) ) {
+			if ((newEnd >= oldEnd &&
+					newStart < oldStart)) {
 				// new course is outside (existing bottom)
 				conflict = code;
 				return;
 			}
 
-			if ( (comingTime.start.replace(':', '') == existingTimes[code].start.replace(':', '')
-			&& comingTime.end.replace(':', '') < existingTimes[code].end.replace(':', '')) ) {
+			if ((newStart == oldStart && newEnd < oldEnd)) {
 				// new course is outside (existing top)
 				conflict = code;
 				return;
 			}
 
-			if ( (comingTime.start.replace(':', '') == existingTimes[code].start.replace(':', '')
-			&& comingTime.end.replace(':', '') < existingTimes[code].end.replace(':', '')) ) {
+			if ((newStart == oldStart && newEnd < oldEnd)) {
 				// new course is inside (top)
 				conflict = code;
 				return;
 			}
 
-			if ( (comingTime.start.replace(':', '') < existingTimes[code].start.replace(':', '')
-			&& comingTime.end.replace(':', '') == existingTimes[code].end.replace(':', '')) ) {
+			if ((newStart < oldStart && newEnd == oldEnd)) {
 				// new course is inside (bottom)
 				conflict = code;
 				return;
 			}
 		})
 		return conflict;
-	}
+	},
+	tConvert: function(_, time) {
+		// Check correct time format and split into components
+		time = time.toString().match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
+
+		if (time.length > 1) { // If time format correct
+			time = time.slice(1); // Remove full string match value
+			time[5] = +time[0] < 12 ? 'AM' : 'PM'; // Set AM/PM
+			time[0] = +time[0] % 12 || 12; // Adjust hours
+		}
+		return time.join(''); // return adjusted time or original string
+	} // http://stackoverflow.com/questions/13898423/javascript-convert-24-hour-time-of-day-string-to-12-hour-time-with-am-pm-and-no
 }

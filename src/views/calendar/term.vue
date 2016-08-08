@@ -149,7 +149,7 @@ module.exports = {
 			html += template('Instructor(s)', course.instructor.displayName.join(', '));
 			html += template('Location', !!!course.location ? 'TBA': course.location);
 			html += template('Meeting Day', !!!course.time ? 'TBA' : course.time.day.join(', '));
-			html += template('Meeting Time', !!!course.time ? 'TBA' : course.time.time.start + '-' + course.time.time.end);
+			html += template('Meeting Time', !!!course.time ? 'TBA' : this.tConvert(course.time.time.start) + '-' + this.tConvert(course.time.time.end));
 			html += template('Capacity', course.capacity);
 
 			if (code !== false || code === null) {
@@ -233,12 +233,12 @@ module.exports = {
 				sections.forEach(function(section) {
 					string += '<tr class="clickable" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ', ' + edit + ')">';
 					string += ['<td>', section.section, '</td>'].join('');
-					string += ['<td>', !!!section.time ? 'TBA' : section.time.day.join(','), '<br>', [section.time.time.start, section.time.time.end].join('-'), '</td>'].join('');
+					string += ['<td>', !!!section.time ? 'TBA' : section.time.day.join(','), '<br>', [this.tConvert(section.time.time.start), this.tConvert(section.time.time.end)].join('-'), '</td>'].join('');
 					string += ['<td>', section.location, '</td>'].join('');
 					string += '</a></tr>';
-				})
+				}.bind(this))
 				return string;
-			}
+			}.bind(this)
 			var table = '<p>' + (edit ? 'Choose another section' : 'Choose a section') + '</p>'
 			+ '<table class="table-light h6">'
 			+ '<thead>'
