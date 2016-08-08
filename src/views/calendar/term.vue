@@ -112,38 +112,6 @@ module.exports = {
 			});
 			return results;
 		},
-		promptSections: function(courseNumber) {
-			var course = this.courseInfo[this.termId][courseNumber];
-			// TODO: customize display (like NOT hard coding it)
-			var headTemplate = function(name) {
-				return ['<th>', name, '</th>'].join('');
-			}
-			var generateRows = function(sections) {
-				var string = '';
-				sections.forEach(function(section) {
-					string += '<tr class="clickable" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ')">';
-					string += ['<td>', section.section, '</td>'].join('');
-					string += ['<td>', !!!section.time ? 'TBA' : section.time.day.join(','), '<br>', [section.time.time.start, section.time.time.end].join('-'), '</td>'].join('');
-					string += ['<td>', section.location, '</td>'].join('');
-					string += '</a></tr>';
-				})
-				return string;
-			}
-			var table = '<table class="table-light">'
-			+ '<thead>'
-			+ headTemplate('Section')
-			+ headTemplate('Meeting Time')
-			+ headTemplate('Location')
-			+ '</thead>'
-			+ '<tbody>'
-			+ generateRows(course.sections)
-			+ '</tbody>'
-			+ '</table>';
-
-			this.alert()
-			.okBtn("Return")
-			.alert(table)
-		},
 		addToSource: function(course) {
 			var courseHasSections = this.courseHasSections(course.number);
 			var code = this.checkForConflict(course);

@@ -32,6 +32,9 @@ module.exports = {
 		if (typeof state.events[termId] === 'undefined') state.events[termId] = [];
 		state.events[termId].push(obj);
 	},
+	restoreEventSourceSnapshot: function(state, termId, events) {
+		state.events[termId] = events;
+	},
 	removeFromSource: function(state, termId, number) {
 		state.events[termId] = state.events[termId].filter(function(event) {
 			return event.number !== number;

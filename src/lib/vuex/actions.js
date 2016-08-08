@@ -66,24 +66,69 @@ var self = module.exports = {
 		        }
 		    ],
 			eventClick: function(calEvent, jsEvent, view) {
-				self.alert()
-				.okBtn("Yes")
-				.cancelBtn("No")
-				.confirm('Remove from calendar?')
-				.then(function(resolved) {
-					resolved.event.preventDefault();
-					if (resolved.buttonClicked !== 'ok') return;
-					_.dispatch('removeFromSource', termId, calEvent.number);
-					self.refreshCalendar();
-					_.state.alert.success('Removed!')
-				}.bind(self));
+				if (typeof calEvent._number !== 'undefined') {
+					// clicked on a section, ask if user wants to change
+					self.promptSections(calEvent.number, true);
+				}else{
+					// or else just ask to remove the whole damn thing
+					self.alert()
+					.okBtn("Yes")
+					.cancelBtn("No")
+					.confirm('Remove ' + calEvent.course.code + ' from calendar?')
+					.then(function(resolved) {
+						resolved.event.preventDefault();
+						if (resolved.buttonClicked !== 'ok') return;
+						_.dispatch('removeFromSource', termId, calEvent.number);
+						self.refreshCalendar();
+						_.state.alert.success('Removed!')
+					}.bind(self));
+				}
 			}
 		})
 	},
 	refreshCalendar: function(_) {
 		$('#calendar-' + _.state.route.params.termId).fullCalendar( 'refetchEvents' )
 	},
-	pushToEventSource: function(_, course) {
+	promptSections: function(_, courseNumber, edit) {
+		edit = edit || false;
+		var course = this.courseInfo[this.termId][courseNumber];
+		// TODO: customize display (like NOT hard coding it)
+		var headTemplate = function(name) {
+			return ['<th>', name, '</th>'].join('');
+		}
+		var generateRows = function(sections) {
+			var string = '';
+			sections.forEach(function(section) {
+				string += '<tr class="clickable" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ', ' + edit + ')">';
+				string += ['<td>', section.section, '</td>'].join('');
+				string += ['<td>', !!!section.time ? 'TBA' : section.time.day.join(','), '<br>', [section.time.time.start, section.time.time.end].join('-'), '</td>'].join('');
+				string += ['<td>', section.location, '</td>'].join('');
+				string += '</a></tr>';
+			})
+			return string;
+		}
+		var table = '<p>' + (edit ? 'Choose another section' : 'Choose a section') + '</p>'
+		+ '<table class="table-light h6">'
+		+ '<thead>'
+		+ headTemplate('Section')
+		+ headTemplate('Meeting Time')
+		+ headTemplate('Location')
+		+ '</thead>'
+		+ '<tbody>'
+		+ generateRows(course.sections)
+		+ '</tbody>'
+		+ '</table>';
+
+		this.alert()
+		.okBtn("Return")
+		.alert(table)
+	},
+	returnEventSourceSnapshot: function(_) {
+		var termId = _.state.route.params.termId;
+		return _.state.events[termId]
+	},
+	pushToEventSource: function(_, course, edit) {
+		edit = edit || false;
 		var termId = _.state.route.params.termId;
 		var code;
 		var obj = {};
@@ -110,27 +155,38 @@ var self = module.exports = {
 			})
 		}
 		this.refreshCalendar();
-		this.alert().success(course.code + ' added to the planner!')
+		if (edit) {
+			this.alert().success(course.code + ' edited!')
+		}else{
+			this.alert().success(course.code + ' added to the planner!')
+		}
 		return Promise.resolve();
 	},
-	_pushSectionToEventSource: function(_, courseNumber, sectionNumber) {
+	_pushSectionToEventSource: function(_, courseNumber, sectionNumber, edit) {
+		edit = edit || false;
 		var termId = _.state.route.params.termId;
 		var courseInfo = _.state.courseInfo[termId][courseNumber];
 		var courses = _.state.flatCourses[termId];
 		var obj = {};
+		var snapshot = [];
 		var code;
 		var section = courseInfo.sections.filter(function(section) {
 			return section.number == sectionNumber
 		});
 		section = section[0];
-		if ((code = this.checkForConflict(section)) !== false) {
-			this.alert().error('Section conflict with ' + code + '!')
-			return Promise.resolve();
-		}
 		var course = courses.filter(function(course) {
 			return course.number == courseNumber;
 		})
 		course = course[0];
+		snapshot = this.returnEventSourceSnapshot();
+		if (edit) {
+			_.dispatch('removeFromSource', termId, course.number);
+		}
+		if ((code = this.checkForConflict(section)) !== false) {
+			this.alert().error('Section conflict with ' + code + '!')
+			_.dispatch('restoreEventSourceSnapshot', termId, snapshot);
+			return Promise.resolve();
+		}
 		var day = section.time.day[0];
 		obj.title = ['DIS ' + section.section, 'Section for ' + course.code].join("\n");
 		obj.number = course.number;
@@ -146,7 +202,7 @@ var self = module.exports = {
 		obj.course = course;
 		obj.section = section;
 		_.dispatch('pushToEventSource', termId, obj);
-		this.pushToEventSource(course);
+		this.pushToEventSource(course, edit);
 		this.refreshCalendar();
 		$('.alertify').remove();
 		return Promise.resolve();
@@ -193,18 +249,6 @@ var self = module.exports = {
 		if (keys.length === 0) return conflict;
 		comingTime = course.time.time;
 		keys.forEach(function(code) {
-			if ( (comingTime.start.replace(':', '') < existingTimes[code].start.replace(':', '')
-			&& comingTime.end.replace(':', '') < existingTimes[code].start.replace(':', '')) ) {
-				// new course is ahead
-				return;
-			}
-
-			if ( (comingTime.start.replace(':', '') > existingTimes[code].end.replace(':', '')
-			&& comingTime.end.replace(':', '') < existingTimes[code].end.replace(':', '')) ) {
-				// new course is behind
-				return;
-			}
-
 			if ( (comingTime.end.replace(':', '') > existingTimes[code].start.replace(':', '')
 			&& comingTime.start.replace(':', '') < existingTimes[code].end.replace(':', '')) ) {
 				// new course is eating from behind
@@ -229,6 +273,34 @@ var self = module.exports = {
 			if ( (comingTime.end.replace(':', '') == existingTimes[code].end.replace(':', '')
 			|| comingTime.start.replace(':', '') == existingTimes[code].start.replace(':', '')) ) {
 				// overlap
+				conflict = code;
+				return;
+			}
+
+			if ( (comingTime.end.replace(':', '') >= existingTimes[code].end.replace(':', '')
+			&& comingTime.start.replace(':', '') < existingTimes[code].start.replace(':', '')) ) {
+				// new course is outside (existing bottom)
+				conflict = code;
+				return;
+			}
+
+			if ( (comingTime.start.replace(':', '') == existingTimes[code].start.replace(':', '')
+			&& comingTime.end.replace(':', '') < existingTimes[code].end.replace(':', '')) ) {
+				// new course is outside (existing top)
+				conflict = code;
+				return;
+			}
+
+			if ( (comingTime.start.replace(':', '') == existingTimes[code].start.replace(':', '')
+			&& comingTime.end.replace(':', '') < existingTimes[code].end.replace(':', '')) ) {
+				// new course is inside (top)
+				conflict = code;
+				return;
+			}
+
+			if ( (comingTime.start.replace(':', '') < existingTimes[code].start.replace(':', '')
+			&& comingTime.end.replace(':', '') == existingTimes[code].end.replace(':', '')) ) {
+				// new course is inside (bottom)
 				conflict = code;
 				return;
 			}
