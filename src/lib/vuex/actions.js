@@ -163,7 +163,7 @@ var self = module.exports = {
 		var comingTime = {};
 		var keys = [];
 		var conflict = false;
-		if (typeof _.state.events[termId] === 'undefined') return false;
+		if (typeof _.state.events[termId] === 'undefined') return conflict;
 		_.state.events[termId].forEach(function(event) {
 			// You can't take the same class twice in a quarter
 			// At least you shouldn't
@@ -175,6 +175,10 @@ var self = module.exports = {
 			existingDays.push(event.course.time.day);
 		})
 		if (conflict !== false) return null;
+		if (!!!course.time) {
+			// TBA
+			return conflict;
+		}
 		intersectDays = helper.containsAll.apply(this, existingDays.concat([course.time.day]))
 		if (intersectDays.length === 0) return false;
 		intersectDays.forEach(function(conflictDay) {
@@ -186,7 +190,7 @@ var self = module.exports = {
 			})
 		})
 		keys = Object.keys(existingTimes);
-		if (keys.length === 0) return false;
+		if (keys.length === 0) return conflict;
 		comingTime = course.time.time;
 		keys.forEach(function(code) {
 			if ( (comingTime.start.replace(':', '') < existingTimes[code].start.replace(':', '')
