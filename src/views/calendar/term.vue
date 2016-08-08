@@ -4,12 +4,12 @@
 			<div class="m0 p2">
 				<div class="clearfix">
 					<div class="left">
-						<a class="btn btn-outline h5 m0 {{ color }}" @click="showAllModal">
+						<a class="btn btn-outline h6 m0 {{ color }}" @click="showAllModal">
 							{{ show.calendar ? 'show all classes' : 'show planner' }}
 						</a>
 					</div>
 					<div class="right">
-						<a class="btn btn-outline h5 m0 {{ color }}" @click="showSearchModal" v-show="show.calendar">
+						<a class="btn btn-outline h6 m0 {{ color }}" @click="showSearchModal" v-show="show.calendar">
 							add classes by search
 						</a>
 					</div>
@@ -21,8 +21,31 @@
 				<div id="calendar-{{ termId }}"></div>
 			</div>
 		</div>
+		<div class="overflow-hidden bg-white rounded mb2 clearfix" v-show="show.calendar">
+			<div class="m0 p2">
+				<div class="clearfix">
+					<div class="left">
+
+					</div>
+					<div class="right">
+						<a class="btn h6 m0 {{ color }}">
+							Color code:
+						</a>
+						<a class="btn btn-outline bg-green white h6">
+							TBA
+						</a>
+						<a class="btn btn-outline bg-aqua white h6">
+							Class
+						</a>
+						<a class="btn btn-outline bg-gray white h6">
+							Section
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
 		<div id="all" v-if="ready" v-bind:class="{ 'hide': !show.table }">
-			<v-client-table :data="dataForTable" :columns="allTable.columns" :options=allTable.options></v-client-table>
+			<v-client-table :data="dataForTable" :columns="allTable.columns" :options="allTable.options"></v-client-table>
 		</div>
 		<modal :show.sync="searchModal">
 			<h4 slot="header">
@@ -31,7 +54,7 @@
 			<span slot="body">
 					<ul class="list-reset block y-scrollable">
 					<li class="overflow-hidden" v-for="result in search.results" track-by="$index">
-						<a class="btn" @click="addToSource(result)">
+						<a class="btn h5" @click="addToSource(result)">
 							{{ result.code }} - {{ result.section }}  - {{ result.name }}
 						</a>
 					</li>
@@ -118,7 +141,7 @@ module.exports = {
 			var alertHandle = function() {};
 			var html = '';
 			var template = function(key, value) {
-				return ['<p>', '<span class="muted h6">', key, ': </span><b>', value, '</b>', '</p>'].join('');
+				return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
 			}
 
 			html += template('This class', courseHasSections ? 'has sections': 'has NO sections');

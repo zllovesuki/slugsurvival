@@ -61,6 +61,7 @@ var self = module.exports = {
 			obj.start = _.state.dateMap['Monday'];
 			obj.end = _.state.dateMap['Saturday'];
 			obj.course = course;
+			obj.color = 'green';
 			_.dispatch('pushToEventSource', termId, obj);
 			obj = {};
 		}else{
@@ -83,6 +84,9 @@ var self = module.exports = {
 		}
 		return Promise.resolve();
 	},
+	removeFromSource: function(_, termId, courseNumber) {
+		_.dispatch('removeFromSource', termId, courseNumber);
+	},
 	_pushSectionToEventSource: function(_, courseNumber, sectionNumber, edit) {
 		edit = edit || false;
 		var termId = _.state.route.params.termId;
@@ -101,10 +105,10 @@ var self = module.exports = {
 		course = course[0];
 		snapshot = this.returnEventSourceSnapshot();
 		if (edit) {
-			_.dispatch('removeFromSource', termId, course.number);
+			this.removeFromSource(termId, course.number);
 		}
 		if ((code = this.checkForConflict(section)) !== false) {
-			this.alert().error('Section conflict with ' + code + '!')
+			this.alert().error('Section ' + section.section + ' conflict with ' + code + '!')
 			_.dispatch('restoreEventSourceSnapshot', termId, snapshot);
 			return Promise.resolve();
 		}
@@ -120,6 +124,7 @@ var self = module.exports = {
 			obj.start = _.state.dateMap[day] + ' ' + section.time.time.start;
 			obj.end = _.state.dateMap[day] + ' ' + section.time.time.end;
 		}
+		obj.color = 'grey';
 		obj.course = course;
 		obj.section = section;
 		_.dispatch('pushToEventSource', termId, obj);
