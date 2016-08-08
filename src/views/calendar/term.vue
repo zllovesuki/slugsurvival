@@ -145,30 +145,45 @@ module.exports = {
 			.alert(table)
 		},
 		addToSource: function(course) {
+			var courseHasSections = this.courseHasSections(course.number);
+			var code = this.checkForConflict(course);
+			var alertHandle = function() {};
 			var html = '';
 			var template = function(key, value) {
 				return ['<p>', '<span class="muted h6">', key, ': </span><b>', value, '</b>', '</p>'].join('');
 			}
-			var courseHasSections = this.courseHasSections(course.number);
+
 			html += template('This class', courseHasSections ? 'has sections': 'has NO sections');
 			//html += template('Course Number', course.number);
 			html += template('Instructor(s)', course.instructor.displayName.join(', '));
 			html += template('Location', !!!course.location ? 'TBA': course.location);
 			html += template('Meeting Day', !!!course.time ? 'TBA' : course.time.day.join(', '));
 			html += template('Meeting Time', !!!course.time ? 'TBA' : course.time.time.start + '-' + course.time.time.end);
-			this.alert()
-			.okBtn(courseHasSections ? 'Sections' : 'Add')
-			.cancelBtn("Return")
-			.confirm(html)
-			.then(function(resolved) {
-				resolved.event.preventDefault();
-				if (resolved.buttonClicked !== 'ok') return;
-				if (courseHasSections) {
-					this.promptSections(course.number);
-				} else {
-					this.pushToEventSource(course);
-				}
-			}.bind(this));
+
+			if (code !== false || code === null) {
+				alertHandle = function() {
+					return this.alert()
+					.okBtn(code === null ? 'Taking the same class twice?' : 'Conflict with ' + code)
+					.alert(html)
+				}.bind(this)
+			}else{
+				alertHandle = function() {
+					this.alert()
+					.okBtn(courseHasSections ? 'Sections' : 'Add')
+					.cancelBtn("Return")
+					.confirm(html)
+					.then(function(resolved) {
+						resolved.event.preventDefault();
+						if (resolved.buttonClicked !== 'ok') return;
+						if (courseHasSections) {
+							this.promptSections(course.number);
+						} else {
+							this.pushToEventSource(course);
+						}
+					}.bind(this));
+				}.bind(this)
+			}
+			return alertHandle()
 		}
 	},
 	ready: function() {
