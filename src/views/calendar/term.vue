@@ -61,7 +61,7 @@ module.exports = {
 				results: []
 			},
 			allTable: {
-				columns: ['code', 'name', 'type', 'location'],
+				columns: ['code', 'section', 'name', 'type'],
 				options: {
 					perPage: 25,
 					perPageValues: [10, 25, 50, 100],

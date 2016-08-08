@@ -5,7 +5,7 @@ var self = module.exports = {
 		_.dispatch('setTitle', title)
 	},
 	fetchTerms: function(_) {
-		return helper.getWithHeader(this.$http, _.state, '/public/db/terms.json')
+		return helper.getWithHeader(this.$http, _.state, '/db/terms.json')
 		.then(function(res) {
 			if (typeof res === 'undefined') return;
 			var data = res.json();
@@ -17,7 +17,7 @@ var self = module.exports = {
 		var termId = _.state.route.params.termId;
 		_.dispatch('setTermName', _.state.termsList[termId])
 		if (typeof _.state.courses[termId] === 'undefined') {
-			return helper.getWithHeader(this.$http, _.state, '/public/db/' + termId + '.json')
+			return helper.getWithHeader(this.$http, _.state, '/db/terms/' + termId + '.json')
 			.then(function(res) {
 				if (typeof res === 'undefined') return;
 				var data = res.json();

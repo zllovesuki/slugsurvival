@@ -15,20 +15,7 @@ module.exports = function() {
 	}
 
 	app.use('/public', express.static(path.join(__dirname, 'public')));
-
-	app.get('/sw.js', function(req, res, next) {
-		fs.readFile(__dirname + '/src/static/sw.js', 'utf8', function (err, data) {
-			if (err) {
-				return next(err);
-			}
-			var apiEndpoint = config.apiEndpoint;
-			var version = '/v' + config.apiVersion;
-			var result = data.replace(/__APIENDPOINT__/g, apiEndpoint + version);
-			result = result.replace(/__SITEURL__/g, config.siteURL);
-			res.header("Content-Type", "text/javascript");
-			res.end(result);
-		})
-	});
+	app.use('/db', express.static(path.join(__dirname, 'node_modules', 'ucsc', 'db')));
 
 	app.use('/*', function(req, res, next) {
 		return res.sendFile(root);

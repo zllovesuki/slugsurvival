@@ -1,9 +1,9 @@
-<div class="bg-white rounded mb2 VueTables VueTables--[[source]]">
-	<div class="m0 p1 border-bottom">
+<div class="overflow-hidden bg-white rounded mb2 VueTables VueTables--[[source]]">
+	<div class="m1 p1 border-bottom">
 		<div class="clearfix">
 			<div class="left black">
 				<div v-if="!options.filterByColumn" class="VueTables__search">
-					<label class="col col-12">filter:
+					<label class="col col-12">
 						<input class="inline-block field" type="text" placeholder="{{display('filterPlaceholder')}}" @keydown="search() | debounce options.delay" v-model="query" />
 					</label>
 				</div>
@@ -17,7 +17,7 @@
 			</div>
 		</div>
 	</div>
-	<div class="m0 p1 border-bottom">
+	<div class="m1 p">
 		<div class="clearfix overflow-scroll">
 			<table class="VueTables__table table-light">
 				<thead class="bg-darken-1">
