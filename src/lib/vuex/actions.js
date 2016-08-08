@@ -152,6 +152,10 @@ var self = module.exports = {
 		return Promise.resolve();
 	},
 	checkForConflict: function(_, course) {
+		/*
+			TODO: This method needs a more efficient rewrite
+			Who the fuck write so many forLoops anyway?
+		*/
 		var termId = _.state.route.params.termId;
 		var intersectDays = [];
 		var existingDays = [];
