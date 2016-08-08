@@ -45,8 +45,6 @@ require('./lib/registerIcons.js')(Vue)
 require('./lib/registerComponents.js')(Vue)
 require('./lib/registerTransistions.js')(Vue)
 
-window.App = App;
-
 sync(store, router);
 
 router.start(App, '#app')

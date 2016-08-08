@@ -121,10 +121,9 @@ module.exports = {
 			var generateRows = function(sections) {
 				var string = '';
 				sections.forEach(function(section) {
-					// TODO: improve this ugly hack
-					string += '<tr class="clickable" onclick="window.App.methods._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ').bind(window.App)">';
+					string += '<tr class="clickable" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ')">';
 					string += ['<td>', section.section, '</td>'].join('');
-					string += ['<td>', !!!section.time ? 'TBA' : section.time.day.join(','), ' ', [section.time.time.start, section.time.time.end].join('-'), '</td>'].join('');
+					string += ['<td>', !!!section.time ? 'TBA' : section.time.day.join(','), '<br>', [section.time.time.start, section.time.time.end].join('-'), '</td>'].join('');
 					string += ['<td>', section.location, '</td>'].join('');
 					string += '</a></tr>';
 				})
@@ -140,8 +139,8 @@ module.exports = {
 			+ generateRows(course.sections)
 			+ '</tbody>'
 			+ '</table>';
-			
-			this.alert
+
+			this.alert()
 			.okBtn("Return")
 			.alert(table)
 		},
@@ -154,31 +153,22 @@ module.exports = {
 			html += template('This class', courseHasSections ? 'has sections': 'has NO sections');
 			//html += template('Course Number', course.number);
 			html += template('Instructor(s)', course.instructor.displayName.join(', '));
-			if (!!course.time) {
-				html += template('Location', course.location);
-				html += template('Meeting Day', course.time.day.join(', '));
-				html += template('Meeting Time', course.time.time.start + '-' + course.time.time.end);
-				this.alert
-				.okBtn(courseHasSections ? 'Sections' : 'Add')
-				.cancelBtn("Return")
-				.confirm(html)
-				.then(function(resolved) {
-					resolved.event.preventDefault();
-					if (resolved.buttonClicked !== 'ok') return;
-					if (courseHasSections) {
-						this.promptSections(course.number);
-					} else {
-						this.pushToEventSource(course);
-					}
-				}.bind(this));
-			}else{
-				html += template('Location', 'TBA');
-				html += template('Meeting Day', 'TBA');
-				html += template('Meeting Time', 'TBA');
-				this.alert
-				.alert(html)
-			}
-
+			html += template('Location', !!!course.location ? 'TBA': course.location);
+			html += template('Meeting Day', !!!course.time ? 'TBA' : course.time.day.join(', '));
+			html += template('Meeting Time', !!!course.time ? 'TBA' : course.time.time.start + '-' + course.time.time.end);
+			this.alert()
+			.okBtn(courseHasSections ? 'Sections' : 'Add')
+			.cancelBtn("Return")
+			.confirm(html)
+			.then(function(resolved) {
+				resolved.event.preventDefault();
+				if (resolved.buttonClicked !== 'ok') return;
+				if (courseHasSections) {
+					this.promptSections(course.number);
+				} else {
+					this.pushToEventSource(course);
+				}
+			}.bind(this));
 		}
 	},
 	ready: function() {

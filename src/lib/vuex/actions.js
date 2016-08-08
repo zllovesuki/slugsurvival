@@ -1,6 +1,9 @@
 var helper = require('./helper')
 
 var self = module.exports = {
+	alert: function(_) {
+		return _.state.alert;
+	},
 	setTitle: function(_, title) {
 		_.dispatch('setTitle', title)
 	},
@@ -47,7 +50,8 @@ var self = module.exports = {
 			minTime: '07:00',
 			maxTime: '23:00',
 			defaultDate: _.state.dateMap.Monday,
-			allDaySlot: false,
+			allDayText: 'TBA',
+			//allDaySlot: false,
 			weekends: false,
 			defaultView: 'agendaWeek',
 			header: false,
@@ -82,17 +86,30 @@ var self = module.exports = {
 	pushToEventSource: function(_, course) {
 		var termId = _.state.route.params.termId;
 		var obj = {};
-		course.time.day.forEach(function(day) {
+		if (!!!course.time) {
+			// TBA will be in the allDaySlot
 			obj.title = [course.code + ' - ' + course.section, course.name].join("\n");
 			obj.number = course.number;
-			obj.start = _.state.dateMap[day] + ' ' + course.time.time.start;
-			obj.end = _.state.dateMap[day] + ' ' + course.time.time.end;
+			obj.allDay = true;
+			obj.start = _.state.dateMap['Monday'];
+			obj.end = _.state.dateMap['Saturday'];
 			obj.course = course;
 			_.dispatch('pushToEventSource', termId, obj);
 			obj = {};
-		})
+		}else{
+			course.time.day.forEach(function(day) {
+				obj.title = [course.code + ' - ' + course.section, course.name].join("\n");
+				obj.number = course.number;
+				obj.allDay = false;
+				obj.start = _.state.dateMap[day] + ' ' + course.time.time.start;
+				obj.end = _.state.dateMap[day] + ' ' + course.time.time.end;
+				obj.course = course;
+				_.dispatch('pushToEventSource', termId, obj);
+				obj = {};
+			})
+		}
 		this.refreshCalendar();
-		_.state.alert.success(course.code + ' added to the planner!')
+		this.alert().success(course.code + ' added to the planner!')
 		return Promise.resolve();
 	},
 	// TODO: remove the ugly hack in here and from views/calendar/term.vue
@@ -114,6 +131,7 @@ var self = module.exports = {
 		obj.number = course.number;
 		obj.start = _.state.dateMap[day] + ' ' + section.time.time.start;
 		obj.end = _.state.dateMap[day] + ' ' + section.time.time.end;
+		obj.course = course;
 		obj.section = section;
 		_.dispatch('pushToEventSource', termId, obj);
 		this.pushToEventSource(course);

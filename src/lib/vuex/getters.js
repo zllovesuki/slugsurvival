@@ -1,7 +1,4 @@
 module.exports = {
-	alert: function(state) {
-		return state.alert;
-	},
 	route: function(state) {
 		return state.route
 	},
