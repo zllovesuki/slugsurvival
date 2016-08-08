@@ -49,7 +49,7 @@ module.exports = {
 	},
 	methods: {
 		comingSoon: function() {
-			this.alert().alert('Coming soon')
+			this.alert.alert('Coming soon')
 		}
 	}
 }

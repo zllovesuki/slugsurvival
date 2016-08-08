@@ -25,11 +25,15 @@ module.exports = {
 			})
 		})
 	},
-	pushToEventSource: function(state, obj) {
-		state.events.push(obj);
+	saveCourseInfo: function(state, termId, courses) {
+		state.courseInfo[termId] = courses;
 	},
-	removeFromSource: function(state, number) {
-		state.events = state.events.filter(function(event) {
+	pushToEventSource: function(state, termId, obj) {
+		if (typeof state.events[termId] === 'undefined') state.events[termId] = [];
+		state.events[termId].push(obj);
+	},
+	removeFromSource: function(state, termId, number) {
+		state.events[termId] = state.events[termId].filter(function(event) {
 			return event.number !== number;
 		})
 	}

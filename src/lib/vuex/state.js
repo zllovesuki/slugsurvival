@@ -3,14 +3,20 @@ var alertify = require('alertify.js');
 module.exports = {
 	termsList: {},
 	flatTermsList: [],
-	search: {},
-	courses: {},
 	termName: '',
+
+	courses: {},
 	flatCourses: {},
+
+	courseInfo: {},
+
+	search: {},
 
 	title: 'Index',
 
-	events: [],
+	events: {
+
+	},
 	dateMap: {
 		'Monday': '2016-08-01',
 		'Tuesday': '2016-08-02',

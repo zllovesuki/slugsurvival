@@ -15,7 +15,7 @@ module.exports = function() {
 	}
 
 	app.use('/public', express.static(path.join(__dirname, 'public')));
-	app.use('/db', express.static(path.join(__dirname, 'node_modules', 'ucsc', 'db')));
+	app.use('/db', express.static(path.join(__dirname, '../', 'ucsc', 'db')));
 
 	app.use('/*', function(req, res, next) {
 		return res.sendFile(root);

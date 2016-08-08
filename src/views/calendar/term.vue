@@ -18,7 +18,7 @@
 		</div>
 		<div class="overflow-hidden bg-white rounded mb2 clearfix" v-bind:class="{ 'hide': !show.calendar }">
 			<div class="m0 p2">
-				<div id="calendar"></div>
+				<div id="calendar-{{ termId }}"></div>
 			</div>
 		</div>
 		<div id="all" v-if="ready" v-bind:class="{ 'hide': !show.table }">
@@ -78,7 +78,7 @@ module.exports = {
 	},
 	computed: {
 		dataForTable: function() {
-			return this.flatCourses[this.route.params.termId];
+			return this.flatCourses[this.termId];
 		}
 	},
 	watch: {
@@ -112,31 +112,70 @@ module.exports = {
 			});
 			return results;
 		},
+		promptSections: function(courseNumber) {
+			var course = this.courseInfo[this.termId][courseNumber];
+			// TODO: customize display (like NOT hard coding it)
+			var headTemplate = function(name) {
+				return ['<th>', name, '</th>'].join('');
+			}
+			var generateRows = function(sections) {
+				var string = '';
+				sections.forEach(function(section) {
+					// TODO: improve this ugly hack
+					string += '<tr class="clickable" onclick="window.App.methods._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ').bind(window.App)">';
+					string += ['<td>', section.section, '</td>'].join('');
+					string += ['<td>', !!!section.time ? 'TBA' : section.time.day.join(','), ' ', [section.time.time.start, section.time.time.end].join('-'), '</td>'].join('');
+					string += ['<td>', section.location, '</td>'].join('');
+					string += '</a></tr>';
+				})
+				return string;
+			}
+			var table = '<table class="table-light">'
+			+ '<thead>'
+			+ headTemplate('Section')
+			+ headTemplate('Meeting Time')
+			+ headTemplate('Location')
+			+ '</thead>'
+			+ '<tbody>'
+			+ generateRows(course.sections)
+			+ '</tbody>'
+			+ '</table>';
+			
+			this.alert
+			.okBtn("Return")
+			.alert(table)
+		},
 		addToSource: function(course) {
 			var html = '';
 			var template = function(key, value) {
 				return ['<p>', '<span class="muted h6">', key, ': </span><b>', value, '</b>', '</p>'].join('');
 			}
-			html += template('Course Number', course.number);
+			var courseHasSections = this.courseHasSections(course.number);
+			html += template('This class', courseHasSections ? 'has sections': 'has NO sections');
+			//html += template('Course Number', course.number);
 			html += template('Instructor(s)', course.instructor.displayName.join(', '));
 			if (!!course.time) {
 				html += template('Location', course.location);
 				html += template('Meeting Day', course.time.day.join(', '));
 				html += template('Meeting Time', course.time.time.start + '-' + course.time.time.end);
-				this.alert()
-				.okBtn("Add")
+				this.alert
+				.okBtn(courseHasSections ? 'Sections' : 'Add')
 				.cancelBtn("Return")
 				.confirm(html)
 				.then(function(resolved) {
 					resolved.event.preventDefault();
 					if (resolved.buttonClicked !== 'ok') return;
-					this.pushToEventSource(course)
+					if (courseHasSections) {
+						this.promptSections(course.number);
+					} else {
+						this.pushToEventSource(course);
+					}
 				}.bind(this));
 			}else{
 				html += template('Location', 'TBA');
 				html += template('Meeting Day', 'TBA');
 				html += template('Meeting Time', 'TBA');
-				this.alert()
+				this.alert
 				.alert(html)
 			}
 

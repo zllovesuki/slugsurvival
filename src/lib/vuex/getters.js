@@ -29,6 +29,9 @@ module.exports = {
 	flatCourses: function(state) {
 		return state.flatCourses;
 	},
+	courseInfo: function(state) {
+		return state.courseInfo;
+	},
 	eventSource: function(state) {
 		return state.eventSource
 	}

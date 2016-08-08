@@ -20,18 +20,29 @@ var self = module.exports = {
 			return helper.getWithHeader(this.$http, _.state, '/db/terms/' + termId + '.json')
 			.then(function(res) {
 				if (typeof res === 'undefined') return;
-				var data = res.json();
-				_.dispatch('saveTermCourses', termId, data);
-				return data;
+				var coursesData = res.json();
+				_.dispatch('saveTermCourses', termId, coursesData);
+				return helper.getWithHeader(this.$http, _.state, '/db/courses/' + termId + '.json')
+				.then(function(res) {
+					if (typeof res === 'undefined') return;
+					var courseInfo = res.json();
+					_.dispatch('saveCourseInfo', termId, courseInfo);
+					return coursesData
+				})
 			})
 		}else{
 			return Promise.resolve(_.state.courses[termId])
 		}
 	},
+	courseHasSections: function(_, courseNumber) {
+		var termId = _.state.route.params.termId;
+		return _.state.courseInfo[termId][courseNumber].sections.length > 0;
+	},
 	initializeCalendar: function(_) {
 		// TODO: do not couple this tightly with views/calendar/term.vue
 		var self = this;
-		$('#calendar').fullCalendar({
+		var termId = _.state.route.params.termId;
+		$('#calendar-' + termId).fullCalendar({
 			columnFormat: 'ddd',
 			minTime: '07:00',
 			maxTime: '23:00',
@@ -44,7 +55,7 @@ var self = module.exports = {
 			eventSources: [
 				{
 		            events: function(start, end, timezone, callback) {
-		                callback(_.state.events);
+		                callback(_.state.events[termId]);
 		            },
 		            //color: 'yellow',   // an option!
 		            //textColor: 'black' // an option!
@@ -58,16 +69,18 @@ var self = module.exports = {
 				.then(function(resolved) {
 					resolved.event.preventDefault();
 					if (resolved.buttonClicked !== 'ok') return;
-					_.dispatch('removeFromSource', calEvent.number);
+					_.dispatch('removeFromSource', termId, calEvent.number);
 					self.refreshCalendar();
+					_.state.alert.success('Removed!')
 				}.bind(self));
 			}
 		})
 	},
 	refreshCalendar: function(_) {
-		$('#calendar').fullCalendar( 'refetchEvents' )
+		$('#calendar-' + _.state.route.params.termId).fullCalendar( 'refetchEvents' )
 	},
 	pushToEventSource: function(_, course) {
+		var termId = _.state.route.params.termId;
 		var obj = {};
 		course.time.day.forEach(function(day) {
 			obj.title = [course.code + ' - ' + course.section, course.name].join("\n");
@@ -75,11 +88,36 @@ var self = module.exports = {
 			obj.start = _.state.dateMap[day] + ' ' + course.time.time.start;
 			obj.end = _.state.dateMap[day] + ' ' + course.time.time.end;
 			obj.course = course;
-			_.dispatch('pushToEventSource', obj);
+			_.dispatch('pushToEventSource', termId, obj);
 			obj = {};
 		})
 		this.refreshCalendar();
-		this.alert().success(course.code + ' added to the planner!')
+		_.state.alert.success(course.code + ' added to the planner!')
+		return Promise.resolve();
+	},
+	// TODO: remove the ugly hack in here and from views/calendar/term.vue
+	_pushSectionToEventSource: function(_, courseNumber, sectionNumber) {
+		var termId = _.state.route.params.termId;
+		var courseInfo = _.state.courseInfo[termId][courseNumber];
+		var courses = _.state.flatCourses[termId];
+		var obj = {};
+		var section = courseInfo.sections.filter(function(section) {
+			return section.number == sectionNumber
+		});
+		section = section[0];
+		var course = courses.filter(function(course) {
+			return course.number == courseNumber;
+		})
+		course = course[0];
+		var day = section.time.day[0];
+		obj.title = ['DIS ' + section.section, 'Section for ' + course.code].join("\n");
+		obj.number = course.number;
+		obj.start = _.state.dateMap[day] + ' ' + section.time.time.start;
+		obj.end = _.state.dateMap[day] + ' ' + section.time.time.end;
+		obj.section = section;
+		_.dispatch('pushToEventSource', termId, obj);
+		this.pushToEventSource(course);
+		this.refreshCalendar();
 		return Promise.resolve();
 	}
 }

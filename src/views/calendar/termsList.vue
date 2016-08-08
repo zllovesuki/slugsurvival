@@ -22,34 +22,43 @@
 				<div class="clearfix">
 					<div class="left black">
 						<span class="btn h6 muted not-clickable">
-							open a new planner
+							click a quarter to open a new planner
 						</span>
 					</div>
-					<div class="right">
+					<!--<div class="right">
 						<span class="btn h6">
 							last updated
 						</span>
-					</div>
+					</div>-->
 				</div>
 			</div>
 			<template v-for="term in flatTermsList" track-by="code">
-				<div class="m0 p0 border-top">
+				<div class="m0 p0 border-top" v-bind:class="{ 'hide': $index > 3 && hidePrior }">
 					<div class="clearfix">
 						<div class="left black">
 							<a v-link="{ name: 'term', params: { termId: term.code } }" class="btn block h5">
 								{{ term.name }}
 							</a>
 						</div>
-						<div class="right">
+						<!--<div class="right">
 							<a class="btn h6 muted not-clickabble">
 								{{ convertTimestamp(term.timestamp) }}
 							</a>
-						</div>
+						</div>-->
 					</div>
 				</div>
 			</template>
-</div>
-</div>
+			<div class="m0 p0 border-top">
+				<div class="clearfix">
+					<div class="left black">
+						<a class="gray muted btn block h6" @click="hidePrior = !hidePrior">
+							click here to {{ hidePrior ? 'show': 'hide' }} prior quarters
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
 
 <script>
@@ -60,6 +69,11 @@
 		vuex: {
 			getters: getters,
 			actions: actions
+		},
+		data: function() {
+			return {
+				hidePrior: true
+			}
 		},
 		methods: {
 			convertTimestamp: function(timestamp) {
