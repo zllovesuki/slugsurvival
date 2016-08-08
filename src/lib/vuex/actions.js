@@ -51,11 +51,12 @@ var self = module.exports = {
 	pushToEventSource: function(_, course, edit) {
 		edit = edit || false;
 		var termId = _.state.route.params.termId;
+		var courseInfo = _.state.courseInfo[termId][course.number];
 		var code;
 		var obj = {};
 		if (!!!course.time) {
 			// TBA will be in the allDaySlot
-			obj.title = [course.code + ' - ' + course.section, course.name].join("\n");
+			obj.title = [course.code + ' - ' + course.section, courseInfo.type, course.name].join("\n");
 			obj.number = course.number;
 			obj.allDay = true;
 			obj.start = _.state.dateMap['Monday'];
@@ -66,7 +67,7 @@ var self = module.exports = {
 			obj = {};
 		}else{
 			course.time.day.forEach(function(day) {
-				obj.title = [course.code + ' - ' + course.section, course.name].join("\n");
+				obj.title = [course.code + ' - ' + course.section, courseInfo.type, course.name].join("\n");
 				obj.number = course.number;
 				obj.allDay = false;
 				obj.start = _.state.dateMap[day] + ' ' + course.time.time.start;
@@ -113,7 +114,7 @@ var self = module.exports = {
 			return Promise.resolve();
 		}
 		var day = section.time.day[0];
-		obj.title = ['DIS ' + section.section, 'Section for ' + course.code].join("\n");
+		obj.title = ['DIS - ' + section.section, 'Section', course.code].join("\n");
 		obj.number = course.number;
 		obj._number = section.number;
 		if (!!!section.time) {
@@ -154,20 +155,40 @@ var self = module.exports = {
 				return;
 			}
 			if (event.allDay) return;
-			existingDays.push(event.course.time.day);
+			if (typeof event.section !== 'undefined') {
+				existingDays.push(event.section.time.day);
+			}else{
+				existingDays.push(event.course.time.day);
+			}
 		})
 		if (conflict !== false) return null;
 		if (!!!course.time) {
 			// TBA
 			return conflict;
 		}
-		intersectDays = helper.containsAll.apply(this, existingDays.concat([course.time.day]))
+
+		existingDays.forEach(function(days) {
+			if (helper.intersect(days, course.time.day)) {
+				intersectDays.push(course.time.day);
+			}
+		})
+
+		intersectDays = [].concat.apply([], intersectDays).filter(function(e, i, c) {
+			return c.indexOf(e) === i;
+		});
+
 		if (intersectDays.length === 0) return false;
-		intersectDays.forEach(function(conflictDay) {
+		intersectDays.forEach(function(potentialConflictDay) {
 			_.state.events[termId].forEach(function(event) {
 				if (event.allDay) return;
-				if (event.course.time.day.indexOf(conflictDay) !== -1) {
-					existingTimes[event.course.code] = event.course.time.time;
+				if (typeof event.section !== 'undefined') {
+					if (event.section.time.day.indexOf(potentialConflictDay) !== -1) {
+						existingTimes[event.course.code + ' Section'] = event.section.time.time;
+					}
+				}else{
+					if (event.course.time.day.indexOf(potentialConflictDay) !== -1) {
+						existingTimes[event.course.code] = event.course.time.time;
+					}
 				}
 			})
 		})
@@ -197,7 +218,7 @@ var self = module.exports = {
 			}
 
 			if ( (comingTime.end.replace(':', '') == existingTimes[code].end.replace(':', '')
-			|| comingTime.start.replace(':', '') == existingTimes[code].start.replace(':', '')) ) {
+			&& comingTime.start.replace(':', '') == existingTimes[code].start.replace(':', '')) ) {
 				// overlap
 				conflict = code;
 				return;
