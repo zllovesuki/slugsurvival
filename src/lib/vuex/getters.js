@@ -30,6 +30,9 @@ module.exports = {
 		return state.courseInfo;
 	},
 	eventSource: function(state) {
-		return state.eventSource
+		return state.events
+	},
+	dateMap: function(state) {
+		return state.dateMap
 	}
 }

@@ -41,87 +41,8 @@ var self = module.exports = {
 		var termId = _.state.route.params.termId;
 		return _.state.courseInfo[termId][courseNumber].sections.length > 0;
 	},
-	initializeCalendar: function(_) {
-		// TODO: do not couple this tightly with views/calendar/term.vue
-		var self = this;
-		var termId = _.state.route.params.termId;
-		$('#calendar-' + termId).fullCalendar({
-			columnFormat: 'ddd',
-			minTime: '07:00',
-			maxTime: '23:00',
-			defaultDate: _.state.dateMap.Monday,
-			allDayText: 'TBA',
-			//allDaySlot: false,
-			weekends: false,
-			defaultView: 'agendaWeek',
-			header: false,
-			contentHeight: 'auto',
-			eventSources: [
-				{
-		            events: function(start, end, timezone, callback) {
-		                callback(_.state.events[termId]);
-		            },
-		            //color: 'yellow',   // an option!
-		            //textColor: 'black' // an option!
-		        }
-		    ],
-			eventClick: function(calEvent, jsEvent, view) {
-				if (typeof calEvent._number !== 'undefined') {
-					// clicked on a section, ask if user wants to change
-					self.promptSections(calEvent.number, true);
-				}else{
-					// or else just ask to remove the whole damn thing
-					self.alert()
-					.okBtn("Yes")
-					.cancelBtn("No")
-					.confirm('Remove ' + calEvent.course.code + ' from calendar?')
-					.then(function(resolved) {
-						resolved.event.preventDefault();
-						if (resolved.buttonClicked !== 'ok') return;
-						_.dispatch('removeFromSource', termId, calEvent.number);
-						self.refreshCalendar();
-						_.state.alert.success('Removed!')
-					}.bind(self));
-				}
-			}
-		})
-	},
 	refreshCalendar: function(_) {
 		$('#calendar-' + _.state.route.params.termId).fullCalendar( 'refetchEvents' )
-	},
-	promptSections: function(_, courseNumber, edit) {
-		edit = edit || false;
-		var course = this.courseInfo[this.termId][courseNumber];
-		// TODO: customize display (like NOT hard coding it)
-		var headTemplate = function(name) {
-			return ['<th>', name, '</th>'].join('');
-		}
-		var generateRows = function(sections) {
-			var string = '';
-			sections.forEach(function(section) {
-				string += '<tr class="clickable" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ', ' + edit + ')">';
-				string += ['<td>', section.section, '</td>'].join('');
-				string += ['<td>', !!!section.time ? 'TBA' : section.time.day.join(','), '<br>', [section.time.time.start, section.time.time.end].join('-'), '</td>'].join('');
-				string += ['<td>', section.location, '</td>'].join('');
-				string += '</a></tr>';
-			})
-			return string;
-		}
-		var table = '<p>' + (edit ? 'Choose another section' : 'Choose a section') + '</p>'
-		+ '<table class="table-light h6">'
-		+ '<thead>'
-		+ headTemplate('Section')
-		+ headTemplate('Meeting Time')
-		+ headTemplate('Location')
-		+ '</thead>'
-		+ '<tbody>'
-		+ generateRows(course.sections)
-		+ '</tbody>'
-		+ '</table>';
-
-		this.alert()
-		.okBtn("Return")
-		.alert(table)
 	},
 	returnEventSourceSnapshot: function(_) {
 		var termId = _.state.route.params.termId;
