@@ -54,7 +54,7 @@
 			<span slot="body">
 					<ul class="list-reset block y-scrollable">
 					<li class="overflow-hidden" v-for="result in search.results" track-by="$index">
-						<a class="btn h5" v-on:click.prevent.stop="addToSource(result)">
+						<a class="btn h5" v-on:click.prevent.stop="promptAddClass(result)">
 							{{ result.code }} - {{ result.section }}  - {{ result.name }}
 						</a>
 					</li>
@@ -89,7 +89,7 @@ module.exports = {
 					perPage: 25,
 					perPageValues: [10, 25, 50, 100],
 					onRowClick: function(row) {
-						this.addToSource(row);
+						this.promptAddClass(row);
 					}.bind(this)
 				}
 			},
@@ -140,22 +140,75 @@ module.exports = {
 			});
 			return results;
 		},
-		addToSource: function(course) {
-			var courseHasSections = this.courseHasSections(course.number);
-			var code = this.checkForConflict(course);
-			var alertHandle = function() {};
+		getCourseDom: function(course, isSection) {
+			// TODO: Reduce special cases
+			isSection = isSection || false;
+			if (!isSection) {
+				var courseHasSections = this.courseHasSections(course.number);
+			}
 			var html = '';
 			var template = function(key, value) {
 				return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
 			}
 
-			html += template('This class', courseHasSections ? 'has sections': 'has NO sections');
-			//html += template('Course Number', course.number);
-			html += template('Instructor(s)', course.instructor.displayName.join(', '));
+			if (isSection) {
+				html += template('Section', 'DIS - ' + course.section);
+			}else{
+				html += template(course.code, courseHasSections ? 'has sections': 'has NO sections');
+			}
+			// html += template('Course Number', course.number);
+			if (isSection) {
+				html += template('TA', course.instructor);
+			}else{
+				html += template('Instructor(s)', course.instructor.displayName.join(', '));
+			}
 			html += template('Location', !!!course.location ? 'TBA': course.location);
 			html += template('Meeting Day', !!!course.time ? 'TBA' : course.time.day.join(', '));
 			html += template('Meeting Time', !!!course.time ? 'TBA' : this.tConvert(course.time.time.start) + '-' + this.tConvert(course.time.time.end));
-			html += template('Capacity', course.capacity);
+			if (!isSection) {
+				html += template('Capacity', course.capacity);
+			}
+
+			return html;
+		},
+		promptToRemove: function(calEvent) {
+			var termId = this.route.params.termId;
+			this.alert()
+			.okBtn("Yes")
+			.cancelBtn("No")
+			.confirm('Remove ' + calEvent.course.code + ' from calendar?')
+			.then(function(resolved) {
+				resolved.event.preventDefault();
+				if (resolved.buttonClicked !== 'ok') return;
+				this.removeFromSource(termId, calEvent.number);
+				this.refreshCalendar();
+				this.alert().success('Removed!')
+			}.bind(this));
+		},
+		promptForAction: function(calEvent) {
+			var isSection = typeof calEvent.section !== 'undefined';
+			var course = isSection ? calEvent.section : calEvent.course;
+			var html = this.getCourseDom(course, isSection);
+			return this.alert()
+			.okBtn(isSection ? 'Change Section' : 'Remove Class')
+			.cancelBtn("Return")
+			.confirm(html)
+			.then(function(resolved) {
+				resolved.event.preventDefault();
+				if (resolved.buttonClicked !== 'ok') return;
+				if (isSection) {
+					this.promptSections(calEvent.number, true);
+				}else{
+					this.promptToRemove(calEvent);
+				}
+			}.bind(this));
+		},
+		promptAddClass: function(course) {
+			var courseHasSections = this.courseHasSections(course.number);
+			var code = this.checkForConflict(course);
+			var alertHandle = function() {};
+
+			var html = this.getCourseDom(course);
 
 			if (code !== false || code === null) {
 				alertHandle = function() {
@@ -166,7 +219,7 @@ module.exports = {
 			}else{
 				alertHandle = function() {
 					return this.alert()
-					.okBtn(courseHasSections ? 'Sections' : 'Add')
+					.okBtn(courseHasSections ? 'Choose Section' : 'Add Class')
 					.cancelBtn("Return")
 					.confirm(html)
 					.then(function(resolved) {
@@ -206,23 +259,7 @@ module.exports = {
 			        }
 			    ],
 				eventClick: function(calEvent, jsEvent, view) {
-					if (typeof calEvent._number !== 'undefined') {
-						// clicked on a section, ask if user wants to change
-						self.promptSections(calEvent.number, true);
-					}else{
-						// or else just ask to remove the whole damn thing
-						self.alert()
-						.okBtn("Yes")
-						.cancelBtn("No")
-						.confirm('Remove ' + calEvent.course.code + ' from calendar?')
-						.then(function(resolved) {
-							resolved.event.preventDefault();
-							if (resolved.buttonClicked !== 'ok') return;
-							self.removeFromSource(termId, calEvent.number);
-							self.refreshCalendar();
-							self.alert().success('Removed!')
-						}.bind(self));
-					}
+					self.promptForAction(calEvent);
 				}
 			})
 		},
