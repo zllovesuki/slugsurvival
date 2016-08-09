@@ -133,12 +133,19 @@ svg{max-width:100%;height:auto}.icon,svg{position:relative;top:.25em}.icon{width
 
 @media (max-height: 480px) {
 	.alertify .dialog>* {
-		max-height: 432px;
+		max-height: 400px;
 		overflow: scroll;
 	}
 }
 
-@media (min-height: 520px) and (max-height: 680px) {
+@media (min-height: 480px) and (max-height: 600px) {
+	.alertify .dialog>* {
+		max-height: 420px;
+		overflow: scroll;
+	}
+}
+
+@media (min-height: 600px) and (max-height: 680px) {
 	.alertify .dialog>* {
 		max-height: 528px;
 		overflow: scroll;

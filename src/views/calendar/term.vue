@@ -52,7 +52,7 @@
 				<input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="250" placeholder="ECON 197, Design, Baskin, Mendes, etc...">
 			</h4>
 			<span slot="body">
-					<ul class="list-reset block y-scrollable">
+					<ul class="list-reset block">
 					<li class="overflow-hidden" v-for="result in search.results" track-by="$index">
 						<a class="btn h5" v-on:click.prevent.stop="promptAddClass(result)">
 							{{ result.code }} - {{ result.section }}  - {{ result.name }}
@@ -191,7 +191,7 @@ module.exports = {
 			var html = this.getCourseDom(course, isSection);
 			return this.alert()
 			.okBtn(isSection ? 'Change Section' : 'Remove Class')
-			.cancelBtn("Return")
+			.cancelBtn("Go Back")
 			.confirm(html)
 			.then(function(resolved) {
 				resolved.event.preventDefault();
@@ -220,7 +220,7 @@ module.exports = {
 				alertHandle = function() {
 					return this.alert()
 					.okBtn(courseHasSections ? 'Choose Section' : 'Add Class')
-					.cancelBtn("Return")
+					.cancelBtn("Go Back")
 					.confirm(html)
 					.then(function(resolved) {
 						resolved.event.preventDefault();
@@ -294,7 +294,7 @@ module.exports = {
 			+ '</table>';
 
 			this.alert()
-			.okBtn("Return")
+			.okBtn("Go back")
 			.alert(table)
 		}
 	},

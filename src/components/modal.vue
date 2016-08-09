@@ -73,12 +73,23 @@ module.exports = {
   transition: all .3s ease;
 }
 
+@media (max-height: 480px) {
+	.modal-container {
+		max-height: 340px;
+	}
+	.modal-body {
+		max-height: 200px;
+	}
+}
+
 .modal-header h3 {
   margin-top: 0;
 }
 
 .modal-body {
-  margin: 20px 0;
+  margin: 10px 0;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 /*
