@@ -88,6 +88,9 @@ var self = module.exports = {
 	removeFromSource: function(_, termId, courseNumber) {
 		_.dispatch('removeFromSource', termId, courseNumber);
 	},
+	removeEmptySection: function(_, termId, courseNumber) {
+		_.dispatch('removeEmptySection', termId, courseNumber)
+	},
 	_pushSectionToEventSource: function(_, courseNumber, sectionNumber, edit) {
 		edit = edit || false;
 		var termId = _.state.route.params.termId;
@@ -95,39 +98,62 @@ var self = module.exports = {
 		var courses = _.state.flatCourses[termId];
 		var obj = {};
 		var snapshot = [];
+		var section = {
+			section: 'TBD'
+		};
 		var code;
-		var section = courseInfo.sections.filter(function(section) {
-			return section.number == sectionNumber
-		});
-		section = section[0];
+
 		var course = courses.filter(function(course) {
 			return course.number == courseNumber;
 		})
 		course = course[0];
-		snapshot = this.returnEventSourceSnapshot();
 
-		if (edit) this.removeFromSource(termId, course.number);
-
-		if ((code = this.checkForConflict(section)) !== false) {
-			this.alert().error('Section ' + section.section + ' conflict with ' + code + '!')
-			if (edit) _.dispatch('restoreEventSourceSnapshot', termId, snapshot);
-			return Promise.resolve();
+		if (edit) {
+			// Let's check if user selects "Choose Later" again
+			if (sectionNumber === null) {
+				this.removeEmptySection(termId, course.number);
+			}else{
+				this.removeFromSource(termId, course.number);
+			}
 		}
-		var day = section.time.day[0];
+
+		if (sectionNumber !== null) {
+			section = courseInfo.sections.filter(function(section) {
+				return section.number == sectionNumber
+			});
+			section = section[0];
+			snapshot = this.returnEventSourceSnapshot();
+
+			if ((code = this.checkForConflict(section)) !== false) {
+				this.alert().error('Section ' + section.section + ' conflict with ' + code + '!')
+				if (edit) _.dispatch('restoreEventSourceSnapshot', termId, snapshot);
+				return Promise.resolve();
+			}
+
+			obj._number = section.number;
+			obj.color = 'grey';
+			obj.course = course;
+			obj.section = section;
+		}else{
+			// User has chose to select section later
+			obj.color = 'black';
+			obj.course = course;
+			obj.section = null;
+		}
+
 		obj.title = [course.code, 'Section', 'DIS - ' + section.section].join("\n");
 		obj.number = course.number;
-		obj._number = section.number;
+
 		if (!!!section.time) {
 			// TBA will be in the allDaySlot
 			obj.start = _.state.dateMap['Monday'];
 			obj.end = _.state.dateMap['Saturday'];
 		} else {
+			var day = section.time.day[0];
 			obj.start = _.state.dateMap[day] + ' ' + section.time.time.start;
 			obj.end = _.state.dateMap[day] + ' ' + section.time.time.end;
 		}
-		obj.color = 'grey';
-		obj.course = course;
-		obj.section = section;
+
 		_.dispatch('pushToEventSource', termId, obj);
 		this.pushToEventSource(course, edit);
 		this.refreshCalendar();
@@ -156,7 +182,7 @@ var self = module.exports = {
 				break;
 			}
 			if (events[i].allDay) continue;
-			if (typeof events[i].section !== 'undefined') {
+			if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
 				existingDays.push(events[i].section.time.day);
 			} else {
 				existingDays.push(events[i].course.time.day);
@@ -182,7 +208,7 @@ var self = module.exports = {
 		intersectDays.forEach(function(potentialConflictDay) {
 			_.state.events[termId].forEach(function(event) {
 				if (event.allDay) return;
-				if (typeof event.section !== 'undefined') {
+				if (typeof event.section !== 'undefined' && event.section !== null) {
 					if (event.section.time.day.indexOf(potentialConflictDay) !== -1) {
 						existingTimes[event.course.code + ' Section'] = event.section.time.time;
 					}
@@ -221,13 +247,13 @@ var self = module.exports = {
 				return;
 			}
 
-			if ((newEnd == oldEnd && newStart == oldStart)) {
+			if ((newEnd == oldEnd || newStart == oldStart)) {
 				// overlap
 				conflict = code;
 				return;
 			}
 
-			if ((newEnd == oldEnd && newStart > oldStart)) {
+			/*if ((newEnd == oldEnd && newStart > oldStart)) {
 				// new course is inside (bottom)
 				conflict = code;
 				return;
@@ -249,7 +275,7 @@ var self = module.exports = {
 				// new course is outside (existing top)
 				conflict = code;
 				return;
-			}
+			}*/
 
 			if ((oldEnd > newEnd && newStart > oldStart)) {
 				// new course is inside

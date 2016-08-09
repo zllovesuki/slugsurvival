@@ -35,9 +35,19 @@ module.exports = {
 	restoreEventSourceSnapshot: function(state, termId, events) {
 		state.events[termId] = events;
 	},
-	removeFromSource: function(state, termId, number) {
+	removeFromSource: function(state, termId, courseNumber) {
+		if (typeof state.events[termId] === 'undefined') return;
 		state.events[termId] = state.events[termId].filter(function(event) {
-			return event.number !== number;
+			return event.number != courseNumber;
+		})
+	},
+	removeEmptySection: function(state, termId, courseNumber) {
+		if (typeof state.events[termId] === 'undefined') return;
+		state.events[termId] = state.events[termId].filter(function(event) {
+			if (event.number !== courseNumber)
+				return true;
+			if (event.number == courseNumber && typeof(event._number) !== 'undefined')
+				return false;
 		})
 	}
 }

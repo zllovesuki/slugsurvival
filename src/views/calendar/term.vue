@@ -184,6 +184,10 @@ module.exports = {
 		promptForAction: function(calEvent) {
 			var isSection = typeof calEvent.section !== 'undefined';
 			var course = isSection ? calEvent.section : calEvent.course;
+			if (isSection && course === null) {
+				// Choose later
+				return this.promptSections(calEvent.number, true);
+			}
 			var html = this.getCourseDom(course, isSection);
 			return this.alert()
 			.okBtn(isSection ? 'Change Section' : 'Remove Class')
@@ -231,6 +235,52 @@ module.exports = {
 			}
 			return alertHandle()
 		},
+		promptSections: function(courseNumber, edit) {
+			edit = edit || false;
+			var course = this.courseInfo[this.termId][courseNumber];
+			// TODO: customize display (like NOT hard coding it)
+			var headTemplate = function(name) {
+				return ['<th>', name, '</th>'].join('');
+			}
+			var conflictClass = 'muted not-clickable';
+			var notConflictClass = 'clickable';
+			var generateRows = function(sections) {
+				var string = '';
+				sections.forEach(function(section) {
+					if (this.checkForConflict(section) === false) {
+						string += '<tr class="' + notConflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ', ' + edit + ')">';
+					}else{
+						string += '<tr class="' + conflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ', ' + edit + ')">';
+					}
+					string += ['<td>', section.section, '</td>'].join('');
+					string += ['<td>', !!!section.time ? 'TBA' : section.time.day.join(','), '<br>', [this.tConvert(section.time.time.start), this.tConvert(section.time.time.end)].join('-'), '</td>'].join('');
+					string += ['<td>', section.location, '</td>'].join('');
+					string += '</a></tr>';
+				}.bind(this))
+				return string;
+			}.bind(this)
+			var table = '<p>' + (edit ? 'Choose another section' : 'Choose a section') + '</p>'
+			+ '<table class="table-light h6">'
+			+ '<thead>'
+			+ headTemplate('Section')
+			+ headTemplate('Meeting Time')
+			+ headTemplate('Location')
+			+ '</thead>'
+			+ '<tbody>'
+			+ generateRows(course.sections)
+			+ '</tbody>'
+			+ '</table>';
+
+			this.alert()
+			.okBtn("Choose Later")
+			.cancelBtn("Go Back")
+			.confirm(table)
+			.then(function(resolved) {
+				resolved.event.preventDefault();
+				if (resolved.buttonClicked !== 'ok') return;
+				this._pushSectionToEventSource(courseNumber, null, true);
+			}.bind(this));
+		},
 		initializeCalendar: function() {
 			var self = this;
 			var termId = this.route.params.termId;
@@ -254,40 +304,6 @@ module.exports = {
 					self.promptForAction(calEvent);
 				}
 			})
-		},
-		promptSections: function(courseNumber, edit) {
-			edit = edit || false;
-			var course = this.courseInfo[this.termId][courseNumber];
-			// TODO: customize display (like NOT hard coding it)
-			var headTemplate = function(name) {
-				return ['<th>', name, '</th>'].join('');
-			}
-			var generateRows = function(sections) {
-				var string = '';
-				sections.forEach(function(section) {
-					string += '<tr class="clickable" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ', ' + edit + ')">';
-					string += ['<td>', section.section, '</td>'].join('');
-					string += ['<td>', !!!section.time ? 'TBA' : section.time.day.join(','), '<br>', [this.tConvert(section.time.time.start), this.tConvert(section.time.time.end)].join('-'), '</td>'].join('');
-					string += ['<td>', section.location, '</td>'].join('');
-					string += '</a></tr>';
-				}.bind(this))
-				return string;
-			}.bind(this)
-			var table = '<p>' + (edit ? 'Choose another section' : 'Choose a section') + '</p>'
-			+ '<table class="table-light h6">'
-			+ '<thead>'
-			+ headTemplate('Section')
-			+ headTemplate('Meeting Time')
-			+ headTemplate('Location')
-			+ '</thead>'
-			+ '<tbody>'
-			+ generateRows(course.sections)
-			+ '</tbody>'
-			+ '</table>';
-
-			this.alert()
-			.okBtn("Go back")
-			.alert(table)
 		}
 	},
 	ready: function() {
