@@ -14,4 +14,6 @@ EXPOSE 3001
 
 RUN npm run prod
 
+RUN npm prune --production
+
 CMD ["pm2", "start", "app.json", "--no-daemon"]

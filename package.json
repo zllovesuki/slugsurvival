@@ -10,13 +10,10 @@
   "dependencies": {
     "debug": "~2.2.0",
     "express": "~4.14.0",
-    "localforage": "^1.4.2",
-    "stringify": "^5.1.0",
-    "ucsc": "git+https://git.fm/zllovesuki/ucsc",
-    "vue-tables": "git+https://github.com/zllovesuki/vue-tables.git",
-    "vuex": "^1.0.0-rc.2"
+    "ucsc": "git+https://git.fm/zllovesuki/ucsc"
   },
   "devDependencies": {
+    "localforage": "^1.4.2",
     "alertify.js": "^1.0.12",
     "autosize": "^3.0.16",
     "babel-core": "^6.10.4",
@@ -27,6 +24,7 @@
     "marked": "^0.3.5",
     "nanobar": "^0.4.2",
     "socket.io-client": "^1.4.8",
+	"stringify": "^5.1.0",
     "unicode-substring": "^0.1.0",
     "validator": "^5.4.0",
     "vue": "^1.0.26",
@@ -36,6 +34,7 @@
     "vue-router": "^0.7.13",
     "vueify": "^8.7.0",
     "vueify-insert-css": "^1.0.0",
+	"vue-tables": "git+https://github.com/zllovesuki/vue-tables.git",
     "vuex": "^1.0.0-rc.2",
     "vuex-router-sync": "git+https://github.com/zllovesuki/vuex-router-sync.git"
   }
