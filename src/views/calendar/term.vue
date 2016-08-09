@@ -246,17 +246,17 @@ module.exports = {
 			var notConflictClass = 'clickable';
 			var generateRows = function(sections) {
 				var string = '';
-				sections.forEach(function(section) {
-					if (this.checkForConflict(section) === false) {
-						string += '<tr class="' + notConflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ', ' + edit + ')">';
+				for (var i = 0, length = sections.length; i < length; i++) {
+					if (this.checkForConflict(sections[i]) === false) {
+						string += '<tr class="' + notConflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + sections[i].number + ', ' + edit + ')">';
 					}else{
-						string += '<tr class="' + conflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + section.number + ', ' + edit + ')">';
+						string += '<tr class="' + conflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + sections[i].number + ', ' + edit + ')">';
 					}
-					string += ['<td>', section.section, '</td>'].join('');
-					string += ['<td>', !!!section.time ? 'TBA' : section.time.day.join(','), '<br>', [this.tConvert(section.time.time.start), this.tConvert(section.time.time.end)].join('-'), '</td>'].join('');
-					string += ['<td>', section.location, '</td>'].join('');
+					string += ['<td>', sections[i].section, '</td>'].join('');
+					string += ['<td>', !!!sections[i].time ? 'TBA' : sections[i].time.day.join(','), '<br>', [this.tConvert(sections[i].time.time.start), this.tConvert(sections[i].time.time.end)].join('-'), '</td>'].join('');
+					string += ['<td>', sections[i].location, '</td>'].join('');
 					string += '</a></tr>';
-				}.bind(this))
+				}
 				return string;
 			}.bind(this)
 			var table = '<p>' + (edit ? 'Choose another section' : 'Choose a section') + '</p>'
