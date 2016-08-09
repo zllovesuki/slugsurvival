@@ -1,7 +1,5 @@
 FROM node:latest
 
-RUN apt-get update -qq && apt-get install -y -qq curl
-
 RUN npm install forever browserify uglifyjs pm2 -g
 
 RUN mkdir -p /usr/src/app
