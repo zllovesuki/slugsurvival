@@ -114,7 +114,7 @@ var self = module.exports = {
 			return Promise.resolve();
 		}
 		var day = section.time.day[0];
-		obj.title = ['DIS - ' + section.section, 'Section', course.code].join("\n");
+		obj.title = [course.code, 'Section', 'DIS - ' + section.section].join("\n");
 		obj.number = course.number;
 		obj._number = section.number;
 		if (!!!section.time) {
@@ -140,27 +140,28 @@ var self = module.exports = {
 			Who the fuck write so many forLoops anyway?
 		*/
 		var termId = _.state.route.params.termId;
+		var events =  _.state.events[termId];
 		var intersectDays = [];
 		var existingDays = [];
 		var existingTimes = {};
 		var comingTime = {};
 		var keys = [];
 		var conflict = false;
-		if (typeof _.state.events[termId] === 'undefined') return conflict;
-		_.state.events[termId].forEach(function(event) {
+		if (typeof events === 'undefined') return conflict;
+		for (var i = 0, length = events.length; i < length; i++) {
 			// You can't take the same class twice in a quarter
 			// At least you shouldn't
-			if (event.course.code === course.code) {
+			if (events[i].course.code === course.code) {
 				conflict = course.code;
-				return;
+				break;
 			}
-			if (event.allDay) return;
-			if (typeof event.section !== 'undefined') {
-				existingDays.push(event.section.time.day);
+			if (events[i].allDay) continue;
+			if (typeof events[i].section !== 'undefined') {
+				existingDays.push(events[i].section.time.day);
 			} else {
-				existingDays.push(event.course.time.day);
+				existingDays.push(events[i].course.time.day);
 			}
-		})
+		}
 		if (conflict !== false) return null;
 		if (!!!course.time) {
 			// TBA

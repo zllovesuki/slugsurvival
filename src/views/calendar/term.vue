@@ -4,12 +4,12 @@
 			<div class="m0 p2">
 				<div class="clearfix">
 					<div class="left">
-						<a class="btn btn-outline h6 m0 {{ color }}" @click="showAllModal">
+						<a class="btn btn-outline h6 m0 {{ color }}" v-on:click.prevent.stop="showAllModal">
 							{{ show.calendar ? 'show all classes' : 'show planner' }}
 						</a>
 					</div>
 					<div class="right">
-						<a class="btn btn-outline h6 m0 {{ color }}" @click="showSearchModal" v-show="show.calendar">
+						<a class="btn btn-outline h6 m0 {{ color }}" v-on:click.prevent.stop="showSearchModal" v-show="show.calendar">
 							add classes by search
 						</a>
 					</div>
@@ -31,13 +31,13 @@
 						<a class="btn h6 m0 {{ color }}">
 							Color code:
 						</a>
-						<a class="btn btn-outline bg-green white h6">
+						<a class="btn btn-outline white h6" style="background-color: #008000">
 							TBA
 						</a>
-						<a class="btn btn-outline bg-aqua white h6">
+						<a class="btn btn-outline white h6" style="background-color: #6aa4c1">
 							Class
 						</a>
-						<a class="btn btn-outline bg-gray white h6">
+						<a class="btn btn-outline white h6" style="background-color: #9f9f9f">
 							Section
 						</a>
 					</div>
@@ -54,11 +54,11 @@
 			<span slot="body">
 					<ul class="list-reset block y-scrollable">
 					<li class="overflow-hidden" v-for="result in search.results" track-by="$index">
-						<a class="btn h5" @click="addToSource(result)">
+						<a class="btn h5" v-on:click.prevent.stop="addToSource(result)">
 							{{ result.code }} - {{ result.section }}  - {{ result.name }}
 						</a>
 					</li>
-					<li v-if="search.string.length > 0 && search.results.length === 0">No results.</li>
+					<li v-show="search.string.length > 0 && search.results.length === 0">No results.</li>
 				</ul>
 			</span>
 		</modal>
@@ -84,7 +84,7 @@ module.exports = {
 				results: []
 			},
 			allTable: {
-				columns: ['code', 'section', 'name', 'type'],
+				columns: ['code', 'section', 'name', 'type', 'Has Sections'],
 				options: {
 					perPage: 25,
 					perPageValues: [10, 25, 50, 100],
@@ -101,7 +101,12 @@ module.exports = {
 	},
 	computed: {
 		dataForTable: function() {
-			return this.flatCourses[this.termId];
+			var self = this;
+			return this.flatCourses[this.termId].map(function(course) {
+				course.type = self.courseInfo[self.termId][course.number].type;
+				course['Has Sections'] = self.courseInfo[self.termId][course.number].sections.length > 0 ? 'Yes' : 'No';
+				return course;
+			});
 		}
 	},
 	watch: {
@@ -160,7 +165,7 @@ module.exports = {
 				}.bind(this)
 			}else{
 				alertHandle = function() {
-					this.alert()
+					return this.alert()
 					.okBtn(courseHasSections ? 'Sections' : 'Add')
 					.cancelBtn("Return")
 					.confirm(html)
