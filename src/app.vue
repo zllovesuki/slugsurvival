@@ -15,7 +15,7 @@
 		</section>
 		<div class="container mb2 clearfix">
 			<div class="sm-flex center nowrap mb2 h5">
-				<div class="flex-auto muted" @click="egg">version 1.1.9</div>
+				<div class="flex-auto muted" @click="egg">version 1.1.10</div>
 			</div>
 		</div>
 	</div>
@@ -122,4 +122,27 @@ svg{max-width:100%;height:auto}.icon,svg{position:relative;top:.25em}.icon{width
 	overflow-x: hidden;
 	overflow-y: auto;
 }
+
+.alertify p {
+	margin-bottom: 0.5rem !important;
+}
+
+.alertify .dialog .msg {
+	padding: 5px !important;
+}
+
+@media (max-height: 480px) {
+	.alertify .dialog>* {
+		max-height: 432px;
+		overflow: scroll;
+	}
+}
+
+@media (min-height: 520px) and (max-height: 680px) {
+	.alertify .dialog>* {
+		max-height: 528px;
+		overflow: scroll;
+	}
+}
+
 </style>

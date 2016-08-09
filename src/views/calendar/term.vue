@@ -262,13 +262,12 @@ module.exports = {
 		}
 	},
 	ready: function() {
-		this.setTitle('Planner')
+		this.setTitle('Planner');
 		this.fetchTermCourses().then(function() {
 			this.ready = true;
 			this.initializeCalendar();
 			$('[class*="fc-button"]').addClass('btn btn-outline');
 			$('[class*="fc-button"]').removeClass('fc-state-default');
-
 		}.bind(this))
 	}
 }
