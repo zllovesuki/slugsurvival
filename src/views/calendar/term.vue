@@ -315,6 +315,6 @@ ul {
 	max-height: 20em;
 }
 .fc-agenda-view tr {
-     height: 30px !important;
+     height: 40px !important;
 }
 </style>
