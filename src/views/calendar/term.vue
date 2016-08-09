@@ -150,16 +150,12 @@ module.exports = {
 			var template = function(key, value) {
 				return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
 			}
-
-			if (isSection) {
-				html += template('Section', 'DIS - ' + course.section);
-			}else{
-				html += template(course.code, courseHasSections ? 'has sections': 'has NO sections');
-			}
 			// html += template('Course Number', course.number);
 			if (isSection) {
+				html += template('Section', 'DIS - ' + course.section);
 				html += template('TA', course.instructor);
 			}else{
+				html += template(course.code, courseHasSections ? 'has sections': 'has NO sections');
 				html += template('Instructor(s)', course.instructor.displayName.join(', '));
 			}
 			html += template('Location', !!!course.location ? 'TBA': course.location);
@@ -249,15 +245,11 @@ module.exports = {
 				defaultView: 'agendaWeek',
 				header: false,
 				contentHeight: 'auto',
-				eventSources: [
-					{
-			            events: function(start, end, timezone, callback) {
-			                callback(self.eventSource[termId]);
-			            },
-			            //color: 'yellow',   // an option!
-			            //textColor: 'black' // an option!
-			        }
-			    ],
+				eventSources: [{
+					events: function(start, end, timezone, callback) {
+						callback(self.eventSource[termId]);
+					},
+				}],
 				eventClick: function(calEvent, jsEvent, view) {
 					self.promptForAction(calEvent);
 				}
@@ -303,8 +295,6 @@ module.exports = {
 		this.fetchTermCourses().then(function() {
 			this.ready = true;
 			this.initializeCalendar();
-			$('[class*="fc-button"]').addClass('btn btn-outline');
-			$('[class*="fc-button"]').removeClass('fc-state-default');
 		}.bind(this))
 	}
 }

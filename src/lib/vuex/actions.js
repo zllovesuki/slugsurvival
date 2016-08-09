@@ -105,12 +105,12 @@ var self = module.exports = {
 		})
 		course = course[0];
 		snapshot = this.returnEventSourceSnapshot();
-		if (edit) {
-			this.removeFromSource(termId, course.number);
-		}
+
+		if (edit) this.removeFromSource(termId, course.number);
+
 		if ((code = this.checkForConflict(section)) !== false) {
 			this.alert().error('Section ' + section.section + ' conflict with ' + code + '!')
-			_.dispatch('restoreEventSourceSnapshot', termId, snapshot);
+			if (edit) _.dispatch('restoreEventSourceSnapshot', termId, snapshot);
 			return Promise.resolve();
 		}
 		var day = section.time.day[0];
@@ -147,7 +147,7 @@ var self = module.exports = {
 		var comingTime = {};
 		var keys = [];
 		var conflict = false;
-		if (typeof events === 'undefined') return conflict;
+		if (typeof events === 'undefined') return false;
 		for (var i = 0, length = events.length; i < length; i++) {
 			// You can't take the same class twice in a quarter
 			// At least you shouldn't
@@ -165,7 +165,7 @@ var self = module.exports = {
 		if (conflict !== false) return null;
 		if (!!!course.time) {
 			// TBA
-			return conflict;
+			return false;
 		}
 
 		existingDays.forEach(function(days) {
@@ -194,7 +194,7 @@ var self = module.exports = {
 			})
 		})
 		keys = Object.keys(existingTimes);
-		if (keys.length === 0) return conflict;
+		if (keys.length === 0) return false;
 		comingTime = course.time.time;
 		var oldStart, newStart, oldEnd, newEnd;
 		keys.forEach(function(code) {
@@ -227,15 +227,8 @@ var self = module.exports = {
 				return;
 			}
 
-			if ((newEnd >= oldEnd &&
-					newStart < oldStart)) {
-				// new course is outside (existing bottom)
-				conflict = code;
-				return;
-			}
-
-			if ((newStart == oldStart && newEnd < oldEnd)) {
-				// new course is outside (existing top)
+			if ((newEnd == oldEnd && newStart > oldStart)) {
+				// new course is inside (bottom)
 				conflict = code;
 				return;
 			}
@@ -246,11 +239,30 @@ var self = module.exports = {
 				return;
 			}
 
-			if ((newStart < oldStart && newEnd == oldEnd)) {
-				// new course is inside (bottom)
+			if ((newEnd == oldEnd && newStart < oldStart)) {
+				// new course is outside (existing bottom)
 				conflict = code;
 				return;
 			}
+
+			if ((newStart == oldStart && newEnd > oldEnd)) {
+				// new course is outside (existing top)
+				conflict = code;
+				return;
+			}
+
+			if ((oldEnd > newEnd && newStart > oldStart)) {
+				// new course is inside
+				conflict = code;
+				return;
+			}
+
+			if ((oldEnd < newEnd && newStart < oldStart)) {
+				// new course is outside
+				conflict = code;
+				return;
+			}
+
 		})
 		return conflict;
 	},
