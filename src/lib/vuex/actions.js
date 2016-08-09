@@ -20,19 +20,20 @@ var self = module.exports = {
 		var termId = _.state.route.params.termId;
 		_.dispatch('setTermName', _.state.termsList[termId])
 		if (typeof _.state.courses[termId] === 'undefined') {
-			return helper.getWithHeader(this.$http, _.state, '/db/terms/' + termId + '.json')
-				.then(function(res) {
-					if (typeof res === 'undefined') return;
-					var coursesData = res.json();
+			return Promise.all([
+				helper.getWithHeader(this.$http, _.state, '/db/terms/' + termId + '.json'),
+				helper.getWithHeader(this.$http, _.state, '/db/courses/' + termId + '.json')
+			]).spread(function(courseDataRes, courseInfoRes){
+				if (typeof courseDataRes !== 'undefined') {
+					var coursesData = courseDataRes.json();
 					_.dispatch('saveTermCourses', termId, coursesData);
-					return helper.getWithHeader(this.$http, _.state, '/db/courses/' + termId + '.json')
-						.then(function(res) {
-							if (typeof res === 'undefined') return;
-							var courseInfo = res.json();
-							_.dispatch('saveCourseInfo', termId, courseInfo);
-							return coursesData
-						})
-				})
+				}
+				if (typeof courseInfoRes !== 'undefined') {
+					var courseInfo = courseInfoRes.json();
+					_.dispatch('saveCourseInfo', termId, courseInfo);
+				}
+				return coursesData;
+			})
 		} else {
 			return Promise.resolve(_.state.courses[termId])
 		}
@@ -252,30 +253,6 @@ var self = module.exports = {
 				conflict = code;
 				return;
 			}
-
-			/*if ((newEnd == oldEnd && newStart > oldStart)) {
-				// new course is inside (bottom)
-				conflict = code;
-				return;
-			}
-
-			if ((newStart == oldStart && newEnd < oldEnd)) {
-				// new course is inside (top)
-				conflict = code;
-				return;
-			}
-
-			if ((newEnd == oldEnd && newStart < oldStart)) {
-				// new course is outside (existing bottom)
-				conflict = code;
-				return;
-			}
-
-			if ((newStart == oldStart && newEnd > oldEnd)) {
-				// new course is outside (existing top)
-				conflict = code;
-				return;
-			}*/
 
 			if ((oldEnd > newEnd && newStart > oldStart)) {
 				// new course is inside
