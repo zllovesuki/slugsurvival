@@ -5,7 +5,7 @@
 				<div class="clearfix">
 					<div class="left black">
 						<span class="btn h6 muted not-clickable">
-							click a quarter to open a new planner
+							click a quarter to open a planner
 						</span>
 					</div>
 					<!--<div class="right">
