@@ -90,7 +90,7 @@ var self = module.exports = {
 	fetchThreeStatsByFirstLastName: function(_, firstName, lastName) {
 		var tid = _.state.instructorNameToTidMapping[firstName + lastName];
 		if (typeof tid === 'undefined') {
-			return null;
+			return Promise.resolve(null);
 		}
 		return this.fetchThreeStatsByTid(tid);
 	},
@@ -226,22 +226,28 @@ var self = module.exports = {
 		this.fetchThreeStatsByFirstLastName(firstName, lastName)
 		.then(function(rmp) {
 			this.loading.go(70);
-			var obj = rmp.stats.stats.quality;
-			var max = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
-			html += template('Quality', firstName + ' is ' + max)
-			html += template('Clarity', rmp.stats.stats.clarity.toFixed(1))
-			html += template('Easy', rmp.stats.stats.easy.toFixed(1))
-			html += template('Difficulty', rmp.stats.scores.difficulty)
-			html += template('Overall', rmp.stats.stats.overall.toFixed(1))
-			this.alert()
-			.okBtn('See it for yourself')
-			.cancelBtn('Go Back')
-			.confirm(html)
-			.then(function(resolved) {
-				resolved.event.preventDefault();
-				if (resolved.buttonClicked !== 'ok') return;
-				window.open('http://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + rmp.tid);
-			})
+			if (rmp !== null) {
+				var obj = rmp.stats.stats.quality;
+				var max = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
+				html += template('Quality', firstName + ' is ' + max)
+				html += template('Clarity', rmp.stats.stats.clarity.toFixed(1))
+				html += template('Easy', rmp.stats.stats.easy.toFixed(1))
+				html += template('Difficulty', rmp.stats.scores.difficulty)
+				html += template('Overall', rmp.stats.stats.overall.toFixed(1))
+				this.alert()
+				.okBtn('See it for yourself')
+				.cancelBtn('Go Back')
+				.confirm(html)
+				.then(function(resolved) {
+					resolved.event.preventDefault();
+					if (resolved.buttonClicked !== 'ok') return;
+					window.open('http://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + rmp.tid);
+				})
+			}else{
+				this.alert()
+				.okBtn('Go Back')
+				.alert(['<p>', 'Sorry, we don\'t have', firstName + '\'s', 'ratings!', '</p>'].join(' '))
+			}
 			this.loading.go(100);
 		}.bind(this))
 	},
