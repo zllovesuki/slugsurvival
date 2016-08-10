@@ -309,10 +309,10 @@ module.exports = {
 		},
 		loadCanvasBundle: function(callback) {
 			var self = this;
-			$script(dist + 'html2canvas/0.5.0-beta4/html2canvas.min.js', 'canvasRootDep');
+			$script(dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.min.js', 'canvasRootDep');
 			$script.ready('canvasRootDep', function() {
 				self.loading.go(60);
-				$script([dist + 'html2canvas/0.5.0-beta4/html2canvas.min.js', dist + 'html2canvas/0.5.0-alpha1/html2canvas.svg.min.js', dist + 'canvas/canvas-toBlob.js', dist + 'canvas/FileSaver.min.js'], 'canvasBundle')
+				$script([dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.svg.min.js', dist + 'canvas/canvas-toBlob.js', dist + 'canvas/FileSaver.min.js'], 'canvasBundle')
 				$script.ready('canvasBundle', callback)
 			})
 		},
