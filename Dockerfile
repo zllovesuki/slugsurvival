@@ -8,6 +8,8 @@ COPY . /usr/src/app
 
 WORKDIR /usr/src/app
 
+RUN apk add --no-cache git
+
 RUN npm install && npm run prod && npm prune --production
 
 EXPOSE 3001
