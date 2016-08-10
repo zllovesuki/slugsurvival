@@ -1,4 +1,5 @@
-var alertify = require('alertify.js');
+var alertify = require('alertify.js'),
+	Nanobar = require('nanobar');
 
 module.exports = {
 	termsList: {},
@@ -9,6 +10,9 @@ module.exports = {
 	flatCourses: {},
 
 	courseInfo: {},
+
+	instructorNameToTidMapping: {},
+	instructorStats: {},
 
 	search: {},
 
@@ -26,5 +30,6 @@ module.exports = {
 		'Saturday': '2016-08-06'
 	},
 
+	loading: new Nanobar(),
 	alert: alertify.reset().closeLogOnClick(true).logPosition("bottom right")
 }

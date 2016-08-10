@@ -1,6 +1,6 @@
 {
   "name": "slugsurvival",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
@@ -29,7 +29,6 @@
     "validator": "^5.4.0",
     "vue": "^1.0.26",
     "vue-hot-reload-api": "^2.0.5",
-    "vue-moment": "^2.0.1",
     "vue-resource": "^0.9.3",
     "vue-router": "^0.7.13",
     "vue-tables": "git+https://github.com/zllovesuki/vue-tables.git",

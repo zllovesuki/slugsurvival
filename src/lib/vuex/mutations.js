@@ -25,6 +25,12 @@ module.exports = {
 			})
 		})
 	},
+	saveInstructorNameToTidMapping: function(state, mapping) {
+		state.instructorNameToTidMapping = mapping;
+	},
+	saveInstructorStats: function(state, stats) {
+		state.instructorStats[stats.tid] = stats;
+	},
 	saveCourseInfo: function(state, termId, courses) {
 		state.courseInfo[termId] = courses;
 	},

@@ -156,7 +156,7 @@ module.exports = {
 				html += template('TA', course.instructor);
 			}else{
 				html += template(course.code, courseHasSections ? 'has sections': 'has NO sections');
-				html += template('Instructor(s)', course.instructor.displayName.join(', '));
+				html += template('Instructor(s)', course.instructor.displayName.join(', ') + '<sup class="muted clickable" onclick="window.App._showInstructorRMP(\'' + course.instructor.firstName + '\', \'' + course.instructor.lastName + '\')">RateMyProfessors</sup>');
 			}
 			html += template('Location', !!!course.location ? 'TBA': course.location);
 			html += template('Meeting Day', !!!course.time ? 'TBA' : course.time.day.join(', '));
@@ -307,10 +307,13 @@ module.exports = {
 		}
 	},
 	ready: function() {
+		this.loading.go(30);
 		this.setTitle('Planner');
 		this.fetchTermCourses().then(function() {
+			this.loading.go(70);
 			this.ready = true;
 			this.initializeCalendar();
+			this.loading.go(100);
 		}.bind(this))
 	}
 }

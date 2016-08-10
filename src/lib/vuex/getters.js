@@ -1,4 +1,7 @@
 module.exports = {
+	loading: function(state) {
+		return state.loading;
+	},
 	route: function(state) {
 		return state.route
 	},

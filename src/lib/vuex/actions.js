@@ -7,6 +7,16 @@ var self = module.exports = {
 	setTitle: function(_, title) {
 		_.dispatch('setTitle', title)
 	},
+	ensureDataLoaded: function(_) {
+		var promises = []
+		if (_.state.flatTermsList.length === 0) {
+			promises.push(this.fetchTerms());
+		}
+		if (Object.keys(_.state.instructorNameToTidMapping).length === 0) {
+			promises.push(this.fetchInstructorNameToTidMapping());
+		}
+		return Promise.all(promises);
+	},
 	fetchTerms: function(_) {
 		return helper.getWithHeader(this.$http, _.state, '/db/terms.json')
 			.then(function(res) {
@@ -16,8 +26,47 @@ var self = module.exports = {
 				return data;
 			})
 	},
+	fetchInstructorNameToTidMapping: function(_) {
+		return helper.getWithHeader(this.$http, _.state, '/db/rmp.json')
+			.then(function(res) {
+				if (typeof res === 'undefined') return;
+				var data = res.json();
+				_.dispatch('saveInstructorNameToTidMapping', data);
+				return data;
+			})
+	},
+	fetchThreeStatsByTid: function(_, tid) {
+		if (typeof _.state.instructorStats[tid] !== 'undefined') {
+			return Promise.resolve(_.state.instructorStats[tid]);
+		}
+		return Promise.all([
+			helper.getWithHeader(this.$http, _.state, '/db/rmp/ratings/' + tid + '.json'),
+			helper.getWithHeader(this.$http, _.state, '/db/rmp/scores/' + tid + '.json'),
+			helper.getWithHeader(this.$http, _.state, '/db/rmp/stats/' + tid + '.json')
+		]).spread(function(ratingsRes, scoresRes, statsRes){
+			if (typeof ratingsRes !== 'undefined') {
+				var ratings = ratingsRes.json();
+			}
+			if (typeof scoresRes !== 'undefined') {
+				var scores = scoresRes.json();
+			}
+			if (typeof statsRes !== 'undefined') {
+				var stats = statsRes.json();
+			}
+			var stats = {
+				tid: tid,
+				stats: {
+					ratings: ratings,
+					scores: scores,
+					stats: stats
+				}
+			};
+			_.dispatch('saveInstructorStats', stats);
+			return stats;
+		})
+	},
 	fetchTermCourses: function(_) {
-		var termId = _.state.route.params.termId;
+		var termId = this.termId;
 		_.dispatch('setTermName', _.state.termsList[termId])
 		if (typeof _.state.courses[termId] === 'undefined') {
 			return Promise.all([
@@ -38,20 +87,27 @@ var self = module.exports = {
 			return Promise.resolve(_.state.courses[termId])
 		}
 	},
+	fetchThreeStatsByFirstLastName: function(_, firstName, lastName) {
+		var tid = _.state.instructorNameToTidMapping[firstName + lastName];
+		if (typeof tid === 'undefined') {
+			return null;
+		}
+		return this.fetchThreeStatsByTid(tid);
+	},
 	courseHasSections: function(_, courseNumber) {
-		var termId = _.state.route.params.termId;
+		var termId = this.termId;
 		return _.state.courseInfo[termId][courseNumber].sections.length > 0;
 	},
 	refreshCalendar: function(_) {
-		$('#calendar-' + _.state.route.params.termId).fullCalendar('refetchEvents')
+		$('#calendar-' + this.termId).fullCalendar('refetchEvents')
 	},
 	returnEventSourceSnapshot: function(_) {
-		var termId = _.state.route.params.termId;
+		var termId = this.termId;
 		return _.state.events[termId]
 	},
 	pushToEventSource: function(_, course, edit) {
 		edit = edit || false;
-		var termId = _.state.route.params.termId;
+		var termId = this.termId;
 		var courseInfo = _.state.courseInfo[termId][course.number];
 		var code;
 		var obj = {};
@@ -94,7 +150,7 @@ var self = module.exports = {
 	},
 	_pushSectionToEventSource: function(_, courseNumber, sectionNumber, edit) {
 		edit = edit || false;
-		var termId = _.state.route.params.termId;
+		var termId = this.termId;
 		var courseInfo = _.state.courseInfo[termId][courseNumber];
 		var courses = _.state.flatCourses[termId];
 		var obj = {};
@@ -161,12 +217,40 @@ var self = module.exports = {
 		$('.alertify').remove();
 		return Promise.resolve();
 	},
+	_showInstructorRMP: function(_, firstName, lastName) {
+		this.loading.go(30);
+		var html = '';
+		var template = function(key, value) {
+			return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
+		}
+		this.fetchThreeStatsByFirstLastName(firstName, lastName)
+		.then(function(rmp) {
+			this.loading.go(70);
+			var obj = rmp.stats.stats.quality;
+			var max = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
+			html += template('Quality', firstName + ' is ' + max)
+			html += template('Clarity', rmp.stats.stats.clarity.toFixed(1))
+			html += template('Easy', rmp.stats.stats.easy.toFixed(1))
+			html += template('Difficulty', rmp.stats.scores.difficulty)
+			html += template('Overall', rmp.stats.stats.overall.toFixed(1))
+			this.alert()
+			.okBtn('See it for yourself')
+			.cancelBtn('Go Back')
+			.confirm(html)
+			.then(function(resolved) {
+				resolved.event.preventDefault();
+				if (resolved.buttonClicked !== 'ok') return;
+				window.open('http://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + rmp.tid);
+			})
+			this.loading.go(100);
+		}.bind(this))
+	},
 	checkForConflict: function(_, course) {
 		/*
 			TODO: This method needs a more efficient rewrite
 			Who the fuck write so many forLoops anyway?
 		*/
-		var termId = _.state.route.params.termId;
+		var termId = this.termId;
 		var events =  _.state.events[termId];
 		var intersectDays = [];
 		var existingDays = [];

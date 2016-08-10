@@ -6,7 +6,6 @@ var VueTables = require('vue-tables')
 
 Vue.use(VueRouter)
 Vue.use(require('vue-resource'))
-Vue.use(require('vue-moment'))
 Vue.use(VueTables.client, {}, {
 	template: require('./components/tableTemplate.html')
 });

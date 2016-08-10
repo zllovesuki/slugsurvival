@@ -1,11 +1,7 @@
 module.exports = function(_, router) {
 	router.beforeEach(function (transition) {
-		if (_.state.flatTermsList.length === 0) {
-			router.app.fetchTerms().then(function() {
-				transition.next();
-			})
-		}else{
+		router.app.ensureDataLoaded().then(function() {
 			transition.next();
-		}
+		})
 	})
 }
