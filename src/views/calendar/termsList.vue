@@ -1,22 +1,5 @@
 <template>
 	<div>
-	<div class="mt2 mb2">
-		<div class="overflow-hidden bg-white rounded mb2">
-			<div class="m0 p1">
-				<div class="clearfix">
-					<span class="btn black h4 muted ">Manage: </span>
-				</div>
-				<!--<div class="clearfix">
-					<span class="ml1 btn black h6 muted not-clickable"></span>
-				</div>-->
-			</div>
-			<div class="m0 p2 border-top">
-				<div class="clearfix">
-					<a class="muted h5 ml1 mb1 bold btn btn-outline {{ color }}">Open a Saved Planner</a>
-				</div>
-			</div>
-		</div>
-	</div>
 		<div class="overflow-hidden bg-white rounded mb2">
 			<div class="m0 p0">
 				<div class="clearfix">
@@ -36,7 +19,7 @@
 				<div class="m0 p0 border-top" v-bind:class="{ 'hide': $index > 3 && hidePrior }">
 					<div class="clearfix">
 						<div class="left black">
-							<a v-link="{ name: 'term', params: { termId: term.code } }" class="btn block h5">
+							<a v-link="{ name: 'term', params: { termId: term.code } }" class="btn block h5" v-bind:class="{ 'muted': $index > 0 }">
 								{{ term.name }}
 							</a>
 						</div>
