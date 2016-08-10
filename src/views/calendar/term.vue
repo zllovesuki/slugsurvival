@@ -16,7 +16,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="overflow-hidden bg-white rounded mb2 clearfix" v-bind:class="{ 'hide': !show.calendar }">
+		<div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix" v-bind:class="{ 'hide': !show.calendar }">
 			<div class="m0 p2">
 				<div id="calendar-{{ termId }}"></div>
 			</div>
@@ -25,7 +25,9 @@
 			<div class="m0 p2">
 				<div class="clearfix">
 					<div class="left">
-
+						<a class="btn btn-outline red h6" v-on:click="saveCalendarAsImage">
+							Save Calendar As Image
+						</a>
 					</div>
 					<div class="right">
 						<a class="btn h6 m0 {{ color }}">
@@ -303,6 +305,28 @@ module.exports = {
 				eventClick: function(calEvent, jsEvent, view) {
 					self.promptForAction(calEvent);
 				}
+			})
+		},
+		loadCanvasBundle: function(callback) {
+			var self = this;
+			$script(dist + 'html2canvas/0.5.0-alpha1/html2canvas.min.js', 'canvasRootDep');
+			$script.ready('canvasRootDep', function() {
+				self.loading.go(60);
+				$script([dist + 'html2canvas/0.5.0-alpha1/html2canvas.min.js', dist + 'html2canvas/0.5.0-alpha1/html2canvas.svg.min.js', dist + 'canvas/canvas-toBlob.js', dist + 'canvas/FileSaver.min.js'], 'canvasBundle')
+				$script.ready('canvasBundle', callback)
+			})
+		},
+		saveCalendarAsImage: function() {
+			var self = this;
+			this.loading.go(30);
+			this.loadCanvasBundle(function() {
+				self.loading.go(80);
+				html2canvas(document.getElementById('calendar-container')).then(function(canvas) {
+					canvas.toBlob(function(blob) {
+						self.loading.go(100);
+						saveAs(blob, "schedule.png");
+					});
+				})
 			})
 		}
 	},

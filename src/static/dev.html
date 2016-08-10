@@ -13,15 +13,22 @@
 		<link rel="stylesheet" href="https://dist.s3.fmt01.sdapi.net/css/alertify/1.0.11/alertify.css" id="alertifyCSS">
 		<link href="https://dist.s3.fmt01.sdapi.net/fonts/lato-v11/lato-v11-all.css" rel="stylesheet" type="text/css">
 
+		<script type="text/javascript" src="http://dist.s3.fmt01.sdapi.net/js/script.js/2.5.8/script.min.js"></script>
+
 	</head>
 	<body>
 		<div id="app">
 
 		</div>
-		<script type="text/javascript" src="https://dist.s3.fmt01.sdapi.net/js/bluebird/v3.4.1/bluebird.min.js"></script>
-		<script type="text/javascript" src="https://dist.s3.fmt01.sdapi.net/js/jquery/3.1.0/jquery-3.1.0.min.js"></script>
-		<script type="text/javascript" src="https://dist.s3.fmt01.sdapi.net/js/moment/2.14.1/moment.min.js"></script>
-		<script type="text/javascript" src="https://dist.s3.fmt01.sdapi.net/js/fullcalender/2.9.1/fullcalendar.min.js"></script>
-		<script type="text/javascript" src="/public/app.js"></script>
+		<script type="text/javascript">
+			var dist = 'https://dist.s3.fmt01.sdapi.net/js/';
+			$script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'moment/2.14.1/moment.min.js'], 'jQuery');
+			$script.ready('jQuery', function() {
+				$script([dist + 'bluebird/v3.4.1/bluebird.min.js', dist + 'fullcalender/2.9.1/fullcalendar.min.js'], 'bundle')
+				$script.ready('bundle', function() {
+					$script('/public/app.js');
+				})
+			})
+		</script>
 	</body>
 </html>
