@@ -321,10 +321,12 @@ module.exports = {
 			this.loading.go(30);
 			this.loadCanvasBundle(function() {
 				self.loading.go(80);
-				html2canvas(document.getElementById('calendar-container')).then(function(canvas) {
+				html2canvas(document.getElementById('calendar-container'), {
+					useCORS: true
+				}).then(function(canvas) {
 					canvas.toBlob(function(blob) {
 						self.loading.go(100);
-						saveAs(blob, "schedule.png");
+						saveAs(blob, 'Schedule for ' + self.termName + '.png');
 					});
 				})
 			})
