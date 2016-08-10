@@ -105,8 +105,9 @@ var self = module.exports = {
 		var termId = this.termId;
 		return _.state.events[termId]
 	},
-	pushToEventSource: function(_, course, edit) {
+	pushToEventSource: function(_, course, edit, changed) {
 		edit = edit || false;
+		changed = changed || true;
 		var termId = this.termId;
 		var courseInfo = _.state.courseInfo[termId][course.number];
 		var code;
@@ -135,7 +136,7 @@ var self = module.exports = {
 			}
 		}
 		this.refreshCalendar();
-		if (edit) {
+		if (edit && changed) {
 			this.alert().success(course.code + ' edited!')
 		} else {
 			this.alert().success(course.code + ' added to the planner!')
@@ -155,9 +156,7 @@ var self = module.exports = {
 		var courses = _.state.flatCourses[termId];
 		var obj = {};
 		var snapshot = [];
-		var section = {
-			section: 'TBD'
-		};
+		var section = {};
 		var code;
 
 		var course = courses.filter(function(course) {
@@ -174,45 +173,44 @@ var self = module.exports = {
 			}
 		}
 
-		if (sectionNumber !== null) {
-			section = courseInfo.sections.filter(function(section) {
-				return section.number == sectionNumber
-			});
-			section = section[0];
-			snapshot = this.returnEventSourceSnapshot();
+		section = courseInfo.sections.filter(function(section) {
+			return section.number == sectionNumber
+		});
+		section = section[0];
+		snapshot = this.returnEventSourceSnapshot();
 
-			if ((code = this.checkForConflict(section)) !== false) {
-				this.alert().error('Section ' + section.section + ' conflict with ' + code + '!')
-				if (edit) _.dispatch('restoreEventSourceSnapshot', termId, snapshot);
-				return Promise.resolve();
-			}
+		if (typeof section !== 'undefined' && (code = this.checkForConflict(section)) !== false) {
+			this.alert().error('Section ' + section.section + ' conflict with ' + code + '!')
+			if (edit) _.dispatch('restoreEventSourceSnapshot', termId, snapshot);
+			return Promise.resolve();
+		}
 
-			obj._number = section.number;
-			obj.color = 'grey';
-			obj.course = course;
-			obj.section = section;
-		}else{
-			// User has chose to select section later
-			obj.color = 'black';
+		if (sectionNumber === null || !!!section.time) {
+			// TBA will be in the allDaySlot
+			obj.title = [course.code, 'Section', 'DIS - ' + (sectionNumber === null ? '?' : 'TBA')].join("\n");
+			obj.number = course.number;
+			obj.color = (sectionNumber === null ? 'black' : 'green');
 			obj.course = course;
 			obj.section = null;
-		}
-
-		obj.title = [course.code, 'Section', 'DIS - ' + section.section].join("\n");
-		obj.number = course.number;
-
-		if (!!!section.time) {
-			// TBA will be in the allDaySlot
 			obj.start = _.state.dateMap['Monday'];
 			obj.end = _.state.dateMap['Saturday'];
+			_.dispatch('pushToEventSource', termId, obj);
 		} else {
-			var day = section.time.day[0];
-			obj.start = _.state.dateMap[day] + ' ' + section.time.time.start;
-			obj.end = _.state.dateMap[day] + ' ' + section.time.time.end;
+			for (var i = 0, days = section.time.day, length = days.length; i < length; i++) {
+				obj.title = [course.code, 'Section', 'DIS - ' + section.section].join("\n");
+				obj.number = course.number;
+				obj._number = section.number;
+				obj.color = 'grey';
+				obj.course = course;
+				obj.section = section;
+				obj.start = _.state.dateMap[days[i]] + ' ' + section.time.time.start;
+				obj.end = _.state.dateMap[days[i]] + ' ' + section.time.time.end;
+				_.dispatch('pushToEventSource', termId, obj);
+				obj = {};
+			}
 		}
 
-		_.dispatch('pushToEventSource', termId, obj);
-		this.pushToEventSource(course, edit);
+		this.pushToEventSource(course, edit, sectionNumber === null ? false : true);
 		this.refreshCalendar();
 		$('.alertify').remove();
 		return Promise.resolve();
@@ -298,8 +296,13 @@ var self = module.exports = {
 		if (intersectDays.length === 0) return false;
 		// O(n^2)
 		// sucks
+		/*
+
+				CONSIDER NESTED LOOP HARMFUL
+
+		*/
 		for (var i = 0, length = intersectDays.length; i < length; i++) {
-			for (var j = 0, events = _.state.events[termId], eLength = events.length; i < eLength; i++) {
+			for (var j = 0, events = _.state.events[termId], eLength = events.length; j < eLength; j++) {
 				if (events[j].allDay) return;
 				if (typeof events[j].section !== 'undefined' && events[j].section !== null) {
 					if (events[j].section.time.day.indexOf(intersectDays[i]) !== -1) {
@@ -321,44 +324,45 @@ var self = module.exports = {
 			newStart = comingTime.start.replace(':', '');
 			newEnd = comingTime.end.replace(':', '');
 
-			if ((newEnd > oldStart && newStart < oldEnd)) {
-				// new course is eating from behind
+			if (this.checkTimeConflict(oldStart, oldEnd, newStart, newEnd)) {
 				conflict = code;
-				return;
-			}
-
-			if ((newEnd > oldStart && newEnd < oldEnd)) {
-				// new course is eating from ahead
-				conflict = code;
-				return;
-			}
-
-			if ((newEnd == oldStart || newStart == oldEnd)) {
-				// piggy back
-				conflict = code;
-				return;
-			}
-
-			if ((newEnd == oldEnd || newStart == oldStart)) {
-				// overlap
-				conflict = code;
-				return;
-			}
-
-			if ((oldEnd > newEnd && newStart > oldStart)) {
-				// new course is inside
-				conflict = code;
-				return;
-			}
-
-			if ((oldEnd < newEnd && newStart < oldStart)) {
-				// new course is outside
-				conflict = code;
-				return;
+				break;
 			}
 
 		}
 		return conflict;
+	},
+	checkTimeConflict: function(_, oldStart, oldEnd, newStart, newEnd) {
+		if ((newStart > oldStart) && (newEnd > oldEnd) && (oldEnd > newStart)) {
+			//console.log('new course is eating from behind')
+			return true;
+		}
+
+		if ((oldEnd > newEnd) && (oldStart > newStart) && (newEnd > oldStart)) {
+			//console.log('new course is eating from ahead');
+			return true;
+		}
+
+		if ((newEnd == oldStart) || (newStart == oldEnd)) {
+			//console.log('piggy back');
+			return true;
+		}
+
+		if ((newEnd == oldEnd) || (newStart == oldStart)) {
+			//console.log('overlap');
+			return true;
+		}
+
+		if ((oldEnd > newEnd) && (newStart > oldStart)) {
+			//console.log('new course is inside');
+			return true;
+		}
+
+		if ((oldEnd < newEnd) && (newStart < oldStart)) {
+			//console.log('new course is outside');
+			return true;
+		}
+		return false;
 	},
 	tConvert: function(_, time) {
 		// Check correct time format and split into components
