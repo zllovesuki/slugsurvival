@@ -1,4 +1,4 @@
-FROM node:latest
+FROM mhart/alpine-node:latest
 
 RUN npm install browserify uglifyjs pm2 -g
 
