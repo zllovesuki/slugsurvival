@@ -1,6 +1,6 @@
 FROM node:latest
 
-RUN npm install forever browserify uglifyjs pm2 -g
+RUN npm install browserify uglifyjs pm2 -g
 
 RUN mkdir -p /usr/src/app
 
