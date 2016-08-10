@@ -230,7 +230,6 @@ var self = module.exports = {
 				html += template('Quality', firstName + ' is ' + max)
 				html += template('Clarity', rmp.stats.stats.clarity.toFixed(1))
 				html += template('Easy', rmp.stats.stats.easy.toFixed(1))
-				html += template('Difficulty', rmp.stats.scores.difficulty)
 				html += template('Overall', rmp.stats.stats.overall.toFixed(1))
 				html += template('Based on', rmp.stats.scores.count + ' ratings')
 				this.alert()
