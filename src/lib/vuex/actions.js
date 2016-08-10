@@ -302,7 +302,7 @@ var self = module.exports = {
 		*/
 		for (var i = 0, length = intersectDays.length; i < length; i++) {
 			for (var j = 0, events = _.state.events[termId], eLength = events.length; j < eLength; j++) {
-				if (events[j].allDay) return;
+				if (events[j].allDay) continue;
 				if (typeof events[j].section !== 'undefined' && events[j].section !== null) {
 					if (events[j].section.time.day.indexOf(intersectDays[i]) !== -1) {
 						existingTimes[events[j].course.code + ' Section'] = events[j].section.time.time;
