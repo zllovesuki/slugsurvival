@@ -51,6 +51,9 @@ module.exports = {
 		comingSoon: function() {
 			this.alert().alert('Coming soon')
 		}
+	},
+	ready: function() {
+		this.setTitle('Main')
 	}
 }
 </script>
