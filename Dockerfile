@@ -1,6 +1,6 @@
 FROM mhart/alpine-node:latest
 
-RUN npm install browserify uglifyjs pm2 -g
+RUN npm install pm2 -g
 
 RUN mkdir -p /usr/src/app
 
