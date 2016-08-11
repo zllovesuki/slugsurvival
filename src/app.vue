@@ -15,7 +15,7 @@
 		</section>
 		<div class="container mb2 clearfix">
 			<div class="sm-flex center nowrap mb2 h5">
-				<div class="flex-auto muted" @click="egg">version 1.6.0</div>
+				<div class="flex-auto muted" @click="egg">version 1.6.1</div>
 			</div>
 		</div>
 	</div>
@@ -57,6 +57,10 @@ body {
 	background-color: #f1f2f3;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+}
+
+body.modal-open {
+	overflow: hidden;
 }
 
 ::selection {

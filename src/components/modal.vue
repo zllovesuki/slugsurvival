@@ -35,6 +35,15 @@ module.exports = {
 			this.show = false;
 		}
 	},
+	watch: {
+		'show': function(val, oldVal) {
+			if (val === true) {
+				document.body.className += 'modal-open';
+			}else{
+				document.body.className = '';
+			}
+		}
+	},
 	created: function () {
 		document.addEventListener("keydown", (e) => {
 			if (this.show && e.keyCode === 27) {
