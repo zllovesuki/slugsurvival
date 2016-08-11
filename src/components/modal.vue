@@ -82,7 +82,7 @@ module.exports = {
   transition: all .3s ease;
 }
 
-@media (max-height: 480px) {
+@media (max-height: 600px) {
 	.modal-container {
 		max-height: 340px;
 	}
