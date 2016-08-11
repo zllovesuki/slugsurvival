@@ -74,25 +74,25 @@ var self = module.exports = {
 	},
 	fetchTermCourses: function(_) {
 		var termId = this.termId;
-		var self = this;
+		var workaround = this.isMobileSafari();
 		_.dispatch('setTermName', _.state.termsList[termId])
 		if (typeof _.state.courses[termId] === 'undefined') {
 			return Promise.all([
 				fetch('/db/terms/' + termId + '.json'),
 				fetch('/db/courses/' + termId + '.json'),
-				self.isMobileSafari() ? null : fetch('/db/index/' + termId + '.json')
+				workaround ? null : fetch('/db/index/' + termId + '.json')
 			])
 			.spread(function(courseDataRes, courseInfoRes, indexRes){
 				return Promise.all([
 					courseDataRes.json(),
 					courseInfoRes.json(),
-					self.isMobileSafari() ? null : indexRes.json()
+					workaround ? null : indexRes.json()
 				])
 			})
 			.spread(function(coursesData, courseInfo, index){
 				_.dispatch('saveTermCourses', termId, coursesData);
 				_.dispatch('saveCourseInfo', termId, courseInfo);
-				if (!self.isMobileSafari()) _.dispatch('buildIndexedSearch', termId, index);
+				if (!workaround) _.dispatch('buildIndexedSearch', termId, index);
 			})
 		} else {
 			return Promise.resolve()
