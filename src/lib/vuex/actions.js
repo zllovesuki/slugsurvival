@@ -164,10 +164,7 @@ var self = module.exports = {
 		var section = {};
 		var code;
 
-		var course = courses.filter(function(course) {
-			return course.number == courseNumber;
-		})
-		course = course[0];
+		var course = courses[courseNumber];
 
 		if (edit) {
 			// Let's check if user selects "Choose Later" again
