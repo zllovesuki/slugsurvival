@@ -7,7 +7,7 @@ var self = module.exports = {
 	setTitle: function(_, title) {
 		_.dispatch('setTitle', title)
 	},
-	isMobileSafari: function(_) {
+	iOS: function(_) {
 		var userAgent = window.navigator.userAgent;
 		if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i)) {
 			return true;
@@ -74,7 +74,7 @@ var self = module.exports = {
 	},
 	fetchTermCourses: function(_) {
 		var termId = this.termId;
-		var workaround = this.isMobileSafari();
+		var workaround = this.iOS();
 		_.dispatch('setTermName', _.state.termsList[termId])
 		if (typeof _.state.courses[termId] === 'undefined') {
 			return Promise.all([
