@@ -65,7 +65,9 @@ module.exports = {
             });
             for (var courseNumber in state.flatCourses[termId]) {
                 obj = state.flatCourses[termId][courseNumber];
-                obj.b = courseNumber;
+                obj.b = obj.num;
+                obj.c = obj.c.split(/(\d+)/).filter(Boolean).map(function(el) { return el.trim(); }).join(" ");
+                obj.n = obj.n.split(/(?=[A-Z])/).map(function(el) { return el.trim(); }).join(" ")
                 state.search[termId].addDoc(obj);
                 obj = {};
             }
