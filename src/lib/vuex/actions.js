@@ -98,11 +98,11 @@ var self = module.exports = {
                 storage.getItem('termIndexTimestamp-' + termId)
             ])
         }
-        var loadFromStorage = function() {
+        var loadFromStorage = function(invalid) {
             return Promise.all([
-                storage.getItem('termCourse-' + termId),
-                storage.getItem('termCourseInfo-' + termId),
-                workaround ? null : storage.getItem('termIndex-' + termId),
+                !invalid.coursesData ? storage.getItem('termCourse-' + termId) : null,
+                !invalid.courseInfo ? storage.getItem('termCourseInfo-' + termId) : null,
+                workaround ? null : (!invalid.index ? storage.getItem('termIndex-' + termId) : null),
                 storage.getItem(termId)
             ]).spread(function(coursesData, courseInfo, index, events) {
                 return self.dispatchSave(coursesData, courseInfo, index, events, true);
@@ -118,14 +118,14 @@ var self = module.exports = {
         })
         .finally(function() {
             return loadOfflineTimestamp().then(function(offline) {
+                var invalid = {
+                    yes: false,
+                    coursesData: false,
+                    courseInfo: false,
+                    index: false
+                }
                 if (typeof online !== 'undefined') {
                     // loadOnlineTimestamp() success
-                    var invalid = {
-                        yes: false,
-                        coursesData: false,
-                        courseInfo: false,
-                        index: false
-                    }
                     if (online[0] !== offline[0]) {
                         invalid.yes = true;
                         invalid.coursesData = true;
@@ -141,7 +141,6 @@ var self = module.exports = {
                         invalid.index = true;
                         console.log('index timestamp differs');
                     }
-                    if (invalid.yes) return Promise.reject(invalid);
                 }else{
                     // possibly no connectivity
                     if (offline[0] === null
@@ -149,8 +148,8 @@ var self = module.exports = {
                         || offline[2] === null) {
                         // We don't have a local copy
                         console.log(('no local copies to fallback'));
-                        var invalid = {
-                            yes: false,
+                        invalid = {
+                            yes: true,
                             coursesData: true,
                             courseInfo: true,
                             index: true
@@ -158,8 +157,13 @@ var self = module.exports = {
                         return Promise.reject(invalid)
                     }
                 }
-                console.log('local copy valid')
-                return loadFromStorage();
+
+                if (invalid.yes) console.log('some or all local copies are outdated')
+                else console.log('local copies valid')
+
+                return loadFromStorage(invalid).then(function () {
+                    return Promise.reject(invalid);
+                })
             })
         })
     },
@@ -191,9 +195,7 @@ var self = module.exports = {
         if (coursesData !== null) _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
         if (courseInfo !== null) _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
         if (index !== null) _.dispatch('buildIndexedSearch', termId, index, workaround, skipSaving);
-        if (events !== null) {
-            _.dispatch('restoreEventSourceSnapshot', termId, events)
-        }
+        if (events !== null) _.dispatch('restoreEventSourceSnapshot', termId, events)
     },
     fetchTermCourses: function(_) {
         var termId = this.termId;
@@ -201,7 +203,7 @@ var self = module.exports = {
         if (typeof _.state.flatCourses[termId] === 'undefined') {
             return this.loadFromLocal()
             .catch(function(invalid) {
-                return this.loadFromOnline(invalid)
+                if (invalid.yes) return this.loadFromOnline(invalid)
             }.bind(this))
         } else {
             return Promise.resolve()
