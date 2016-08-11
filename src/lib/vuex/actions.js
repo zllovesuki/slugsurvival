@@ -194,7 +194,7 @@ var self = module.exports = {
         var workaround = this.iOS();
         if (coursesData !== null) _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
         if (courseInfo !== null) _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
-        if (index !== null) _.dispatch('buildIndexedSearch', termId, index, workaround, skipSaving);
+        if (workaround || index !== null) _.dispatch('buildIndexedSearch', termId, index, workaround, skipSaving);
         if (events !== null) _.dispatch('restoreEventSourceSnapshot', termId, events)
     },
     fetchTermCourses: function(_) {
