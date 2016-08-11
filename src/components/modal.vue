@@ -23,35 +23,35 @@
 
 <script>
 module.exports = {
-        props: {
-            show: {
-                type: Boolean,
-                required: true,
-                twoWay: true
-            }
-        },
-        methods: {
-            close: function() {
-                this.show = false;
-            }
-        },
-        watch: {
-            'show': function(val, oldVal) {
-                if (val === true) {
-                    document.body.className += 'modal-open';
-                } else {
-                    document.body.className = '';
-                }
-            }
-        },
-        created: function() {
-            document.addEventListener("keydown", (e) => {
-                if (this.show && e.keyCode === 27) {
-                    this.close();
-                }
-            });
+    props: {
+        show: {
+            type: Boolean,
+            required: true,
+            twoWay: true
         }
-    } // http://adamwathan.me/2016/01/04/composing-reusable-modal-dialogs-with-vuejs/: close on clicking outside
+    },
+    methods: {
+        close: function() {
+            this.show = false;
+        }
+    },
+    watch: {
+        'show': function(val, oldVal) {
+            if (val === true) {
+                document.body.className += 'modal-open';
+            } else {
+                document.body.className = '';
+            }
+        }
+    },
+    created: function() {
+        document.addEventListener("keydown", (e) => {
+            if (this.show && e.keyCode === 27) {
+                this.close();
+            }
+        });
+    }
+} // http://adamwathan.me/2016/01/04/composing-reusable-modal-dialogs-with-vuejs/: close on clicking outside
 </script>
 
 <style>
