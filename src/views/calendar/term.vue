@@ -4,30 +4,28 @@
 			<div class="m0 p2">
 				<div class="clearfix">
 					<div class="left">
-						<a class="btn btn-outline h6 m0 {{ color }}" v-on:click.prevent.stop="showAllModal">
-							{{ show.calendar ? 'show all classes' : 'show planner' }}
+						<a class="btn btn-outline red h6" v-on:click="saveCalendarAsImage">
+							Save As Image
 						</a>
 					</div>
 					<div class="right">
-						<a class="btn btn-outline h6 m0 {{ color }}" v-on:click.prevent.stop="showSearchModal" v-show="show.calendar">
+						<a class="btn btn-outline h6 m0 {{ color }}" v-on:click.prevent.stop="showSearchModal">
 							add classes by search
 						</a>
 					</div>
 				</div>
 			</div>
 		</div>
-		<div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix" v-bind:class="{ 'hide': !show.calendar }">
+		<div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix">
 			<div class="m0 p2">
 				<div id="calendar-{{ termId }}"></div>
 			</div>
 		</div>
-		<div class="overflow-hidden bg-white rounded mb2 clearfix" v-show="show.calendar">
+		<div class="overflow-hidden bg-white rounded mb2 clearfix">
 			<div class="m0 p2">
 				<div class="clearfix">
 					<div class="left">
-						<a class="btn btn-outline red h6" v-on:click="saveCalendarAsImage">
-							Save Calendar As Image
-						</a>
+
 					</div>
 					<div class="right">
 						<a class="btn h6 m0 {{ color }}">
@@ -45,9 +43,6 @@
 					</div>
 				</div>
 			</div>
-		</div>
-		<div id="all" v-if="ready" v-bind:class="{ 'hide': !show.table }">
-			<v-client-table :data="dataForTable" :columns="allTable.columns" :options="allTable.options"></v-client-table>
 		</div>
 		<modal :show.sync="searchModal">
 			<h4 slot="header">
@@ -94,34 +89,38 @@ module.exports = {
 						this.promptAddClass(row);
 					}.bind(this)
 				}
-			},
-			show: {
-				calendar: true,
-				table: false
 			}
-		}
-	},
-	computed: {
-		dataForTable: function() {
-			var self = this;
-			return this.flatCourses[this.termId].map(function(course) {
-				course.type = self.courseInfo[self.termId][course.number].type;
-				course['Has Sections'] = self.courseInfo[self.termId][course.number].sections.length > 0 ? 'Yes' : 'No';
-				return course;
-			});
 		}
 	},
 	watch: {
 		'search.string': function(val, oldVal) {
 			if (val.length < 1) return;
-			this.search.results = this.bruteForceSearch(val);
+			var self = this;
+			//this.search.results = this.bruteForceSearch(val);
+			this.search.results = this.indexSearch[this.termId].search(val, {
+				fields: {
+					code: {
+						boost: 5
+					},
+					name: {
+						boost: 3
+					},
+					firstName: {
+						boost: 2
+					},
+					lastName: {
+						boost: 2
+					},
+					location: {
+						boost: 1
+					}
+				}
+			}).map(function(result) {
+				return self.flatCourses[self.termId][result.ref]
+			});
 		}
 	},
 	methods: {
-		showAllModal: function() {
-			this.show.calendar = !this.show.calendar;
-			this.show.table = !this.show.table;
-		},
 		showSearchModal: function() {
 			this.searchModal = true;
 			this.search.string = '';

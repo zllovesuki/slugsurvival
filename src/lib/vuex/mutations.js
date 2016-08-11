@@ -1,3 +1,5 @@
+var elasticlunr = require('elasticlunr')
+
 module.exports = {
 	setTitle: function(state, title) {
 		state.title = title;
@@ -14,14 +16,14 @@ module.exports = {
 	saveTermCourses: function(state, termId, courses) {
 		state.courses[termId] = courses;
 		if (typeof state.flatCourses[termId] === 'undefined') {
-			state.flatCourses[termId] = [];
+			state.flatCourses[termId] = {};
 		}
 		var obj;
 		Object.keys(courses).forEach(function(subject) {
 			courses[subject].forEach(function(course) {
 				obj = course;
 				obj.code = [subject, course.code].join(' ');
-				state.flatCourses[termId].push(obj);
+				state.flatCourses[termId][course.number] = obj;
 			})
 		})
 	},
@@ -33,6 +35,9 @@ module.exports = {
 	},
 	saveCourseInfo: function(state, termId, courses) {
 		state.courseInfo[termId] = courses;
+	},
+	buildIndexedSearch: function(state, termId, json) {
+		state.search[termId] = elasticlunr.Index.load(json);
 	},
 	pushToEventSource: function(state, termId, obj) {
 		if (typeof state.events[termId] === 'undefined') state.events[termId] = [];

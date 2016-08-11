@@ -71,8 +71,9 @@ var self = module.exports = {
 		if (typeof _.state.courses[termId] === 'undefined') {
 			return Promise.all([
 				helper.getWithHeader(this.$http, _.state, '/db/terms/' + termId + '.json'),
-				helper.getWithHeader(this.$http, _.state, '/db/courses/' + termId + '.json')
-			]).spread(function(courseDataRes, courseInfoRes){
+				helper.getWithHeader(this.$http, _.state, '/db/courses/' + termId + '.json'),
+				helper.getWithHeader(this.$http, _.state, '/db/index/' + termId + '.json')
+			]).spread(function(courseDataRes, courseInfoRes, indexRes){
 				if (typeof courseDataRes !== 'undefined') {
 					var coursesData = courseDataRes.json();
 					_.dispatch('saveTermCourses', termId, coursesData);
@@ -80,6 +81,10 @@ var self = module.exports = {
 				if (typeof courseInfoRes !== 'undefined') {
 					var courseInfo = courseInfoRes.json();
 					_.dispatch('saveCourseInfo', termId, courseInfo);
+				}
+				if (typeof indexRes !== 'undefined') {
+					var index = indexRes.json();
+					_.dispatch('buildIndexedSearch', termId, index);
 				}
 				return coursesData;
 			})

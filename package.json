@@ -1,6 +1,6 @@
 {
   "name": "slugsurvival",
-  "version": "1.4.1u1",
+  "version": "1.5.0",
   "scripts": {
     "test": "./node_modules/.bin/mocha --timeout 30000 --reporter spec",
     "prod": "NODE_ENV=production ./node_modules/browserify/bin/cmd.js -t stringify -t vueify -e src/main.js | ./node_modules/uglifyjs/bin/uglifyjs -c -m > public/prod.js",
@@ -27,6 +27,7 @@
     "bluebird": "^3.4.1",
     "browserify": "^13.1.0",
     "chai": "^3.5.0",
+    "elasticlunr": "^0.9.0",
     "localforage": "^1.4.2",
     "marked": "^0.3.5",
     "mocha": "^3.0.2",
@@ -40,7 +41,6 @@
     "vue-hot-reload-api": "^2.0.5",
     "vue-resource": "^0.9.3",
     "vue-router": "^0.7.13",
-    "vue-tables": "git+https://github.com/zllovesuki/vue-tables.git",
     "vueify": "^8.7.0",
     "vueify-insert-css": "^1.0.0",
     "vuex": "^1.0.0-rc.2",

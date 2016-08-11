@@ -2,13 +2,9 @@ var Vue = require('vue')
 
 var VueRouter = require('vue-router')
 var sync = require('vuex-router-sync').sync
-var VueTables = require('vue-tables')
 
 Vue.use(VueRouter)
 Vue.use(require('vue-resource'))
-Vue.use(VueTables.client, {}, {
-	template: require('./components/tableTemplate.html')
-});
 
 var store = require('./lib/vuex/store.js');
 
