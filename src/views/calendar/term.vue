@@ -79,16 +79,6 @@ module.exports = {
 			search: {
 				string: '',
 				results: []
-			},
-			allTable: {
-				columns: ['code', 'section', 'name', 'type', 'Has Sections'],
-				options: {
-					perPage: 25,
-					perPageValues: [10, 25, 50, 100],
-					onRowClick: function(row) {
-						this.promptAddClass(row);
-					}.bind(this)
-				}
 			}
 		}
 	},
