@@ -4,7 +4,6 @@ var VueRouter = require('vue-router')
 var sync = require('vuex-router-sync').sync
 
 Vue.use(VueRouter)
-Vue.use(require('vue-resource'))
 
 var store = require('./lib/vuex/store.js');
 

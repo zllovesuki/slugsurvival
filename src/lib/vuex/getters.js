@@ -23,9 +23,6 @@ module.exports = {
 	indexSearch: function(state) {
 		return state.search;
 	},
-	courses: function(state) {
-		return state.courses;
-	},
 	flatCourses: function(state) {
 		return state.flatCourses;
 	},

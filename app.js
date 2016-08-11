@@ -8,14 +8,17 @@ module.exports = function() {
 	app.enable('trust proxy');
 	app.set('trust proxy', 'loopback, linklocal, uniquelocal');
 
-	var root = __dirname + '/src/static/prod.html';
+	var root;
+
+	app.use('/public', express.static(path.join(__dirname, 'public')));
 
 	if (process.env.RDB_HOST) {
 		root = __dirname + '/src/static/dev.html'
+		app.use('/db', express.static(path.join(__dirname, '..', 'ucsc', 'db')));
+	}else{
+		root = __dirname + '/src/static/prod.html';
+		app.use('/db', express.static(path.join(__dirname, 'node_modules', 'ucsc', 'db')));
 	}
-
-	app.use('/public', express.static(path.join(__dirname, 'public')));
-	app.use('/db', express.static(path.join(__dirname, 'node_modules', 'ucsc', 'db')));
 
 	app.use('/*', function(req, res, next) {
 		return res.sendFile(root);

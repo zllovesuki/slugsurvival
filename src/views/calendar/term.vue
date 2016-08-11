@@ -5,12 +5,15 @@
 				<div class="clearfix">
 					<div class="left">
 						<a class="btn btn-outline red h6" v-on:click="saveCalendarAsImage">
-							Save As Image
+							save as image
 						</a>
 					</div>
 					<div class="right">
+						<a class="btn btn-outline h6 m0 {{ color }}">
+							criteria
+						</a>
 						<a class="btn btn-outline h6 m0 {{ color }}" v-on:click.prevent.stop="showSearchModal">
-							add classes by search
+							search anything
 						</a>
 					</div>
 				</div>
@@ -74,7 +77,6 @@ module.exports = {
 	},
 	data: function() {
 		return {
-			ready: false,
 			searchModal: false,
 			search: {
 				string: '',
@@ -86,28 +88,31 @@ module.exports = {
 		'search.string': function(val, oldVal) {
 			if (val.length < 1) return;
 			var self = this;
-			//this.search.results = this.bruteForceSearch(val);
-			this.search.results = this.indexSearch[this.termId].search(val, {
-				fields: {
-					code: {
-						boost: 5
-					},
-					name: {
-						boost: 3
-					},
-					firstName: {
-						boost: 2
-					},
-					lastName: {
-						boost: 2
-					},
-					location: {
-						boost: 1
+			if (this.isMobileSafari()) {
+				this.search.results = this.bruteForceSearch(val);
+			}else{
+				this.search.results = this.indexSearch[this.termId].search(val, {
+					fields: {
+						c: {
+							boost: 5
+						},
+						n: {
+							boost: 3
+						},
+						f: {
+							boost: 2
+						},
+						la: {
+							boost: 2
+						},
+						lo: {
+							boost: 1
+						}
 					}
-				}
-			}).map(function(result) {
-				return self.flatCourses[self.termId][result.ref]
-			});
+				}).map(function(result) {
+					return self.flatCourses[self.termId][result.ref]
+				});
+			}
 		}
 	},
 	methods: {
@@ -120,15 +125,18 @@ module.exports = {
 			}, 500);
 		},
 		bruteForceSearch: function(string) {
+			var courses = this.flatCourses[this.termId];
 			var results = [];
 			string = string.toLowerCase();
-			results = this.flatCourses[this.termId].filter(function(course) {
-				return course.code.toLowerCase().indexOf(string) !== -1
-				|| course.name.toLowerCase().indexOf(string) !== -1
-				|| (!!!course.location ? false : course.location.toLowerCase().indexOf(string) !== -1)
-				|| (!!!course.instructor.firstName ? false : course.instructor.firstName.toLowerCase().indexOf(string) !== -1)
-				|| (!!!course.instructor.lastName ? false : course.instructor.lastName.toLowerCase().indexOf(string) !== -1);
-			});
+			for (var number in courses) {
+				if (courses[number].code.toLowerCase().indexOf(string) !== -1
+				|| courses[number].name.toLowerCase().indexOf(string) !== -1
+				|| (!!!courses[number].location ? false : courses[number].location.toLowerCase().indexOf(string) !== -1)
+				|| (!!!courses[number].instructor.firstName ? false : courses[number].instructor.firstName.toLowerCase().indexOf(string) !== -1)
+				|| (!!!courses[number].instructor.lastName ? false : courses[number].instructor.lastName.toLowerCase().indexOf(string) !== -1)) {
+					results.push(courses[number]);
+				}
+			};
 			return results;
 		},
 		getCourseDom: function(course, isSection) {
@@ -331,7 +339,6 @@ module.exports = {
 		this.setTitle('Planner');
 		this.fetchTermCourses().then(function() {
 			this.loading.go(50);
-			this.ready = true;
 			$script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'moment/2.14.1/moment.min.js'], 'jQuery');
 			$script.ready('jQuery', function() {
 				self.loading.go(70);

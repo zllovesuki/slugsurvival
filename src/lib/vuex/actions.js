@@ -7,6 +7,13 @@ var self = module.exports = {
 	setTitle: function(_, title) {
 		_.dispatch('setTitle', title)
 	},
+	isMobileSafari: function(_) {
+		var userAgent = window.navigator.userAgent;
+		if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i)) {
+			return true;
+		}
+		return false;
+	}, // http://stackoverflow.com/questions/3007480/determine-if-user-navigated-from-mobile-safari
 	ensureDataLoaded: function(_) {
 		var promises = []
 		if (_.state.flatTermsList.length === 0) {
@@ -18,19 +25,21 @@ var self = module.exports = {
 		return Promise.all(promises);
 	},
 	fetchTerms: function(_) {
-		return helper.getWithHeader(this.$http, _.state, '/db/terms.json')
+		return fetch('/db/terms.json')
 			.then(function(res) {
-				if (typeof res === 'undefined') return;
-				var data = res.json();
+				return res.json();
+			})
+			.then(function(data) {
 				_.dispatch('saveTermsList', data);
 				return data;
 			})
 	},
 	fetchInstructorNameToTidMapping: function(_) {
-		return helper.getWithHeader(this.$http, _.state, '/db/rmp.json')
+		return fetch('/db/rmp.json')
 			.then(function(res) {
-				if (typeof res === 'undefined') return;
-				var data = res.json();
+				return res.json();
+			})
+			.then(function(data) {
 				_.dispatch('saveInstructorNameToTidMapping', data);
 				return data;
 			})
@@ -40,19 +49,17 @@ var self = module.exports = {
 			return Promise.resolve(_.state.instructorStats[tid]);
 		}
 		return Promise.all([
-			helper.getWithHeader(this.$http, _.state, '/db/rmp/ratings/' + tid + '.json'),
-			helper.getWithHeader(this.$http, _.state, '/db/rmp/scores/' + tid + '.json'),
-			helper.getWithHeader(this.$http, _.state, '/db/rmp/stats/' + tid + '.json')
-		]).spread(function(ratingsRes, scoresRes, statsRes){
-			if (typeof ratingsRes !== 'undefined') {
-				var ratings = ratingsRes.json();
-			}
-			if (typeof scoresRes !== 'undefined') {
-				var scores = scoresRes.json();
-			}
-			if (typeof statsRes !== 'undefined') {
-				var stats = statsRes.json();
-			}
+			fetch('/db/rmp/ratings/' + tid + '.json'),
+			fetch('/db/rmp/scores/' + tid + '.json'),
+			fetch('/db/rmp/stats/' + tid + '.json')
+		])
+		.spread(function(ratingsRes, scoresRes, statsRes){
+			return Promise.all([
+				ratingsRes.json(),
+				scoresRes.json(),
+				statsRes.json()
+			])
+		}).spread(function(ratings, scores, stats){
 			var stats = {
 				tid: tid,
 				stats: {
@@ -67,29 +74,28 @@ var self = module.exports = {
 	},
 	fetchTermCourses: function(_) {
 		var termId = this.termId;
+		var self = this;
 		_.dispatch('setTermName', _.state.termsList[termId])
 		if (typeof _.state.courses[termId] === 'undefined') {
 			return Promise.all([
-				helper.getWithHeader(this.$http, _.state, '/db/terms/' + termId + '.json'),
-				helper.getWithHeader(this.$http, _.state, '/db/courses/' + termId + '.json'),
-				helper.getWithHeader(this.$http, _.state, '/db/index/' + termId + '.json')
-			]).spread(function(courseDataRes, courseInfoRes, indexRes){
-				if (typeof courseDataRes !== 'undefined') {
-					var coursesData = courseDataRes.json();
-					_.dispatch('saveTermCourses', termId, coursesData);
-				}
-				if (typeof courseInfoRes !== 'undefined') {
-					var courseInfo = courseInfoRes.json();
-					_.dispatch('saveCourseInfo', termId, courseInfo);
-				}
-				if (typeof indexRes !== 'undefined') {
-					var index = indexRes.json();
-					_.dispatch('buildIndexedSearch', termId, index);
-				}
-				return coursesData;
+				fetch('/db/terms/' + termId + '.json'),
+				fetch('/db/courses/' + termId + '.json'),
+				self.isMobileSafari() ? null : fetch('/db/index/' + termId + '.json')
+			])
+			.spread(function(courseDataRes, courseInfoRes, indexRes){
+				return Promise.all([
+					courseDataRes.json(),
+					courseInfoRes.json(),
+					self.isMobileSafari() ? null : indexRes.json()
+				])
+			})
+			.spread(function(coursesData, courseInfo, index){
+				_.dispatch('saveTermCourses', termId, coursesData);
+				_.dispatch('saveCourseInfo', termId, courseInfo);
+				if (!self.isMobileSafari()) _.dispatch('buildIndexedSearch', termId, index);
 			})
 		} else {
-			return Promise.resolve(_.state.courses[termId])
+			return Promise.resolve()
 		}
 	},
 	fetchThreeStatsByFirstLastName: function(_, firstName, lastName) {
