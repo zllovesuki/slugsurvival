@@ -4,6 +4,10 @@ This is a project aims to help new and continuing students with their Slug Life.
 
 ## Functionalities
 
+### Disclaimer
+
+THIS IS STILL A VERY NEW PROJECT. Bugs are expected.
+
 ### Improved course selections/planning (better than my.ucsc.edu)
 
 (Data source: pisa.ucsc.edu, fetched by [UCSC Courses Fetch](https://github.com/zllovesuki/ucsc))
@@ -13,7 +17,7 @@ This is a project aims to help new and continuing students with their Slug Life.
 3. You can add a classes first, sections later
 4. RateMyProfessors scores right where you need it
 5. Search classes based on preferences, GE, and many criteria (coming soon)
-6. Click to save your current planner as a picture (coming soon)
+6. Click to save your current planner as a picture (experimental)
 
 ### Major/minor requirement in a graph (coming soon)
 
