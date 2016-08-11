@@ -38,8 +38,29 @@ module.exports = {
 	saveCourseInfo: function(state, termId, courses) {
 		state.courseInfo[termId] = courses;
 	},
-	buildIndexedSearch: function(state, termId, json) {
-		state.search[termId] = elasticlunr.Index.load(json);
+	buildIndexedSearch: function(state, termId, json, workaround) {
+		workaround = workaround || false;
+		if (workaround) {
+			var obj;
+			state.search[termId] = elasticlunr(function() {
+				this.addField('c');
+				this.addField('n');
+				this.addField('lo');
+				this.addField('f');
+				this.addField('la');
+				this.addField('d');
+				this.setRef('b');
+				this.saveDocument(false);
+			});
+			for (var courseNumber in state.flatCourses[termId]) {
+				obj = state.flatCourses[termId][courseNumber];
+				obj.b = courseNumber;
+				state.search[termId].addDoc(obj);
+				obj = {};
+			}
+		}else{
+			state.search[termId] = elasticlunr.Index.load(json);
+		}
 	},
 	pushToEventSource: function(state, termId, obj) {
 		if (typeof state.events[termId] === 'undefined') state.events[termId] = [];

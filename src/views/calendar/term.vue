@@ -104,25 +104,9 @@ module.exports = {
 					}
 				}
 			};
-			if (this.iOS()) {
-				options = {
-					fields: {
-						c: {
-							boost: 5
-						},
-						n: {
-							boost: 3
-						}
-					}
-				};
-			}
-			//if (this.iOS()) {
-			//	this.search.results = this.bruteForceSearch(val);
-			//}else{
-				this.search.results = this.indexSearch[this.termId].search(val, options).map(function(result) {
-					return self.flatCourses[self.termId][result.ref]
-				});
-			//}
+			this.search.results = this.indexSearch[this.termId].search(val, options).map(function(result) {
+				return self.flatCourses[self.termId][result.ref]
+			});
 		}
 	},
 	methods: {

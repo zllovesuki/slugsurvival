@@ -74,25 +74,35 @@ var self = module.exports = {
 	},
 	fetchTermCourses: function(_) {
 		var termId = this.termId;
+
 		var workaround = this.iOS();
+
+		/*
+
+		Apparently, according to http://stackoverflow.com/questions/29552139/website-repeatedly-reloads-then-crashes-on-iphone-4-ios-8-0-2-ios-8-1-2
+		iOS crashes on loading the index JSON from lunr.js. However, building the index on the fly does not crash browser
+		Thus, the workaround for iOS devices is to build the index from scratch
+
+		*/
+
 		_.dispatch('setTermName', _.state.termsList[termId])
 		if (typeof _.state.flatCourses[termId] === 'undefined') {
 			return Promise.all([
 				fetch('/db/terms/' + termId + '.json'),
 				fetch('/db/courses/' + termId + '.json'),
-				workaround ? fetch('/db/index/' + termId + '.reduced.json') : fetch('/db/index/' + termId + '.json')
+				workaround ? null : fetch('/db/index/' + termId + '.json')
 			])
 			.spread(function(courseDataRes, courseInfoRes, indexRes){
 				return Promise.all([
 					courseDataRes.json(),
 					courseInfoRes.json(),
-					indexRes.json()
+					workaround ? null : indexRes.json()
 				])
 			})
 			.spread(function(coursesData, courseInfo, index){
 				_.dispatch('saveTermCourses', termId, coursesData);
 				_.dispatch('saveCourseInfo', termId, courseInfo);
-				_.dispatch('buildIndexedSearch', termId, index);
+				_.dispatch('buildIndexedSearch', termId, index, workaround);
 			})
 		} else {
 			return Promise.resolve()
