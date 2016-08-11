@@ -365,6 +365,12 @@ var self = module.exports = {
                 .okBtn('Go Back')
                 .alert(['<p>', 'Sorry, we don\'t have', firstName + '\'s', 'ratings!', '</p>'].join(' '))
             }
+        }.bind(this))
+        .catch(function(e) {
+            console.log(e);
+            this.alert().error('Cannot fetch RMP stats!')
+        }.bind(this))
+        .finally(function() {
             this.loading.go(100);
         }.bind(this))
     },
