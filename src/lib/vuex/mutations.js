@@ -45,6 +45,7 @@ module.exports = {
     buildIndexedSearch: function(state, termId, json, workaround, skipSaving) {
         workaround = workaround || false;
         if (workaround) {
+            console.log('building index on the fly')
             /*
 
             Apparently, according to http://stackoverflow.com/questions/29552139/website-repeatedly-reloads-then-crashes-on-iphone-4-ios-8-0-2-ios-8-1-2
@@ -64,7 +65,7 @@ module.exports = {
                 this.saveDocument(false);
             });
             for (var courseNumber in state.flatCourses[termId]) {
-                obj = state.flatCourses[termId][courseNumber];
+                obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNumber]));
                 obj.b = obj.num;
                 obj.c = obj.c.split(/(\d+)/).filter(Boolean).map(function(el) { return el.trim(); }).join(" ");
                 obj.n = obj.n.split(/(?=[A-Z])/).map(function(el) { return el.trim(); }).join(" ")

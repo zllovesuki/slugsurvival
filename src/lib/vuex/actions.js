@@ -136,7 +136,7 @@ var self = module.exports = {
                         invalid.courseInfo = true;
                         console.log('course info timestamp differs');
                     }
-                    if (online[2] !== offline[2]) {
+                    if (!workaround && online[2] !== offline[2]) {
                         invalid.yes = true;
                         invalid.index = true;
                         console.log('index timestamp differs');
@@ -145,7 +145,7 @@ var self = module.exports = {
                     // possibly no connectivity
                     if (offline[0] === null
                         || offline[1] === null
-                        || offline[2] === null) {
+                        || (!workaround && offline[2] === null)) {
                         // We don't have a local copy
                         console.log(('no local copies to fallback'));
                         invalid = {
