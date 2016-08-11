@@ -255,7 +255,11 @@ module.exports = {
 						string += '<tr class="' + conflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + sections[i].number + ', ' + edit + ')">';
 					}
 					string += ['<td>', sections[i].section, '</td>'].join('');
-					string += ['<td>', !!!sections[i].time ? 'TBA' : sections[i].time.day.join(', '), '<br>', [this.tConvert(sections[i].time.time.start), this.tConvert(sections[i].time.time.end)].join('-'), '</td>'].join('');
+					if (!!sections[i].time) {
+						string += ['<td>', sections[i].time.day.join(', '), '<br>', [this.tConvert(sections[i].time.time.start), this.tConvert(sections[i].time.time.end)].join('-'), '</td>'].join('');
+					}else{
+						string += ['<td>', 'TBA', '</td>'].join('');
+					}
 					string += ['<td>', sections[i].location, '</td>'].join('');
 					string += '</a></tr>';
 				}
