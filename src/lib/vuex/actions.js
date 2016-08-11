@@ -73,43 +73,107 @@ var self = module.exports = {
             return stats;
         })
     },
-    fetchTermCourses: function(_) {
+    loadFromLocal: function(_) {
+        var online;
         var termId = this.termId;
-
         var workaround = this.iOS();
-
-        /*
-
-        Apparently, according to http://stackoverflow.com/questions/29552139/website-repeatedly-reloads-then-crashes-on-iphone-4-ios-8-0-2-ios-8-1-2
-        iOS crashes on loading the index JSON from lunr.js. However, building the index on the fly does not crash browser
-        Thus, the workaround for iOS devices is to build the index from scratch
-
-        */
-
-        _.dispatch('setTermName', _.state.termsList[termId])
-        if (typeof _.state.flatCourses[termId] === 'undefined') {
+        var self = this;
+        var loadOnlineTimestamp = function() {
             return Promise.all([
-                fetch('/db/terms/' + termId + '.json'),
-                fetch('/db/courses/' + termId + '.json'),
-                workaround ? null : fetch('/db/index/' + termId + '.json'),
-                storage.getItem(termId)
-            ])
-            .spread(function(courseDataRes, courseInfoRes, indexRes, events){
+                fetch('/db/timestamp/terms/' + termId + '.json'),
+                fetch('/db/timestamp/courses/' + termId + '.json')
+            ]).spread(function(termsRes, InfoRes){
                 return Promise.all([
-                    courseDataRes.json(),
-                    courseInfoRes.json(),
-                    workaround ? null : indexRes.json(),
-                    events
+                    termsRes.json(),
+                    InfoRes.json()
                 ])
             })
-            .spread(function(coursesData, courseInfo, index, events){
-                _.dispatch('saveTermCourses', termId, coursesData);
-                _.dispatch('saveCourseInfo', termId, courseInfo);
-                _.dispatch('buildIndexedSearch', termId, index, workaround);
-                if (events !== null) {
-                    _.dispatch('restoreEventSourceSnapshot', termId, events)
-                }
+        }
+        var loadOfflineTimestamp = function() {
+            return Promise.all([
+                storage.getItem('termCourseTimestamp-' + termId),
+                storage.getItem('termCourseInfoTimestamp-' + termId)
+            ])
+        }
+        var loadFromStorage = function() {
+            return Promise.all([
+                storage.getItem('termCourse-' + termId),
+                storage.getItem('termCourseInfo-' + termId),
+                workaround ? null : storage.getItem('termIndex-' + termId),
+                storage.getItem(termId)
+            ]).spread(function(coursesData, courseInfo, index, events) {
+                return self.dispatchSave(coursesData, courseInfo, index, events, true);
             })
+        }
+        return loadOnlineTimestamp()
+        .then(function(timestamp) {
+            online = timestamp;
+        })
+        .catch(function(e) {
+            console.log('Fail to fetch online timestamp, checking local copy');
+        })
+        .finally(function() {
+            return loadOfflineTimestamp().then(function(offline) {
+                if (typeof online !== 'undefined') {
+                    // loadOnlineTimestamp() success
+                    console.log('fetched online timestamp')
+                    if (online[0] !== offline[0] || online[1] !== offline[1]) {
+                        return Promise.reject('Timestamp differs');
+                    }
+                }else{
+                    console.log('cannot fetch online timestamp')
+                    // possibly no connectivity
+                    if (offline[0] === null || offline[1] === null) {
+                        // We don't have a local copy
+                        return Promise.reject('No local copies to fallback')
+                    }
+                }
+                console.log('local copy valid')
+                return loadFromStorage();
+            })
+        })
+    },
+    loadFromOnline: function(_) {
+        var termId = this.termId;
+        var workaround = this.iOS();
+        var self = this;
+        return Promise.all([
+            fetch('/db/terms/' + termId + '.json'),
+            fetch('/db/courses/' + termId + '.json'),
+            workaround ? null : fetch('/db/index/' + termId + '.json'),
+            storage.getItem(termId)
+        ])
+        .spread(function(courseDataRes, courseInfoRes, indexRes, events){
+            return Promise.all([
+                courseDataRes.json(),
+                courseInfoRes.json(),
+                workaround ? null : indexRes.json(),
+                events
+            ])
+        })
+        .spread(function(coursesData, courseInfo, index, events) {
+            return self.dispatchSave(coursesData, courseInfo, index, events, false);
+        })
+    },
+    dispatchSave: function(_, coursesData, courseInfo, index, events, skipSaving) {
+        var termId = this.termId;
+        var workaround = this.iOS();
+        _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
+        _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
+        _.dispatch('buildIndexedSearch', termId, index, workaround);
+        if (events !== null) {
+            _.dispatch('restoreEventSourceSnapshot', termId, events)
+        }
+    },
+    fetchTermCourses: function(_) {
+        var termId = this.termId;
+        _.dispatch('setTermName', _.state.termsList[termId])
+        if (typeof _.state.flatCourses[termId] === 'undefined') {
+            return this.loadFromLocal()
+            .catch(function(locale) {
+                console.log(locale);
+                return this.loadFromOnline()
+            }.bind(this))
         } else {
             return Promise.resolve()
         }

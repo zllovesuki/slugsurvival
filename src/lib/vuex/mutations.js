@@ -13,16 +13,20 @@ module.exports = {
             state.termsList[term.code] = term.name;
         })
     },
-    saveTermCourses: function(state, termId, courses) {
+    saveTermCourses: function(state, termId, courses, skipSaving) {
         if (typeof state.flatCourses[termId] === 'undefined') {
             state.flatCourses[termId] = {};
         }
         var obj;
         Object.keys(courses).forEach(function(subject) {
             courses[subject].forEach(function(course) {
-                obj = course;
-                obj.c = [subject, course.c].join(' ');
-                state.flatCourses[termId][course.num] = obj;
+                if (!skipSaving) {
+                    obj = course;
+                    obj.c = [subject, course.c].join(' ');
+                    state.flatCourses[termId][course.num] = obj;
+                }else{
+                    state.flatCourses[termId][course.num] = course;
+                }
             })
         })
     },
@@ -35,12 +39,19 @@ module.exports = {
         }
         state.instructorStats[stats.tid] = stats;
     },
-    saveCourseInfo: function(state, termId, courses) {
+    saveCourseInfo: function(state, termId, courses, skipSaving) {
         state.courseInfo[termId] = courses;
     },
     buildIndexedSearch: function(state, termId, json, workaround) {
         workaround = workaround || false;
         if (workaround) {
+            /*
+
+            Apparently, according to http://stackoverflow.com/questions/29552139/website-repeatedly-reloads-then-crashes-on-iphone-4-ios-8-0-2-ios-8-1-2
+            iOS crashes on loading the index JSON from lunr.js. However, building the index on the fly does not crash browser
+            Thus, the workaround for iOS devices is to build the index from scratch
+
+            */
             var obj;
             state.search[termId] = elasticlunr(function() {
                 this.addField('c');

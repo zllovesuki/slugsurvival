@@ -348,11 +348,15 @@ module.exports = {
         $script.ready('calendar', function() {
             self.loading.go(70);
             self.fetchTermCourses().then(function() {
-                self.loading.go(100);
                 self.ready = true;
                 self.$nextTick(function() {
                     self.initializeCalendar();
                 })
+            }).catch(function(e) {
+                self.ready = false;
+                self.alert().error('Cannot load course data!')
+            }).finally(function() {
+                self.loading.go(100);
             })
         })
     }
