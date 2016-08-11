@@ -49,9 +49,21 @@ module.exports = function(storage) {
 
                 var index = mutation.payload[1];
                 var workaround = mutation.payload[2];
+                var skipSaving = mutation.payload[3];
+
+                if (skipSaving) return;
 
                 if (!workaround) {
-                    return storage.setItem('termIndex-' + termId, index)
+                    return fetch('/db/timestamp/index/' + termId + '.json')
+                    .then(function(res) {
+                        return res.json();
+                    })
+                    .then(function(onlineTimestamp) {
+                        return Promise.all([
+                            storage.setItem('termIndexTimestamp-' + termId, onlineTimestamp),
+                            storage.setItem('termIndex-' + termId, index)
+                        ])
+                    })
                 }
 
                 break;

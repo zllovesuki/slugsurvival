@@ -42,7 +42,7 @@ module.exports = {
     saveCourseInfo: function(state, termId, courses, skipSaving) {
         state.courseInfo[termId] = courses;
     },
-    buildIndexedSearch: function(state, termId, json, workaround) {
+    buildIndexedSearch: function(state, termId, json, workaround, skipSaving) {
         workaround = workaround || false;
         if (workaround) {
             /*

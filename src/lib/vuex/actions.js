@@ -81,18 +81,21 @@ var self = module.exports = {
         var loadOnlineTimestamp = function() {
             return Promise.all([
                 fetch('/db/timestamp/terms/' + termId + '.json'),
-                fetch('/db/timestamp/courses/' + termId + '.json')
-            ]).spread(function(termsRes, InfoRes){
+                fetch('/db/timestamp/courses/' + termId + '.json'),
+                fetch('/db/timestamp/index/' + termId + '.json')
+            ]).spread(function(termsRes, InfoRes, indexRes){
                 return Promise.all([
                     termsRes.json(),
-                    InfoRes.json()
+                    InfoRes.json(),
+                    indexRes.json()
                 ])
             })
         }
         var loadOfflineTimestamp = function() {
             return Promise.all([
                 storage.getItem('termCourseTimestamp-' + termId),
-                storage.getItem('termCourseInfoTimestamp-' + termId)
+                storage.getItem('termCourseInfoTimestamp-' + termId),
+                storage.getItem('termIndexTimestamp-' + termId)
             ])
         }
         var loadFromStorage = function() {
@@ -117,8 +120,14 @@ var self = module.exports = {
                 if (typeof online !== 'undefined') {
                     // loadOnlineTimestamp() success
                     console.log('fetched online timestamp')
-                    if (online[0] !== offline[0] || online[1] !== offline[1]) {
-                        return Promise.reject('Timestamp differs');
+                    if (online[0] !== offline[0]) {
+                        return Promise.reject('Courses data timestamp differs');
+                    }
+                    if (online[1] !== offline[1]) {
+                        return Promise.reject('Course info timestamp differs');
+                    }
+                    if (online[2] !== offline[2]) {
+                        return Promise.reject('Index timestamp differs');
                     }
                 }else{
                     console.log('cannot fetch online timestamp')
@@ -160,7 +169,7 @@ var self = module.exports = {
         var workaround = this.iOS();
         _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
         _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
-        _.dispatch('buildIndexedSearch', termId, index, workaround);
+        _.dispatch('buildIndexedSearch', termId, index, workaround, skipSaving);
         if (events !== null) {
             _.dispatch('restoreEventSourceSnapshot', termId, events)
         }
