@@ -52,7 +52,7 @@
 					<ul class="list-reset block">
 					<li class="overflow-hidden" v-for="result in search.results" track-by="$index">
 						<a class="btn h5" v-on:click.prevent.stop="promptAddClass(result)">
-							{{ result.code }} - {{ result.section }}  - {{ result.name }}
+							{{ result.c }} - {{ result.s }}  - {{ result.n }}
 						</a>
 					</li>
 					<li v-show="search.string.length > 0 && search.results.length === 0">No results.</li>
@@ -85,31 +85,44 @@ module.exports = {
 		'search.string': function(val, oldVal) {
 			if (val.length < 1) return;
 			var self = this;
+			var options = {
+				fields: {
+					c: {
+						boost: 5
+					},
+					n: {
+						boost: 3
+					},
+					f: {
+						boost: 2
+					},
+					la: {
+						boost: 2
+					},
+					lo: {
+						boost: 1
+					}
+				}
+			};
 			if (this.iOS()) {
-				this.search.results = this.bruteForceSearch(val);
-			}else{
-				this.search.results = this.indexSearch[this.termId].search(val, {
+				options = {
 					fields: {
 						c: {
 							boost: 5
 						},
 						n: {
 							boost: 3
-						},
-						f: {
-							boost: 2
-						},
-						la: {
-							boost: 2
-						},
-						lo: {
-							boost: 1
 						}
 					}
-				}).map(function(result) {
+				};
+			}
+			//if (this.iOS()) {
+			//	this.search.results = this.bruteForceSearch(val);
+			//}else{
+				this.search.results = this.indexSearch[this.termId].search(val, options).map(function(result) {
 					return self.flatCourses[self.termId][result.ref]
 				});
-			}
+			//}
 		}
 	},
 	methods: {
@@ -126,11 +139,11 @@ module.exports = {
 			var results = [];
 			string = string.toLowerCase();
 			for (var number in courses) {
-				if (courses[number].code.toLowerCase().indexOf(string) !== -1
-				|| courses[number].name.toLowerCase().indexOf(string) !== -1
-				|| (!!!courses[number].location ? false : courses[number].location.toLowerCase().indexOf(string) !== -1)
-				|| (!!!courses[number].instructor.firstName ? false : courses[number].instructor.firstName.toLowerCase().indexOf(string) !== -1)
-				|| (!!!courses[number].instructor.lastName ? false : courses[number].instructor.lastName.toLowerCase().indexOf(string) !== -1)) {
+				if (courses[number].c.toLowerCase().indexOf(string) !== -1
+				|| courses[number].n.toLowerCase().indexOf(string) !== -1
+				|| (!!!courses[number].loc ? false : courses[number].loc.toLowerCase().indexOf(string) !== -1)
+				|| (!!!courses[number].ins.f ? false : courses[number].ins.f.toLowerCase().indexOf(string) !== -1)
+				|| (!!!courses[number].ins.l ? false : courses[number].ins.l.toLowerCase().indexOf(string) !== -1)) {
 					results.push(courses[number]);
 				}
 			};
@@ -140,7 +153,7 @@ module.exports = {
 			// TODO: Reduce special cases
 			isSection = isSection || false;
 			if (!isSection) {
-				var courseHasSections = this.courseHasSections(course.number);
+				var courseHasSections = this.courseHasSections(course.num);
 			}
 			var html = '';
 			var template = function(key, value) {
@@ -148,17 +161,17 @@ module.exports = {
 			}
 			// html += template('Course Number', course.number);
 			if (isSection) {
-				html += template('Section', 'DIS - ' + course.section);
-				html += template('TA', course.instructor);
+				html += template('Section', 'DIS - ' + course.sec);
+				html += template('TA', course.ins);
 			}else{
-				html += template(course.code, courseHasSections ? 'has sections': 'has NO sections');
-				html += template('Instructor(s)', course.instructor.displayName.join(', ') + (!!!course.instructor.firstName ? '' : '<sup class="muted clickable" onclick="window.App._showInstructorRMP(\'' + course.instructor.firstName.replace(/'/g, '\\\'') + '\', \'' + course.instructor.lastName.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
+				html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
+				html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '<sup class="muted clickable" onclick="window.App._showInstructorRMP(\'' + course.ins.f.replace(/'/g, '\\\'') + '\', \'' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
 			}
-			html += template('Location', !!!course.location ? 'TBA': course.location);
-			html += template('Meeting Day', !!!course.time ? 'TBA' : course.time.day.join(', '));
-			html += template('Meeting Time', !!!course.time ? 'TBA' : this.tConvert(course.time.time.start) + '-' + this.tConvert(course.time.time.end));
+			html += template('Location', !!!course.loc ? 'TBA': course.loc);
+			html += template('Meeting Day', !!!course.t ? 'TBA' : course.t.day.join(', '));
+			html += template('Meeting Time', !!!course.t ? 'TBA' : this.tConvert(course.t.time.start) + '-' + this.tConvert(course.t.time.end));
 			if (!isSection) {
-				html += template('Capacity', course.capacity);
+				html += template('Capacity', course.cap);
 			}
 
 			return html;
@@ -168,7 +181,7 @@ module.exports = {
 			this.alert()
 			.okBtn("Yes")
 			.cancelBtn("No")
-			.confirm('Remove ' + calEvent.course.code + ' from calendar?')
+			.confirm('Remove ' + calEvent.course.c + ' from calendar?')
 			.then(function(resolved) {
 				resolved.event.preventDefault();
 				if (resolved.buttonClicked !== 'ok') return;
@@ -200,7 +213,7 @@ module.exports = {
 			}.bind(this));
 		},
 		promptAddClass: function(course) {
-			var courseHasSections = this.courseHasSections(course.number);
+			var courseHasSections = this.courseHasSections(course.num);
 			var code = this.checkForConflict(course);
 			var alertHandle = function() {};
 
@@ -222,7 +235,7 @@ module.exports = {
 						resolved.event.preventDefault();
 						if (resolved.buttonClicked !== 'ok') return;
 						if (courseHasSections) {
-							this.promptSections(course.number);
+							this.promptSections(course.num);
 						} else {
 							this.pushToEventSource(course);
 						}
@@ -244,17 +257,17 @@ module.exports = {
 				var string = '';
 				for (var i = 0, length = sections.length; i < length; i++) {
 					if (this.checkForConflict(sections[i]) === false) {
-						string += '<tr class="' + notConflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + sections[i].number + ', ' + edit + ')">';
+						string += '<tr class="' + notConflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + sections[i].num + ', ' + edit + ')">';
 					}else{
-						string += '<tr class="' + conflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + sections[i].number + ', ' + edit + ')">';
+						string += '<tr class="' + conflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + sections[i].num + ', ' + edit + ')">';
 					}
-					string += ['<td>', sections[i].section, '</td>'].join('');
-					if (!!sections[i].time) {
-						string += ['<td>', sections[i].time.day.join(', '), '<br>', [this.tConvert(sections[i].time.time.start), this.tConvert(sections[i].time.time.end)].join('-'), '</td>'].join('');
+					string += ['<td>', sections[i].sec, '</td>'].join('');
+					if (!!sections[i].t) {
+						string += ['<td>', sections[i].t.day.join(', '), '<br>', [this.tConvert(sections[i].t.time.start), this.tConvert(sections[i].t.time.end)].join('-'), '</td>'].join('');
 					}else{
 						string += ['<td>', 'TBA', '</td>'].join('');
 					}
-					string += ['<td>', sections[i].location, '</td>'].join('');
+					string += ['<td>', sections[i].loc, '</td>'].join('');
 					string += '</a></tr>';
 				}
 				return string;
@@ -267,7 +280,7 @@ module.exports = {
 			+ headTemplate('Location')
 			+ '</thead>'
 			+ '<tbody>'
-			+ generateRows(course.sections)
+			+ generateRows(course.sec)
 			+ '</tbody>'
 			+ '</table>';
 

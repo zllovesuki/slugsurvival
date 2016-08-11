@@ -21,8 +21,8 @@ module.exports = {
 		Object.keys(courses).forEach(function(subject) {
 			courses[subject].forEach(function(course) {
 				obj = course;
-				obj.code = [subject, course.code].join(' ');
-				state.flatCourses[termId][course.number] = obj;
+				obj.c = [subject, course.c].join(' ');
+				state.flatCourses[termId][course.num] = obj;
 			})
 		})
 	},

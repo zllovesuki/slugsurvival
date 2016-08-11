@@ -80,19 +80,19 @@ var self = module.exports = {
 			return Promise.all([
 				fetch('/db/terms/' + termId + '.json'),
 				fetch('/db/courses/' + termId + '.json'),
-				workaround ? null : fetch('/db/index/' + termId + '.json')
+				workaround ? fetch('/db/index/' + termId + '.reduced.json') : fetch('/db/index/' + termId + '.json')
 			])
 			.spread(function(courseDataRes, courseInfoRes, indexRes){
 				return Promise.all([
 					courseDataRes.json(),
 					courseInfoRes.json(),
-					workaround ? null : indexRes.json()
+					indexRes.json()
 				])
 			})
 			.spread(function(coursesData, courseInfo, index){
 				_.dispatch('saveTermCourses', termId, coursesData);
 				_.dispatch('saveCourseInfo', termId, courseInfo);
-				if (!workaround) _.dispatch('buildIndexedSearch', termId, index);
+				_.dispatch('buildIndexedSearch', termId, index);
 			})
 		} else {
 			return Promise.resolve()
@@ -107,7 +107,7 @@ var self = module.exports = {
 	},
 	courseHasSections: function(_, courseNumber) {
 		var termId = this.termId;
-		return _.state.courseInfo[termId][courseNumber].sections.length > 0;
+		return _.state.courseInfo[termId][courseNumber].sec.length > 0;
 	},
 	refreshCalendar: function(_) {
 		$('#calendar-' + this.termId).fullCalendar('refetchEvents')
@@ -120,13 +120,13 @@ var self = module.exports = {
 		edit = edit || false;
 		changed = changed || true;
 		var termId = this.termId;
-		var courseInfo = _.state.courseInfo[termId][course.number];
+		var courseInfo = _.state.courseInfo[termId][course.num];
 		var code;
 		var obj = {};
-		if (!!!course.time) {
+		if (!!!course.t) {
 			// TBA will be in the allDaySlot
-			obj.title = [course.code + ' - ' + course.section, courseInfo.type, course.name].join("\n");
-			obj.number = course.number;
+			obj.title = [course.c + ' - ' + course.s, courseInfo.ty, course.n].join("\n");
+			obj.number = course.num;
 			obj.allDay = true;
 			obj.start = _.state.dateMap['Monday'];
 			obj.end = _.state.dateMap['Saturday'];
@@ -135,12 +135,12 @@ var self = module.exports = {
 			_.dispatch('pushToEventSource', termId, obj);
 			obj = {};
 		} else {
-			for (var i = 0, days = course.time.day, length = days.length; i < length; i++) {
-				obj.title = [course.code + ' - ' + course.section, courseInfo.type, course.name].join("\n");
-				obj.number = course.number;
+			for (var i = 0, days = course.t.day, length = days.length; i < length; i++) {
+				obj.title = [course.c + ' - ' + course.s, courseInfo.ty, course.n].join("\n");
+				obj.number = course.num;
 				obj.allDay = false;
-				obj.start = _.state.dateMap[days[i]] + ' ' + course.time.time.start;
-				obj.end = _.state.dateMap[days[i]] + ' ' + course.time.time.end;
+				obj.start = _.state.dateMap[days[i]] + ' ' + course.t.time.start;
+				obj.end = _.state.dateMap[days[i]] + ' ' + course.t.time.end;
 				obj.course = course;
 				_.dispatch('pushToEventSource', termId, obj);
 				obj = {};
@@ -148,9 +148,9 @@ var self = module.exports = {
 		}
 		this.refreshCalendar();
 		if (edit && changed) {
-			this.alert().success(course.code + ' edited!')
+			this.alert().success(course.c + ' edited!')
 		} else {
-			this.alert().success(course.code + ' added to the planner!')
+			this.alert().success(course.c + ' added to the planner!')
 		}
 		return Promise.resolve();
 	},
@@ -175,14 +175,14 @@ var self = module.exports = {
 		if (edit) {
 			// Let's check if user selects "Choose Later" again
 			if (sectionNumber === null) {
-				this.removeEmptySection(termId, course.number);
+				this.removeEmptySection(termId, course.num);
 			}else{
-				this.removeFromSource(termId, course.number);
+				this.removeFromSource(termId, course.num);
 			}
 		}
 
-		section = courseInfo.sections.filter(function(section) {
-			return section.number == sectionNumber
+		section = courseInfo.sec.filter(function(section) {
+			return section.num == sectionNumber
 		});
 		section = section[0];
 		snapshot = this.returnEventSourceSnapshot();
@@ -193,10 +193,10 @@ var self = module.exports = {
 			return Promise.resolve();
 		}
 
-		if (sectionNumber === null || !!!section.time) {
+		if (sectionNumber === null || !!!section.t) {
 			// TBA will be in the allDaySlot
-			obj.title = [course.code, 'Section', 'DIS - ' + (sectionNumber === null ? '?' : 'TBA')].join("\n");
-			obj.number = course.number;
+			obj.title = [course.c, 'Section', 'DIS - ' + (sectionNumber === null ? '?' : 'TBA')].join("\n");
+			obj.number = course.num;
 			obj.color = (sectionNumber === null ? 'black' : 'green');
 			obj.course = course;
 			obj.section = null;
@@ -204,15 +204,15 @@ var self = module.exports = {
 			obj.end = _.state.dateMap['Saturday'];
 			_.dispatch('pushToEventSource', termId, obj);
 		} else {
-			for (var i = 0, days = section.time.day, length = days.length; i < length; i++) {
-				obj.title = [course.code, 'Section', 'DIS - ' + section.section].join("\n");
-				obj.number = course.number;
-				obj._number = section.number;
+			for (var i = 0, days = section.t.day, length = days.length; i < length; i++) {
+				obj.title = [course.c, 'Section', 'DIS - ' + section.sec].join("\n");
+				obj.number = course.num;
+				obj._number = sectionNumber;
 				obj.color = 'grey';
 				obj.course = course;
 				obj.section = section;
-				obj.start = _.state.dateMap[days[i]] + ' ' + section.time.time.start;
-				obj.end = _.state.dateMap[days[i]] + ' ' + section.time.time.end;
+				obj.start = _.state.dateMap[days[i]] + ' ' + section.t.time.start;
+				obj.end = _.state.dateMap[days[i]] + ' ' + section.t.time.end;
 				_.dispatch('pushToEventSource', termId, obj);
 				obj = {};
 			}
@@ -273,26 +273,26 @@ var self = module.exports = {
 		for (var i = 0, length = events.length; i < length; i++) {
 			// You can't take the same class twice in a quarter
 			// At least you shouldn't
-			if (events[i].course.code === course.code) {
-				conflict = course.code;
+			if (events[i].course.c === course.c) {
+				conflict = course.c;
 				break;
 			}
 			if (events[i].allDay) continue;
 			if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
-				existingDays.push(events[i].section.time.day);
+				existingDays.push(events[i].section.t.day);
 			} else {
-				existingDays.push(events[i].course.time.day);
+				existingDays.push(events[i].course.t.day);
 			}
 		}
 		if (conflict !== false) return null;
-		if (!!!course.time) {
+		if (!!!course.t) {
 			// TBA
 			return false;
 		}
 
 		for (var i = 0, length = existingDays.length; i < length; i++) {
-			if (helper.intersect(existingDays[i], course.time.day)) {
-				intersectDays.push(course.time.day);
+			if (helper.intersect(existingDays[i], course.t.day)) {
+				intersectDays.push(course.t.day);
 			}
 		}
 
@@ -312,18 +312,18 @@ var self = module.exports = {
 			for (var j = 0, events = _.state.events[termId], eLength = events.length; j < eLength; j++) {
 				if (events[j].allDay) continue;
 				if (typeof events[j].section !== 'undefined' && events[j].section !== null) {
-					if (events[j].section.time.day.indexOf(intersectDays[i]) !== -1) {
-						existingTimes[events[j].course.code + ' Section'] = events[j].section.time.time;
+					if (events[j].section.t.day.indexOf(intersectDays[i]) !== -1) {
+						existingTimes[events[j].course.c + ' Section'] = events[j].section.t.time;
 					}
 				} else {
-					if (events[j].course.time.day.indexOf(intersectDays[i]) !== -1) {
-						existingTimes[events[j].course.code] = events[j].course.time.time;
+					if (events[j].course.t.day.indexOf(intersectDays[i]) !== -1) {
+						existingTimes[events[j].course.c] = events[j].course.t.time;
 					}
 				}
 			}
 		}
 
-		comingTime = course.time.time;
+		comingTime = course.t.time;
 		var oldStart, newStart, oldEnd, newEnd;
 		for (var code in existingTimes) {
 			oldStart = existingTimes[code].start.replace(':', '');
