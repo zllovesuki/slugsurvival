@@ -1,7 +1,10 @@
 <template>
     <div>
         <div class="overflow-hidden bg-white rounded mb2 clearfix">
-            <div class="m0 p2">
+            <div class="m0 p2" v-show="!ready">
+                Loading...
+            </div>
+            <div class="m0 p2" v-show="ready">
                 <div class="clearfix">
                     <div class="left">
                         <a class="btn btn-outline red h6" v-on:click="saveCalendarAsImage">
@@ -16,7 +19,7 @@
                 </div>
             </div>
         </div>
-        <div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix">
+        <div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix" v-show="ready">
             <div class="m0 p2">
                 <div id="calendar-{{ termId }}"></div>
             </div>
@@ -74,6 +77,7 @@ module.exports = {
     },
     data: function() {
         return {
+            ready: false,
             searchModal: false,
             search: {
                 string: '',
@@ -337,16 +341,20 @@ module.exports = {
         var self = this;
         this.loading.go(30);
         this.setTitle('Planner');
-        this.fetchTermCourses().then(function() {
-            this.loading.go(50);
-            $script.ready('jQuery', function() {
-                self.loading.go(70);
-                $script.ready('calendar', function() {
-                    self.loading.go(100);
+
+        $script.ready('jQuery', function() {
+            self.loading.go(50);
+        })
+        $script.ready('calendar', function() {
+            self.loading.go(70);
+            self.fetchTermCourses().then(function() {
+                self.loading.go(100);
+                self.ready = true;
+                self.$nextTick(function() {
                     self.initializeCalendar();
                 })
             })
-        }.bind(this))
+        })
     }
 }
 </script>
