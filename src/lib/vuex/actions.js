@@ -111,30 +111,51 @@ var self = module.exports = {
         return loadOnlineTimestamp()
         .then(function(timestamp) {
             online = timestamp;
+            console.log('fetched online timestamp')
         })
         .catch(function(e) {
-            console.log('Fail to fetch online timestamp, checking local copy');
+            console.log('fail to fetch online timestamp, checking local copy');
         })
         .finally(function() {
             return loadOfflineTimestamp().then(function(offline) {
                 if (typeof online !== 'undefined') {
                     // loadOnlineTimestamp() success
-                    console.log('fetched online timestamp')
+                    var invalid = {
+                        yes: false,
+                        coursesData: false,
+                        courseInfo: false,
+                        index: false
+                    }
                     if (online[0] !== offline[0]) {
-                        return Promise.reject('Courses data timestamp differs');
+                        invalid.yes = true;
+                        invalid.coursesData = true;
+                        console.log('courses data timestamp differs');
                     }
                     if (online[1] !== offline[1]) {
-                        return Promise.reject('Course info timestamp differs');
+                        invalid.yes = true;
+                        invalid.courseInfo = true;
+                        console.log('course info timestamp differs');
                     }
                     if (online[2] !== offline[2]) {
-                        return Promise.reject('Index timestamp differs');
+                        invalid.yes = true;
+                        invalid.index = true;
+                        console.log('index timestamp differs');
                     }
+                    if (invalid.yes) return Promise.reject(invalid);
                 }else{
-                    console.log('cannot fetch online timestamp')
                     // possibly no connectivity
-                    if (offline[0] === null || offline[1] === null) {
+                    if (offline[0] === null
+                        || offline[1] === null
+                        || offline[2] === null) {
                         // We don't have a local copy
-                        return Promise.reject('No local copies to fallback')
+                        console.log(('no local copies to fallback'));
+                        var invalid = {
+                            yes: false,
+                            coursesData: true,
+                            courseInfo: true,
+                            index: true
+                        }
+                        return Promise.reject(invalid)
                     }
                 }
                 console.log('local copy valid')
@@ -142,21 +163,21 @@ var self = module.exports = {
             })
         })
     },
-    loadFromOnline: function(_) {
+    loadFromOnline: function(_, invalid) {
         var termId = this.termId;
         var workaround = this.iOS();
         var self = this;
         return Promise.all([
-            fetch('/db/terms/' + termId + '.json'),
-            fetch('/db/courses/' + termId + '.json'),
-            workaround ? null : fetch('/db/index/' + termId + '.json'),
+            invalid.coursesData ? fetch('/db/terms/' + termId + '.json') : null,
+            invalid.courseInfo ? fetch('/db/courses/' + termId + '.json') : null,
+            workaround ? null : (invalid.index ? fetch('/db/index/' + termId + '.json') : null),
             storage.getItem(termId)
         ])
         .spread(function(courseDataRes, courseInfoRes, indexRes, events){
             return Promise.all([
-                courseDataRes.json(),
-                courseInfoRes.json(),
-                workaround ? null : indexRes.json(),
+                invalid.coursesData ? courseDataRes.json() : null,
+                invalid.courseInfo ? courseInfoRes.json() : null,
+                workaround ? null : (invalid.index ? indexRes.json() : null),
                 events
             ])
         })
@@ -167,9 +188,9 @@ var self = module.exports = {
     dispatchSave: function(_, coursesData, courseInfo, index, events, skipSaving) {
         var termId = this.termId;
         var workaround = this.iOS();
-        _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
-        _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
-        _.dispatch('buildIndexedSearch', termId, index, workaround, skipSaving);
+        if (coursesData !== null) _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
+        if (courseInfo !== null) _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
+        if (index !== null) _.dispatch('buildIndexedSearch', termId, index, workaround, skipSaving);
         if (events !== null) {
             _.dispatch('restoreEventSourceSnapshot', termId, events)
         }
@@ -179,9 +200,8 @@ var self = module.exports = {
         _.dispatch('setTermName', _.state.termsList[termId])
         if (typeof _.state.flatCourses[termId] === 'undefined') {
             return this.loadFromLocal()
-            .catch(function(locale) {
-                console.log(locale);
-                return this.loadFromOnline()
+            .catch(function(invalid) {
+                return this.loadFromOnline(invalid)
             }.bind(this))
         } else {
             return Promise.resolve()
