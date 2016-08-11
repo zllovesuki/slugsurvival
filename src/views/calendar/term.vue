@@ -9,9 +9,6 @@
 						</a>
 					</div>
 					<div class="right">
-						<a class="btn btn-outline h6 m0 {{ color }}">
-							criteria
-						</a>
 						<a class="btn btn-outline h6 m0 {{ color }}" v-on:click.prevent.stop="showSearchModal">
 							search anything
 						</a>
