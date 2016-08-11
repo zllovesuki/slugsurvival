@@ -30,6 +30,9 @@ module.exports = {
 		state.instructorNameToTidMapping = mapping;
 	},
 	saveInstructorStats: function(state, stats) {
+		if (Object.keys(state.instructorStats).length > 5) {
+			state.instructorStats = {};
+		}
 		state.instructorStats[stats.tid] = stats;
 	},
 	saveCourseInfo: function(state, termId, courses) {

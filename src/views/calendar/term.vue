@@ -259,7 +259,7 @@ module.exports = {
 					if (this.checkForConflict(sections[i]) === false) {
 						string += '<tr class="' + notConflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + sections[i].num + ', ' + edit + ')">';
 					}else{
-						string += '<tr class="' + conflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + sections[i].num + ', ' + edit + ')">';
+						string += '<tr class="' + conflictClass + '">';
 					}
 					string += ['<td>', sections[i].sec, '</td>'].join('');
 					if (!!sections[i].t) {
