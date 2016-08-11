@@ -6,7 +6,6 @@ module.exports = {
 	flatTermsList: [],
 	termName: '',
 
-	courses: {},
 	flatCourses: {},
 
 	courseInfo: {},

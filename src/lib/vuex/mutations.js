@@ -14,7 +14,6 @@ module.exports = {
 		})
 	},
 	saveTermCourses: function(state, termId, courses) {
-		state.courses[termId] = true;
 		if (typeof state.flatCourses[termId] === 'undefined') {
 			state.flatCourses[termId] = {};
 		}

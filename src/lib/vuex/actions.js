@@ -76,7 +76,7 @@ var self = module.exports = {
 		var termId = this.termId;
 		var workaround = this.iOS();
 		_.dispatch('setTermName', _.state.termsList[termId])
-		if (typeof _.state.courses[termId] === 'undefined') {
+		if (typeof _.state.flatCourses[termId] === 'undefined') {
 			return Promise.all([
 				fetch('/db/terms/' + termId + '.json'),
 				fetch('/db/courses/' + termId + '.json'),
