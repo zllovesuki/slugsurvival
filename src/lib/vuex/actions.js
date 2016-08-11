@@ -1,4 +1,5 @@
-var helper = require('./helper')
+var helper = require('./helper'),
+    storage = require('./plugins/storage');
 
 var self = module.exports = {
     alert: function(_) {
@@ -90,19 +91,24 @@ var self = module.exports = {
             return Promise.all([
                 fetch('/db/terms/' + termId + '.json'),
                 fetch('/db/courses/' + termId + '.json'),
-                workaround ? null : fetch('/db/index/' + termId + '.json')
+                workaround ? null : fetch('/db/index/' + termId + '.json'),
+                storage.getItem(termId)
             ])
-            .spread(function(courseDataRes, courseInfoRes, indexRes){
+            .spread(function(courseDataRes, courseInfoRes, indexRes, events){
                 return Promise.all([
                     courseDataRes.json(),
                     courseInfoRes.json(),
-                    workaround ? null : indexRes.json()
+                    workaround ? null : indexRes.json(),
+                    events
                 ])
             })
-            .spread(function(coursesData, courseInfo, index){
+            .spread(function(coursesData, courseInfo, index, events){
                 _.dispatch('saveTermCourses', termId, coursesData);
                 _.dispatch('saveCourseInfo', termId, courseInfo);
                 _.dispatch('buildIndexedSearch', termId, index, workaround);
+                if (events !== null) {
+                    _.dispatch('restoreEventSourceSnapshot', termId, events)
+                }
             })
         } else {
             return Promise.resolve()

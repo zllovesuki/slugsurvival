@@ -23,11 +23,11 @@
                                 {{ term.name }}
                             </a>
                         </div>
-                        <!--<div class="right">
-                            <a class="btn h6 muted not-clickabble">
-                                {{ convertTimestamp(term.timestamp) }}
+                        <div class="right">
+                            <a class="btn h6 muted not-clickabble" v-show="saved.indexOf(term.code) !== -1">
+                                &#128190;
                             </a>
-                        </div>-->
+                        </div>
                     </div>
                 </div>
             </template>
@@ -45,34 +45,48 @@
 </template>
 
 <script>
-    var getters = require('../../lib/vuex/getters.js')
-    var actions = require('../../lib/vuex/actions.js')
+var getters = require('../../lib/vuex/getters.js')
+var actions = require('../../lib/vuex/actions.js')
+var storage = require('../../lib/vuex/plugins/storage')
 
-    module.exports = {
-        vuex: {
-            getters: getters,
-            actions: actions
-        },
-        data: function() {
-            return {
-                hidePrior: true
-            }
-        },
-        methods: {
-            convertTimestamp: function(timestamp) {
-                var d = new Date(timestamp * 1000), // Convert the passed timestamp to milliseconds
-                    yyyy = d.getFullYear(),
-                    mm = ('0' + (d.getMonth() + 1)).slice(-2), // Months are zero based. Add leading 0.
-                    dd = ('0' + d.getDate()).slice(-2), // Add leading 0.
-                    time;
-
-                time = yyyy + '-' + mm + '-' + dd;
-
-                return time;
-            }
-        },
-        ready: function() {
-            this.setTitle('Terms List')
+module.exports = {
+    vuex: {
+        getters: getters,
+        actions: actions
+    },
+    data: function() {
+        return {
+            hidePrior: true,
+            saved: []
         }
+    },
+    methods: {
+        convertTimestamp: function(timestamp) {
+            var d = new Date(timestamp * 1000), // Convert the passed timestamp to milliseconds
+                yyyy = d.getFullYear(),
+                mm = ('0' + (d.getMonth() + 1)).slice(-2), // Months are zero based. Add leading 0.
+                dd = ('0' + d.getDate()).slice(-2), // Add leading 0.
+                time;
+
+            time = yyyy + '-' + mm + '-' + dd;
+
+            return time;
+        }
+    },
+    created: function() {
+        var self = this;
+        storage.keys().then(function(keys) {
+            keys.forEach(function(key) {
+                storage.getItem(key).then(function(events) {
+                    if (events !== null && events.length > 0) {
+                        self.saved.push(key);
+                    }
+                })
+            })
+        })
+    },
+    ready: function() {
+        this.setTitle('Terms List');
     }
+}
 </script>

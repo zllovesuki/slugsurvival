@@ -74,6 +74,9 @@ module.exports = {
         state.events[termId] = state.events[termId].filter(function(event) {
             return event.number != courseNumber;
         })
+        if (state.events[termId].length === 0) {
+            delete state.events[termId];
+        }
     },
     removeEmptySection: function(state, termId, courseNumber) {
         if (typeof state.events[termId] === 'undefined') return;
@@ -83,5 +86,8 @@ module.exports = {
             if (event.number == courseNumber && typeof(event._number) !== 'undefined')
                 return false;
         })
+        if (state.events[termId].length === 0) {
+            delete state.events[termId];
+        }
     }
 }

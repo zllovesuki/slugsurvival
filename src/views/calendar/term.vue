@@ -327,20 +327,23 @@ module.exports = {
             })
         }
     },
+    created: function() {
+        var self = this;
+        $script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'moment/2.14.1/moment.min.js'], 'jQuery');
+        $script.ready('jQuery', function() {
+            self.loading.go(70);
+            $script(dist + 'fullcalender/2.9.1/fullcalendar.min.js', 'calendar')
+        })
+    },
     ready: function() {
         var self = this;
         this.loading.go(30);
         this.setTitle('Planner');
         this.fetchTermCourses().then(function() {
             this.loading.go(50);
-            $script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'moment/2.14.1/moment.min.js'], 'jQuery');
-            $script.ready('jQuery', function() {
-                self.loading.go(70);
-                $script(dist + 'fullcalender/2.9.1/fullcalendar.min.js', 'calendar')
-                $script.ready('calendar', function() {
-                    self.loading.go(100);
-                    self.initializeCalendar();
-                })
+            $script.ready('calendar', function() {
+                self.loading.go(100);
+                self.initializeCalendar();
             })
         }.bind(this))
     }

@@ -1,6 +1,6 @@
 var	Vue = require('vue'),
     Vuex = require('vuex'),
-    localforage = require('localforage');
+    storage = require('./plugins/storage');
 
 Vue.use(Vuex);
 
