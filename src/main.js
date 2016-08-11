@@ -9,29 +9,29 @@ var store = require('./lib/vuex/store.js');
 
 var App = require('./app.vue')
 var router = new VueRouter({
-	history: true,
-	saveScrollPosition: true
+    history: true,
+    saveScrollPosition: true
 })
 
 router.map({
-	'/': {
-		name: 'index',
-		component: require('./views/index.vue')
-	},
-	'/calendar': {
-		name: 'calendar',
-		component: require('./views/calendar/index.vue'),
-		subRoutes: {
-			'/': {
-				name: 'termsList',
-				component: require('./views/calendar/termsList.vue')
-			},
-			'/:termId': {
-				name: 'term',
-				component: require('./views/calendar/term.vue')
-			}
-		}
-	}
+    '/': {
+        name: 'index',
+        component: require('./views/index.vue')
+    },
+    '/calendar': {
+        name: 'calendar',
+        component: require('./views/calendar/index.vue'),
+        subRoutes: {
+            '/': {
+                name: 'termsList',
+                component: require('./views/calendar/termsList.vue')
+            },
+            '/:termId': {
+                name: 'term',
+                component: require('./views/calendar/term.vue')
+            }
+        }
+    }
 })
 
 require('./lib/init.js')(store, router)
