@@ -85,7 +85,7 @@ module.exports = {
 		'search.string': function(val, oldVal) {
 			if (val.length < 1) return;
 			var self = this;
-			if (this.isMobileSafari()) {
+			if (this.iOS()) {
 				this.search.results = this.bruteForceSearch(val);
 			}else{
 				this.search.results = this.indexSearch[this.termId].search(val, {
