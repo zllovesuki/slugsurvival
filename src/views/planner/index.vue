@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="ml1 mt1 mb1">
-            <span class="btn button-narrow mxn2 muted" v-link="{ name: 'termsList' }">C</span>
+            <span class="btn button-narrow mxn2 muted" v-link="{ name: 'termsList' }">P</span>
             <chevron-right></chevron-right>
             <span v-if="route.name === 'termsList'">
                 <span class="btn button-narrow mxn1">
