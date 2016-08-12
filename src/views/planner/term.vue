@@ -148,13 +148,13 @@ module.exports = {
             var template = function(key, value) {
                 return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
             }
-            // html += template('Course Number', course.number);
             if (isSection) {
                 html += template('Section', 'DIS - ' + course.sec);
                 html += template('TA', course.ins);
             }else{
+                html += template('Course Number', course.num);
                 html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
-                html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '<sup class="muted clickable" onclick="window.App._showInstructorRMP(\'' + course.ins.f.replace(/'/g, '\\\'') + '\', \'' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
+                html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App._showInstructorRMP(\'' + course.ins.f.replace(/'/g, '\\\'') + '\', \'' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
             }
             html += template('Location', !!!course.loc ? 'TBA': course.loc);
             html += template('Meeting Day', !!!course.t ? 'TBA' : course.t.day.join(', '));
@@ -376,5 +376,66 @@ ul {
 }
 .fc-agenda-view tr {
      height: 40px !important;
+}
+/*
+    https://codepen.io/beben-koben/pen/gfuvc
+*/
+.rainbow:hover {
+    -webkit-animation:rainbow 1s infinite;
+    -ms-animation:rainbow 1s infinite;
+    -o-animation:rainbow 1s infinite;
+    animation:rainbow 1s infinite;
+}
+@-webkit-keyframes rainbow {
+    0% {color: #ff0000;}
+    10% {color: #ff8000;}
+    20% {color: #ffff00;}
+    30% {color: #80ff00;}
+    40% {color: #00ff00;}
+    50% {color: #00ff80;}
+    60% {color: #00ffff;}
+    70% {color: #0080ff;}
+    80% {color: #0000ff;}
+    90% {color: #8000ff;}
+    100% {color: #ff0080;}
+}
+@-ms-keyframes rainbow {
+    0% {color: #ff0000;}
+    10% {color: #ff8000;}
+    20% {color: #ffff00;}
+    30% {color: #80ff00;}
+    40% {color: #00ff00;}
+    50% {color: #00ff80;}
+    60% {color: #00ffff;}
+    70% {color: #0080ff;}
+    80% {color: #0000ff;}
+    90% {color: #8000ff;}
+    100% {color: #ff0080;}
+}
+@-o-keyframes rainbow {
+    0% {color: #ff0000;}
+    10% {color: #ff8000;}
+    20% {color: #ffff00;}
+    30% {color: #80ff00;}
+    40% {color: #00ff00;}
+    50% {color: #00ff80;}
+    60% {color: #00ffff;}
+    70% {color: #0080ff;}
+    80% {color: #0000ff;}
+    90% {color: #8000ff;}
+    100% {color: #ff0080;}
+}
+@keyframes rainbow {
+    0% {color: #ff0000;}
+    10% {color: #ff8000;}
+    20% {color: #ffff00;}
+    30% {color: #80ff00;}
+    40% {color: #00ff00;}
+    50% {color: #00ff80;}
+    60% {color: #00ffff;}
+    70% {color: #0080ff;}
+    80% {color: #0000ff;}
+    90% {color: #8000ff;}
+    100% {color: #ff0080;}
 }
 </style>
