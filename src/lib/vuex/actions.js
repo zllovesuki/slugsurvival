@@ -216,6 +216,42 @@ var self = module.exports = {
         }
         return this.fetchThreeStatsByTid(tid);
     },
+    decodeHash: function(_) {
+        var termId = this.termId;
+        return new Promise(function(resolve) {
+            return storage.getItem(termId).then(function(events) {
+                if (!!events) return resolve();
+                try {
+                    console.log('restoring events from hash')
+                    var hash = window.location.hash.substring(1);
+                    var array = JSON.parse(helper.Base64.decode(hash));
+                    if (typeof array.forEach !== 'undefined') {
+                        var split;
+                        var course;
+                        array.forEach(function(obj) {
+                            obj = obj + '';
+                            split = obj.split('-')
+                            if (typeof split[1] !== 'undefined') {
+                                if (split[1] == 'null') split[1] = null;
+                                this._pushSectionToEventSource(split[0], split[1], false, true)
+                            }else{
+                                course = _.state.flatCourses[termId][split[0]];
+                                this.pushToEventSource(course, false, false, true)
+                            }
+                        }.bind(this))
+                        this.alert()
+                        .okBtn('OK')
+                        .alert('Looks like you are accessing your planner via a bookmark link! We have the planner for you!')
+                    }
+                    window.location.hash = '';
+                    return resolve();
+                }catch(e) {
+                    console.log(e);
+                    return resolve();
+                }
+            }.bind(this))
+        }.bind(this))
+    },
     courseHasSections: function(_, courseNumber) {
         var termId = this.termId;
         return _.state.courseInfo[termId][courseNumber].sec.length > 0;
@@ -227,9 +263,7 @@ var self = module.exports = {
         var termId = this.termId;
         return _.state.events[termId]
     },
-    pushToEventSource: function(_, course, edit, changed) {
-        edit = edit || false;
-        changed = changed || true;
+    pushToEventSource: function(_, course, edit, changed, privateMethod) {
         var termId = this.termId;
         var courseInfo = _.state.courseInfo[termId][course.num];
         var code;
@@ -257,8 +291,13 @@ var self = module.exports = {
                 obj = {};
             }
         }
+
+        if (!!privateMethod) {
+            return Promise.resolve();
+        }
+
         this.refreshCalendar();
-        if (edit && changed) {
+        if (!!edit && !!changed) {
             this.alert().success(course.c + ' edited!')
         } else {
             this.alert().success(course.c + ' added to the planner!')
@@ -271,8 +310,7 @@ var self = module.exports = {
     removeEmptySection: function(_, termId, courseNumber) {
         _.dispatch('removeEmptySection', termId, courseNumber)
     },
-    _pushSectionToEventSource: function(_, courseNumber, sectionNumber, edit) {
-        edit = edit || false;
+    _pushSectionToEventSource: function(_, courseNumber, sectionNumber, edit, privateMethod) {
         var termId = this.termId;
         var courseInfo = _.state.courseInfo[termId][courseNumber];
         var courses = _.state.flatCourses[termId];
@@ -329,7 +367,12 @@ var self = module.exports = {
             }
         }
 
-        this.pushToEventSource(course, edit, sectionNumber === null ? false : true);
+        this.pushToEventSource(course, edit, sectionNumber === null ? false : true, privateMethod);
+
+        if (!!privateMethod) {
+            return Promise.resolve();
+        }
+
         this.refreshCalendar();
         $('.alertify').remove();
         return Promise.resolve();

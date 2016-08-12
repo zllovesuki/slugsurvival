@@ -349,6 +349,10 @@ module.exports = {
         $script.ready('calendar', function() {
             self.loading.go(70);
             self.fetchTermCourses().then(function() {
+                if (typeof self.eventSource[self.termId] === 'undefined') {
+                    return self.decodeHash();
+                }
+            }).then(function() {
                 self.ready = true;
                 self.$nextTick(function() {
                     self.initializeCalendar();
