@@ -27,11 +27,8 @@
         <div class="overflow-hidden bg-white rounded mb2 clearfix">
             <div class="m0 p2">
                 <div class="clearfix">
-                    <div class="left">
-
-                    </div>
                     <div class="right">
-                        <a class="btn h6 m0 {{ color }}">
+                        <a class="btn h6 mxn1 {{ color }}">
                             Color code:
                         </a>
                         <a class="btn btn-outline white h6" style="background-color: #008000">
