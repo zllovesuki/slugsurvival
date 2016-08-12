@@ -162,21 +162,21 @@ svg {
 @media (max-height: 480px) {
     .alertify .dialog>* {
         max-height: 400px;
-        overflow: scroll;
+        overflow: auto;
     }
 }
 
 @media (min-height: 480px) and (max-height: 600px) {
     .alertify .dialog>* {
         max-height: 420px;
-        overflow: scroll;
+        overflow: auto;
     }
 }
 
 @media (min-height: 600px) and (max-height: 680px) {
     .alertify .dialog>* {
         max-height: 528px;
-        overflow: scroll;
+        overflow: auto;
     }
 }
 </style>

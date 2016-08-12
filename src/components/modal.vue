@@ -15,6 +15,15 @@
                             default body
                         </slot>
                     </div>
+
+                    <div class="modal-footer white">
+                        <slot name="footer">
+                            .
+                            <a class="btn h6 right black" @click="show = false">
+                                X
+                            </a>
+                        </slot>
+                    </div>
                 </div>
             </div>
         </div>
@@ -99,6 +108,10 @@ module.exports = {
     margin: 10px 0;
     overflow-x: hidden;
     overflow-y: auto;
+}
+
+.modal-footer {
+    margin: -1em -1em 0 0;
 }
 
 /*
