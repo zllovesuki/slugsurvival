@@ -108,6 +108,7 @@ module.exports = {
                     }
                 }
             };
+            val = val.split(/(\d+)/).filter(Boolean).map(function(el) { return el.trim(); }).join(" ");
             this.search.results = this.indexSearch[this.termId].search(val, options).map(function(result) {
                 return self.flatCourses[self.termId][result.ref]
             });
