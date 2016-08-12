@@ -224,7 +224,9 @@ var self = module.exports = {
         var termId = this.termId;
         return new Promise(function(resolve) {
             return storage.getItem(termId).then(function(events) {
-                if (!!events) return resolve();
+                if (!!events) {
+                    return resolve();
+                }
                 try {
                     console.log('restoring events from hash')
                     var hash = window.location.hash.substring(1);
@@ -244,9 +246,8 @@ var self = module.exports = {
                             }
                         }.bind(this))
                         var html = '';
-                        html += ['<p>', 'Looks like you are accessing your planner via a bookmark link! We have the planner for you!', '</p>'].join('');
-                        html += ['<p>', 'However, if you makes changes to your calendar, please do not use the old link.', '</p>'].join('');
-                        html += ['<p>', 'Instead, use the new bookmark link.', '</p>'].join('');
+                        html += ['<p>', 'Looks like you are accessing the planner via a bookmark link! We have the planner for you!', '</p>'].join('');
+                        html += ['<p>', 'However, if you makes changes to the planner, your will need a <b>new</b> bookmark link.', '</p>'].join('');
                         this.alert()
                         .okBtn('OK')
                         .alert(html)

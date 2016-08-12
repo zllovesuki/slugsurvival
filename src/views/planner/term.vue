@@ -44,6 +44,17 @@
                 </div>
             </div>
         </div>
+        <div class="overflow-hidden bg-white rounded mb2 clearfix">
+            <div class="m0 p2">
+                <div class="clearfix">
+                    <div class="right">
+                        <a class="btn btn-outline green h6" @click="bookmark">
+                            click here to bring your planner anywhere
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
         <modal :show.sync="searchModal">
             <h4 slot="header">
                 <input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="250" placeholder="ECON 197, Design, Baskin, Mendes, etc...">
@@ -325,6 +336,31 @@ module.exports = {
                     });
                 })
             })
+        },
+        bookmark: function() {
+            var html = '';
+            this.dispatchReplaceHash();
+
+            html += ['<p>', '<i>', 'Now you can bookmark this page!', '</i>', '</p>'].join('');
+            html += ['<p>', 'Your planner will show up when you visit this URL on another device.', '</p>'].join('');
+            html += ['<p>', '(That means you can share this URL to your friends!)', '</p>'].join('');
+            html += ['<p class="pt1 px2 mt1">', '<input type="text" class="field block bookmark" onmouseover="this.setSelectionRange(0, this.value.length)">', '</p>'].join('');
+
+            this.alert()
+            .okBtn('I\'m Done!')
+            .alert(html)
+            .then(function(resolved) {
+                window.location.hash = '';
+                console.log('click')
+            })
+
+            setTimeout(function() {
+                try {
+                    var element = document.getElementsByClassName('bookmark')[0];
+                    element.value = window.location.href;
+                    element.setSelectionRange(0, element.value.length)
+                }catch(e) {}
+            }, 500);
         }
     },
     created: function() {
@@ -346,10 +382,10 @@ module.exports = {
             self.fetchTermCourses().then(function() {
                 if (typeof self.eventSource[self.termId] === 'undefined') {
                     return self.decodeHash();
-                }else{
-                    return self.dispatchReplaceHash();
                 }
             }).then(function() {
+                window.location.hash = '';
+
                 self.ready = true;
                 self.$nextTick(function() {
                     self.initializeCalendar();
