@@ -52,7 +52,7 @@
                 <input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="250" placeholder="ECON 197, Design, Baskin, Mendes, etc...">
             </h4>
             <span slot="body">
-                    <ul class="list-reset block">
+                <ul class="list-reset block">
                     <li class="overflow-hidden" v-for="result in search.results" track-by="num">
                         <a class="btn h5" v-on:click.prevent.stop="promptAddClass(result)">
                             {{ result.c }} - {{ result.s }}  - {{ result.n }}
