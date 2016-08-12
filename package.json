@@ -45,6 +45,6 @@
     "vueify": "^8.7.0",
     "vueify-insert-css": "^1.0.0",
     "vuex": "^1.0.0-rc.2",
-    "vuex-router-sync": "git+https://github.com/zllovesuki/vuex-router-sync.git"
+    "vuex-router-sync": "git+https://git.fm/zllovesuki/vuex-router-sync.git"
   }
 }
