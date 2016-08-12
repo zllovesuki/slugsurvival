@@ -216,6 +216,10 @@ var self = module.exports = {
         }
         return this.fetchThreeStatsByTid(tid);
     },
+    dispatchReplaceHash: function(_) {
+        var termId = this.termId;
+        _.dispatch('replaceHash', termId);
+    },
     decodeHash: function(_) {
         var termId = this.termId;
         return new Promise(function(resolve) {
@@ -239,11 +243,14 @@ var self = module.exports = {
                                 this.pushToEventSource(course, false, false, true)
                             }
                         }.bind(this))
+                        var html = '';
+                        html += ['<p>', 'Looks like you are accessing your planner via a bookmark link! We have the planner for you!', '</p>'].join('');
+                        html += ['<p>', 'However, if you makes changes to your calendar, please do not use the old link.', '</p>'].join('');
+                        html += ['<p>', 'Instead, use the new bookmark link.', '</p>'].join('');
                         this.alert()
                         .okBtn('OK')
-                        .alert('Looks like you are accessing your planner via a bookmark link! We have the planner for you!')
+                        .alert(html)
                     }
-                    window.location.hash = '';
                     return resolve();
                 }catch(e) {
                     console.log(e);

@@ -351,6 +351,8 @@ module.exports = {
             self.fetchTermCourses().then(function() {
                 if (typeof self.eventSource[self.termId] === 'undefined') {
                     return self.decodeHash();
+                }else{
+                    return self.dispatchReplaceHash();
                 }
             }).then(function() {
                 self.ready = true;
