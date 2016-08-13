@@ -20,6 +20,9 @@ module.exports = {
     termsList: function(state) {
         return state.termsList;
     },
+    historicData: function(state) {
+        return state.historicData;
+    },
     indexSearch: function(state) {
         return state.search;
     },

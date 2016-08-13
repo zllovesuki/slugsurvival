@@ -43,6 +43,12 @@ module.exports = {
     saveCourseInfo: function(state, termId, courses, skipSaving) {
         state.courseInfo[termId] = courses;
     },
+    saveHistoricData: function(state, spring, summer, fall, winter) {
+        state.historicData.spring = spring;
+        state.historicData.summer = summer;
+        state.historicData.fall = fall;
+        state.historicData.winter = winter;
+    },
     buildIndexedSearch: function(state, termId, json, workaround, skipSaving) {
         workaround = workaround || false;
         if (workaround) {

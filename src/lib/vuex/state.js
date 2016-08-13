@@ -13,6 +13,8 @@ module.exports = {
     instructorNameToTidMapping: {},
     instructorStats: {},
 
+    historicData: {},
+
     search: {},
 
     title: 'Index',

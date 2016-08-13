@@ -73,6 +73,25 @@ var self = module.exports = {
             return stats;
         })
     },
+    fetchHistoricData: function(_) {
+        return Promise.all([
+            fetch('/db/offered/spring.json'),
+            fetch('/db/offered/summer.json'),
+            fetch('/db/offered/fall.json'),
+            fetch('/db/offered/winter.json')
+        ])
+        .spread(function(springRes, summerRes, fallRes, winterRes){
+            return Promise.all([
+                springRes.json(),
+                summerRes.json(),
+                fallRes.json(),
+                winterRes.json()
+            ])
+        })
+        .spread(function(spring, summer, fall, winter){
+            _.dispatch('saveHistoricData', spring, summer, fall, winter);
+        })
+    },
     loadFromLocal: function(_) {
         var online;
         var termId = this.termId;
