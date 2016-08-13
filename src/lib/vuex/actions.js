@@ -95,6 +95,16 @@ var self = module.exports = {
             _.dispatch('saveHistoricData', spring, summer, fall, winter);
         })
     },
+    loadAutosave: function(_) {
+        var termId = this.termId;
+        return storage.getItem(termId).then(function(array) {
+            if (array !== null) {
+                var events = this.parseFromCompact(array);
+                _.dispatch('restoreEventSourceSnapshot', termId, events);
+                this.alert().okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
+            }
+        }.bind(this))
+    },
     loadFromLocal: function(_) {
         var online;
         var termId = this.termId;
@@ -124,10 +134,9 @@ var self = module.exports = {
             return Promise.all([
                 !invalid.coursesData ? storage.getItem('termCourse-' + termId) : null,
                 !invalid.courseInfo ? storage.getItem('termCourseInfo-' + termId) : null,
-                workaround ? null : (!invalid.index ? storage.getItem('termIndex-' + termId) : null),
-                storage.getItem(termId)
-            ]).spread(function(coursesData, courseInfo, index, array) {
-                return self.dispatchSave(coursesData, courseInfo, index, array, true);
+                workaround ? null : (!invalid.index ? storage.getItem('termIndex-' + termId) : null)
+            ]).spread(function(coursesData, courseInfo, index) {
+                return self.dispatchSave(coursesData, courseInfo, index, true);
             })
         }
         return loadOnlineTimestamp()
@@ -196,31 +205,25 @@ var self = module.exports = {
         return Promise.all([
             invalid.coursesData ? fetch('/db/terms/' + termId + '.json') : null,
             invalid.courseInfo ? fetch('/db/courses/' + termId + '.json') : null,
-            workaround ? null : (invalid.index ? fetch('/db/index/' + termId + '.json') : null),
-            storage.getItem(termId)
+            workaround ? null : (invalid.index ? fetch('/db/index/' + termId + '.json') : null)
         ])
-        .spread(function(courseDataRes, courseInfoRes, indexRes, array){
+        .spread(function(courseDataRes, courseInfoRes, indexRes){
             return Promise.all([
                 invalid.coursesData ? courseDataRes.json() : null,
                 invalid.courseInfo ? courseInfoRes.json() : null,
-                workaround ? null : (invalid.index ? indexRes.json() : null),
-                array
+                workaround ? null : (invalid.index ? indexRes.json() : null)
             ])
         })
-        .spread(function(coursesData, courseInfo, index, array) {
-            return self.dispatchSave(coursesData, courseInfo, index, array, false);
+        .spread(function(coursesData, courseInfo, index) {
+            return self.dispatchSave(coursesData, courseInfo, index, false);
         })
     },
-    dispatchSave: function(_, coursesData, courseInfo, index, array, skipSaving) {
+    dispatchSave: function(_, coursesData, courseInfo, index, skipSaving) {
         var termId = this.termId;
         var workaround = this.iOS();
         if (coursesData !== null) _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
         if (courseInfo !== null) _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
         if (workaround || index !== null) _.dispatch('buildIndexedSearch', termId, index, workaround, skipSaving);
-        if (events !== null) {
-            var events = this.parseFromCompact(array);
-            _.dispatch('restoreEventSourceSnapshot', termId, events);
-        }
     },
     fetchTermCourses: function(_) {
         var termId = this.termId;
@@ -228,7 +231,14 @@ var self = module.exports = {
         if (typeof _.state.flatCourses[termId] === 'undefined') {
             return this.loadFromLocal()
             .catch(function(invalid) {
-                if (invalid.yes) return this.loadFromOnline(invalid)
+                if (invalid.yes) {
+                    return this.loadFromOnline(invalid)
+                    .then(function() {
+                        return this.loadAutosave();
+                    }.bind(this))
+                }else{
+                    return this.loadAutosave();
+                }
             }.bind(this))
         } else {
             return Promise.resolve()
@@ -281,7 +291,7 @@ var self = module.exports = {
 
                         var html = '';
                         html += ['<p>', 'Looks like you are accessing the planner via a bookmark link! We have the planner for you!', '</p>'].join('');
-                        html += ['<p>', 'However, if you makes changes to the planner on this page, your will <b>override</b> your local planner (if you have one already).', '</p>'].join('');
+                        html += ['<p>', 'However, if you makes changes to the planner on this page, your will <b>override</b> your planner previously saved in your browser (if you have one already).', '</p>'].join('');
 
                         this.alert()
                         .okBtn('OK')
@@ -321,7 +331,7 @@ var self = module.exports = {
             courseInfo = _.state.courseInfo[termId][courseNumber];
         }else{
             courseNumber = input1;
-            course = this.flatCourses[termId][courseNumber];
+            course = _.state.flatCourses[termId][courseNumber];
             courseInfo = _.state.courseInfo[termId][courseNumber];
         }
 
