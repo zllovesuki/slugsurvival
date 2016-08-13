@@ -1,7 +1,7 @@
 var localforage = require('localforage')
 
 module.exports = localforage.createInstance({
-    name: "events",
+    name: "offlineStore",
     version: 1.0,
     storeName: "kvStoreForCalendar"
 })

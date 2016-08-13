@@ -129,21 +129,6 @@ module.exports = {
                 document.getElementsByClassName('search-box')[0].focus();
             }, 500);
         },
-        bruteForceSearch: function(string) {
-            var courses = this.flatCourses[this.termId];
-            var results = [];
-            string = string.toLowerCase();
-            for (var number in courses) {
-                if (courses[number].c.toLowerCase().indexOf(string) !== -1
-                || courses[number].n.toLowerCase().indexOf(string) !== -1
-                || (!!!courses[number].loc ? false : courses[number].loc.toLowerCase().indexOf(string) !== -1)
-                || (!!!courses[number].ins.f ? false : courses[number].ins.f.toLowerCase().indexOf(string) !== -1)
-                || (!!!courses[number].ins.l ? false : courses[number].ins.l.toLowerCase().indexOf(string) !== -1)) {
-                    results.push(courses[number]);
-                }
-            };
-            return results;
-        },
         getCourseDom: function(course, isSection) {
             // TODO: Reduce special cases
             isSection = isSection || false;
@@ -181,8 +166,9 @@ module.exports = {
                 resolved.event.preventDefault();
                 if (resolved.buttonClicked !== 'ok') return;
                 this.removeFromSource(termId, calEvent.number);
+                
                 this.refreshCalendar();
-                this.alert().success('Removed!')
+                this.alert().success('Removed!');
             }.bind(this));
         },
         promptForAction: function(calEvent) {
@@ -190,7 +176,7 @@ module.exports = {
             var course = isSection ? calEvent.section : calEvent.course;
             if (isSection && course === null) {
                 // Choose later
-                return this.promptSections(calEvent.number, true);
+                return this.promptSections(calEvent.number, null);
             }
             var html = this.getCourseDom(course, isSection);
             return this.alert()
@@ -230,17 +216,23 @@ module.exports = {
                         resolved.event.preventDefault();
                         if (resolved.buttonClicked !== 'ok') return;
                         if (courseHasSections) {
-                            this.promptSections(course.num);
+                            // First time, initial = true
+                            this.promptSections(course.num, false, true);
                         } else {
                             this.pushToEventSource(course);
+
+                            this.refreshCalendar();
+                            this.alert().success(course.c + ' added to the planner!');
                         }
                     }.bind(this));
                 }.bind(this)
             }
             return alertHandle()
         },
-        promptSections: function(courseNumber, edit) {
-            edit = edit || false;
+        promptSections: function(courseNumber, edit, initial) {
+            edit = (typeof edit === 'undefined' ? false : edit);
+            initial = (typeof initial === 'undefined' ? false: initial);
+
             var course = this.courseInfo[this.termId][courseNumber];
             // TODO: customize display (like NOT hard coding it)
             var headTemplate = function(name) {
@@ -286,7 +278,14 @@ module.exports = {
             .then(function(resolved) {
                 resolved.event.preventDefault();
                 if (resolved.buttonClicked !== 'ok') return;
-                this._pushSectionToEventSource(courseNumber, null, true);
+                // Check if are adding the class for the first time
+                if (initial) {
+                    // Not first time, so edit = false
+                    this._pushSectionToEventSource(courseNumber, null, false);
+                }else{
+                    // First time, so edit = null
+                    this._pushSectionToEventSource(courseNumber, null, null);
+                }
             }.bind(this));
         },
         initializeCalendar: function() {

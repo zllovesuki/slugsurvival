@@ -256,23 +256,27 @@ var self = module.exports = {
                     if (typeof array.forEach !== 'undefined') {
                         var split;
                         var course;
+                        var events = [];
                         array.forEach(function(obj) {
                             obj = obj + '';
                             split = obj.split('-')
                             if (typeof split[1] !== 'undefined') {
                                 if (split[1] == 'null') split[1] = null;
-                                this._pushSectionToEventSource(split[0], split[1], false, true)
+                                events = events.concat(this.getEventObjectsByCourse(split[0], split[1]))
                             }else{
-                                course = _.state.flatCourses[termId][split[0]];
-                                this.pushToEventSource(course, false, false, true)
+                                events = events.concat(this.getEventObjectsByCourse(split[0]));
                             }
-                        }.bind(this))
+                        }.bind(this));
+
+                        _.dispatch('restoreEventSourceSnapshot', termId, events);
+
                         var html = '';
                         html += ['<p>', 'Looks like you are accessing the planner via a bookmark link! We have the planner for you!', '</p>'].join('');
-                        html += ['<p>', 'However, if you makes changes to the planner, your will need a <b>new</b> bookmark link.', '</p>'].join('');
+                        html += ['<p>', 'However, if you makes changes to the planner on this page, your will <b>override</b> your local planner (if you have one already).', '</p>'].join('');
+
                         this.alert()
                         .okBtn('OK')
-                        .alert(html)
+                        .alert(html);
                     }
                     return resolve();
                 }catch(e) {
@@ -287,101 +291,83 @@ var self = module.exports = {
         return _.state.courseInfo[termId][courseNumber].sec.length > 0;
     },
     refreshCalendar: function(_) {
-        $('#calendar-' + this.termId).fullCalendar('refetchEvents')
+        $('#calendar-' + this.termId).fullCalendar('refetchEvents');
+        $('.alertify').remove();
     },
     returnEventSourceSnapshot: function(_) {
         var termId = this.termId;
         return _.state.events[termId]
     },
-    pushToEventSource: function(_, course, edit, changed, privateMethod) {
+    getEventObjectsByCourse: function(_, input1, input2) {
         var termId = this.termId;
-        var courseInfo = _.state.courseInfo[termId][course.num];
-        var code;
+        var dateMap = _.state.dateMap;
+        var events = [];
         var obj = {};
+        var courseNumber, course, courseInfo, sectionNumber, section;
+
+        // We are not sure that if input1 is a course object or course number
+        if (typeof input1.num !== 'undefined') {
+            courseNumber = input1.num;
+            course = input1;
+            courseInfo = _.state.courseInfo[termId][courseNumber];
+        }else{
+            courseNumber = input1;
+            course = this.flatCourses[termId][courseNumber];
+            courseInfo = _.state.courseInfo[termId][courseNumber];
+        }
+
+        // Process course
         if (!!!course.t) {
             // TBA will be in the allDaySlot
             obj.title = [course.c + ' - ' + course.s, courseInfo.ty, course.n].join("\n");
             obj.number = course.num;
             obj.allDay = true;
-            obj.start = _.state.dateMap['Monday'];
-            obj.end = _.state.dateMap['Saturday'];
+            obj.start = dateMap['Monday'];
+            obj.end = dateMap['Saturday'];
             obj.course = course;
             obj.color = 'green';
-            _.dispatch('pushToEventSource', termId, obj);
+            events.push(obj);
             obj = {};
-        } else {
+        }else{
             for (var i = 0, days = course.t.day, length = days.length; i < length; i++) {
                 obj.title = [course.c + ' - ' + course.s, courseInfo.ty, course.n].join("\n");
                 obj.number = course.num;
                 obj.allDay = false;
-                obj.start = _.state.dateMap[days[i]] + ' ' + course.t.time.start;
-                obj.end = _.state.dateMap[days[i]] + ' ' + course.t.time.end;
+                obj.start = dateMap[days[i]] + ' ' + course.t.time.start;
+                obj.end = dateMap[days[i]] + ' ' + course.t.time.end;
                 obj.course = course;
-                _.dispatch('pushToEventSource', termId, obj);
+                events.push(obj);
                 obj = {};
             }
         }
 
-        if (!!privateMethod) {
-            return Promise.resolve();
+        // We are going to process section as well if provided
+        if (typeof input2 !== 'undefined' && input2 !== null) {
+            sectionNumber = input2;
+            section = courseInfo.sec.filter(function(section) {
+                return section.num == sectionNumber;
+            });
+            section = section[0];
+        }else if (input2 === null) {
+            sectionNumber = null;
+        }else{
+            section = false;
         }
 
-        this.refreshCalendar();
-        if (!!edit && !!changed) {
-            this.alert().success(course.c + ' edited!')
-        } else {
-            this.alert().success(course.c + ' added to the planner!')
-        }
-        return Promise.resolve();
-    },
-    removeFromSource: function(_, termId, courseNumber) {
-        _.dispatch('removeFromSource', termId, courseNumber);
-    },
-    removeEmptySection: function(_, termId, courseNumber) {
-        _.dispatch('removeEmptySection', termId, courseNumber)
-    },
-    _pushSectionToEventSource: function(_, courseNumber, sectionNumber, edit, privateMethod) {
-        var termId = this.termId;
-        var courseInfo = _.state.courseInfo[termId][courseNumber];
-        var courses = _.state.flatCourses[termId];
-        var obj = {};
-        var snapshot = [];
-        var section = {};
-        var code;
+        if (section === false) return events;
 
-        var course = courses[courseNumber];
-
-        if (edit) {
-            // Let's check if user selects "Choose Later" again
-            if (sectionNumber === null) {
-                this.removeEmptySection(termId, course.num);
-            }else{
-                this.removeFromSource(termId, course.num);
-            }
-        }
-
-        section = courseInfo.sec.filter(function(section) {
-            return section.num == sectionNumber
-        });
-        section = section[0];
-        snapshot = this.returnEventSourceSnapshot();
-
-        if (typeof section !== 'undefined' && (code = this.checkForConflict(section)) !== false) {
-            this.alert().error('Section ' + section.section + ' conflict with ' + code + '!')
-            if (edit) _.dispatch('restoreEventSourceSnapshot', termId, snapshot);
-            return Promise.resolve();
-        }
-
+        // We will now process sections
         if (sectionNumber === null || !!!section.t) {
-            // TBA will be in the allDaySlot
+            // TBA or Choose Later will be in the allDaySlot
             obj.title = [course.c, 'Section', 'DIS - ' + (sectionNumber === null ? '?' : 'TBA')].join("\n");
             obj.number = course.num;
             obj.color = (sectionNumber === null ? 'black' : 'green');
             obj.course = course;
             obj.section = null;
-            obj.start = _.state.dateMap['Monday'];
-            obj.end = _.state.dateMap['Saturday'];
-            _.dispatch('pushToEventSource', termId, obj);
+            obj.start = dateMap['Monday'];
+            obj.end = dateMap['Saturday'];
+            events.push(obj);
+            obj = {};
         } else {
             for (var i = 0, days = section.t.day, length = days.length; i < length; i++) {
                 obj.title = [course.c, 'Section', 'DIS - ' + section.sec].join("\n");
@@ -390,22 +376,72 @@ var self = module.exports = {
                 obj.color = 'grey';
                 obj.course = course;
                 obj.section = section;
-                obj.start = _.state.dateMap[days[i]] + ' ' + section.t.time.start;
-                obj.end = _.state.dateMap[days[i]] + ' ' + section.t.time.end;
-                _.dispatch('pushToEventSource', termId, obj);
+                obj.start = dateMap[days[i]] + ' ' + section.t.time.start;
+                obj.end = dateMap[days[i]] + ' ' + section.t.time.end;
+                events.push(obj);
                 obj = {};
             }
         }
 
-        this.pushToEventSource(course, edit, sectionNumber === null ? false : true, privateMethod);
+        return events;
+    },
+    /*
+        pushToEventSource() and _pushSectionToEventSource() are mutually exclusive
+        You can call either one (but not both)
+    */
+    pushToEventSource: function(_, course, edit, changed) {
 
-        if (!!privateMethod) {
-            return Promise.resolve();
+        var termId = this.termId;
+        var courses = _.state.flatCourses[termId];
+        var events = [];
+
+        events = this.getEventObjectsByCourse(course);
+        _.dispatch('mergeEventSource', termId, events);
+
+        return Promise.resolve();
+    },
+    _pushSectionToEventSource: function(_, courseNumber, sectionNumber, edit) {
+        /*
+            edit denotes the operation
+            true: it is an editing operation
+            false: it is NOT an editing operatin (possibly first time adding the class)
+            null: user has selected choose later, prompts something else
+        */
+        var termId = this.termId;
+        var course = _.state.flatCourses[termId][courseNumber];
+        var events = [];
+
+        if (edit === true || edit === null) {
+            // Let's check if user selects "Choose Later" again
+            if (sectionNumber === null) {
+                // Choose Later, so we remove the *old* TBA section
+                this.removeEmptySection(termId, course.num);
+            }else{
+                // Or, remove every old event
+                this.removeFromSource(termId, course.num);
+            }
         }
 
+        events = this.getEventObjectsByCourse(courseNumber, sectionNumber);
+        _.dispatch('mergeEventSource', termId, events);
+
+        // Since this method can only be called outside of Vue context
+        // Thus the notifications are called inside this function
+        // Also, this function will refresh the calendar
         this.refreshCalendar();
-        $('.alertify').remove();
+        if (edit === true || edit === null) {
+            this.alert().success(course.c + ' edited!')
+        } else {
+            this.alert().success(course.c + ' added to the planner!')
+        }
+
         return Promise.resolve();
+    },
+    removeFromSource: function(_, termId, courseNumber) {
+        _.dispatch('removeFromSource', termId, courseNumber);
+    },
+    removeEmptySection: function(_, termId, courseNumber) {
+        _.dispatch('removeEmptySection', termId, courseNumber)
     },
     _showInstructorRMP: function(_, firstName, lastName) {
         this.loading.go(30);

@@ -1,5 +1,5 @@
 var listen = [
-    'pushToEventSource',
+    'mergeEventSource',
     'removeFromSource'
 ];
 

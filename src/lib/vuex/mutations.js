@@ -83,9 +83,13 @@ module.exports = {
             state.search[termId] = elasticlunr.Index.load(json);
         }
     },
-    pushToEventSource: function(state, termId, obj) {
+    /*pushToEventSource: function(state, termId, obj) {
         if (typeof state.events[termId] === 'undefined') state.events[termId] = [];
         state.events[termId].push(obj);
+    },*/
+    mergeEventSource: function(state, termId, events) {
+        if (typeof state.events[termId] === 'undefined') state.events[termId] = [];
+        state.events[termId] = state.events[termId].concat(events);
     },
     restoreEventSourceSnapshot: function(state, termId, events) {
         state.events[termId] = events;
