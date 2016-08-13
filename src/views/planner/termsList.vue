@@ -106,16 +106,11 @@ module.exports = {
         }
     },
     methods: {
-        convertTimestamp: function(timestamp) {
-            var d = new Date(timestamp * 1000), // Convert the passed timestamp to milliseconds
-                yyyy = d.getFullYear(),
-                mm = ('0' + (d.getMonth() + 1)).slice(-2), // Months are zero based. Add leading 0.
-                dd = ('0' + d.getDate()).slice(-2), // Add leading 0.
-                time;
-
-            time = yyyy + '-' + mm + '-' + dd;
-
-            return time;
+        groupBy: function(xs, key) {
+            return xs.reduce(function(rv, x) {
+                (rv[x[key]] = rv[x[key]] || []).push(x);
+                return rv;
+            }, {});
         }
     },
     watch: {
@@ -140,7 +135,12 @@ module.exports = {
                     }
                 }
             }
-            this.search.results = results;
+            results = this.groupBy(results, 'code');
+            var _results = [];
+            for (var code in results) {
+                _results = _results.concat(results[code]);
+            }
+            this.search.results = _results;
         }
     },
     created: function() {
