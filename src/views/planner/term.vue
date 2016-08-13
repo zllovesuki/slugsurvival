@@ -19,7 +19,7 @@
                 </div>
             </div>
         </div>
-        <div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix" v-show="ready">
+        <div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix h5" v-show="ready">
             <div class="m0 p2">
                 <div id="calendar-{{ termId }}"></div>
             </div>
