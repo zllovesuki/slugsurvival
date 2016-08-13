@@ -74,6 +74,9 @@ var self = module.exports = {
         })
     },
     fetchHistoricData: function(_) {
+        if (typeof _.state.historicData.spring !== 'undefined') {
+            return Promise.resolve();
+        }
         return Promise.all([
             fetch('/db/offered/spring.json'),
             fetch('/db/offered/summer.json'),

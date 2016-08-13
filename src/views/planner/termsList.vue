@@ -54,7 +54,7 @@
             </div>
             <div class="m0 p2 border-top" v-bind:class="{ 'hide': hideHistoric }">
                 <div class="clearfix">
-                    <input type="text" class="field block mb2 search-box" v-model="search.string" debounce="750" placeholder="EE 177, ECON 117B, etc..." onmouseover="this.focus()">
+                    <input type="text" class="field block mb2 search-box" v-model="search.string" debounce="750" placeholder="EE 177, ECON 117B, ..." onmouseover="this.focus()">
                     <div class="overflow-scroll" v-show="search.results.length > 0">
                         <table class="table-light">
                             <thead class="bg-darken-1 h6">
