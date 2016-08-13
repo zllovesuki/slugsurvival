@@ -116,26 +116,13 @@ module.exports = {
         }
     },
     replaceHash: function(state, termId) {
-        var array = [];
         if (typeof state.events[termId] === 'undefined') {
             window.location.hash = '';
             return;
         }
-        var tracker = {};
-        state.events[termId].forEach(function(event) {
-            if (typeof event._number !== 'undefined' || event.section === null) {
-                if (array.indexOf(event.number + '-' + (event._number ? event._number : null)) === -1) {
-                    tracker[event.number] = true;
-                    array.push(event.number + '-' + (event._number ? event._number : null));
-                }
-            }else{
-                if (array.indexOf(event.number) === -1) {
-                    if (tracker[event.number] !== true) {
-                        array.push(event.number);
-                    }
-                }
-            }
-        })
+
+        var array = helper.compact(state.events[termId]);
+
         window.location.hash = '#' + helper.Base64.encode(JSON.stringify(array));
     }
 }

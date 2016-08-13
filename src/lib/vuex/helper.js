@@ -12,6 +12,34 @@ var self = module.exports = {
             });
     }, // http://stackoverflow.com/questions/16227197/compute-intersection-of-two-arrays-in-javascript
 
+    compact: function(events) {
+        var array = [];
+        var tracker = {};
+        tracker.coursesWithoutSections = {};
+        tracker.eventsWithSections = {};
+        events.forEach(function(event) {
+            if (typeof event._number !== 'undefined' || event.section === null) {
+                tracker.eventsWithSections[event.number] = event._number;
+            }else{
+                tracker.coursesWithoutSections[event.number] = true;
+            }
+        });
+        tracker.coursesWithSections = [];
+        tracker.coursesWithSections = self.intersect(Object.keys(tracker.eventsWithSections), Object.keys(tracker.coursesWithoutSections));
+
+        tracker.coursesWithSections.forEach(function(courseNumber) {
+            array.push(courseNumber + '-' + tracker.eventsWithSections[courseNumber])
+        });
+
+        for (var courseNumber in tracker.coursesWithoutSections) {
+            if (tracker.coursesWithSections.indexOf(courseNumber) === -1) {
+                array.push(courseNumber);
+            }
+        }
+
+        return array;
+    },
+
     Base64: {
         _keyStr: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=",
         encode: function(e) {

@@ -166,7 +166,7 @@ module.exports = {
                 resolved.event.preventDefault();
                 if (resolved.buttonClicked !== 'ok') return;
                 this.removeFromSource(termId, calEvent.number);
-                
+
                 this.refreshCalendar();
                 this.alert().success('Removed!');
             }.bind(this));
@@ -379,9 +379,7 @@ module.exports = {
         $script.ready('calendar', function() {
             self.loading.go(70);
             self.fetchTermCourses().then(function() {
-                if (typeof self.eventSource[self.termId] === 'undefined') {
-                    return self.decodeHash();
-                }
+                return self.decodeHash();
             }).then(function() {
                 window.location.hash = '';
 

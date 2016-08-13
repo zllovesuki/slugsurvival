@@ -126,8 +126,8 @@ var self = module.exports = {
                 !invalid.courseInfo ? storage.getItem('termCourseInfo-' + termId) : null,
                 workaround ? null : (!invalid.index ? storage.getItem('termIndex-' + termId) : null),
                 storage.getItem(termId)
-            ]).spread(function(coursesData, courseInfo, index, events) {
-                return self.dispatchSave(coursesData, courseInfo, index, events, true);
+            ]).spread(function(coursesData, courseInfo, index, array) {
+                return self.dispatchSave(coursesData, courseInfo, index, array, true);
             })
         }
         return loadOnlineTimestamp()
@@ -199,25 +199,28 @@ var self = module.exports = {
             workaround ? null : (invalid.index ? fetch('/db/index/' + termId + '.json') : null),
             storage.getItem(termId)
         ])
-        .spread(function(courseDataRes, courseInfoRes, indexRes, events){
+        .spread(function(courseDataRes, courseInfoRes, indexRes, array){
             return Promise.all([
                 invalid.coursesData ? courseDataRes.json() : null,
                 invalid.courseInfo ? courseInfoRes.json() : null,
                 workaround ? null : (invalid.index ? indexRes.json() : null),
-                events
+                array
             ])
         })
-        .spread(function(coursesData, courseInfo, index, events) {
-            return self.dispatchSave(coursesData, courseInfo, index, events, false);
+        .spread(function(coursesData, courseInfo, index, array) {
+            return self.dispatchSave(coursesData, courseInfo, index, array, false);
         })
     },
-    dispatchSave: function(_, coursesData, courseInfo, index, events, skipSaving) {
+    dispatchSave: function(_, coursesData, courseInfo, index, array, skipSaving) {
         var termId = this.termId;
         var workaround = this.iOS();
         if (coursesData !== null) _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
         if (courseInfo !== null) _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
         if (workaround || index !== null) _.dispatch('buildIndexedSearch', termId, index, workaround, skipSaving);
-        if (events !== null) _.dispatch('restoreEventSourceSnapshot', termId, events)
+        if (events !== null) {
+            var events = this.parseFromCompact(array);
+            _.dispatch('restoreEventSourceSnapshot', termId, events);
+        }
     },
     fetchTermCourses: function(_) {
         var termId = this.termId;
@@ -242,6 +245,21 @@ var self = module.exports = {
         var termId = this.termId;
         _.dispatch('replaceHash', termId);
     },
+    parseFromCompact: function(_, array) {
+        var events = [];
+        array.forEach(function(obj) {
+            obj = obj + '';
+            split = obj.split('-')
+            if (typeof split[1] !== 'undefined') {
+                if (split[1] == 'null') split[1] = null;
+                events = events.concat(this.getEventObjectsByCourse(split[0], split[1]))
+            }else{
+                events = events.concat(this.getEventObjectsByCourse(split[0]));
+            }
+        }.bind(this));
+
+        return events;
+    },
     decodeHash: function(_) {
         var termId = this.termId;
         return new Promise(function(resolve) {
@@ -256,17 +274,8 @@ var self = module.exports = {
                     if (typeof array.forEach !== 'undefined') {
                         var split;
                         var course;
-                        var events = [];
-                        array.forEach(function(obj) {
-                            obj = obj + '';
-                            split = obj.split('-')
-                            if (typeof split[1] !== 'undefined') {
-                                if (split[1] == 'null') split[1] = null;
-                                events = events.concat(this.getEventObjectsByCourse(split[0], split[1]))
-                            }else{
-                                events = events.concat(this.getEventObjectsByCourse(split[0]));
-                            }
-                        }.bind(this));
+
+                        var events = this.parseFromCompact(array);
 
                         _.dispatch('restoreEventSourceSnapshot', termId, events);
 
@@ -359,8 +368,9 @@ var self = module.exports = {
         // We will now process sections
         if (sectionNumber === null || !!!section.t) {
             // TBA or Choose Later will be in the allDaySlot
-            obj.title = [course.c, 'Section', 'DIS - ' + (sectionNumber === null ? '?' : 'TBA')].join("\n");
+            obj.title = [course.c, 'Section', 'DIS - ' + (sectionNumber === null ? '?' : section.sec)].join("\n");
             obj.number = course.num;
+            obj._number = (sectionNumber === null ? null : section.num);
             obj.color = (sectionNumber === null ? 'black' : 'green');
             obj.course = course;
             obj.section = null;
