@@ -379,7 +379,14 @@ module.exports = {
         $script.ready('calendar', function() {
             self.loading.go(70);
             self.fetchTermCourses().then(function() {
-                return self.decodeHash();
+                return self.decodeHash()
+                .then(function() {
+                    // no valid was decoded
+                    return self.loadAutosave()
+                })
+                .catch(function() {
+                    // hash was used instead of local copy
+                })
             }).then(function() {
                 window.location.hash = '';
 

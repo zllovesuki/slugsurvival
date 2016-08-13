@@ -233,11 +233,6 @@ var self = module.exports = {
             .catch(function(invalid) {
                 if (invalid.yes) {
                     return this.loadFromOnline(invalid)
-                    .then(function() {
-                        return this.loadAutosave();
-                    }.bind(this))
-                }else{
-                    return this.loadAutosave();
                 }
             }.bind(this))
         } else {
@@ -272,38 +267,36 @@ var self = module.exports = {
     },
     decodeHash: function(_) {
         var termId = this.termId;
-        return new Promise(function(resolve) {
-            return storage.getItem(termId).then(function(events) {
-                if (!!events) {
-                    return resolve();
-                }
-                try {
-                    console.log('restoring events from hash')
-                    var hash = window.location.hash.substring(1);
-                    var array = JSON.parse(helper.Base64.decode(hash));
-                    if (typeof array.forEach !== 'undefined') {
-                        var split;
-                        var course;
+        try {
+            console.log('trying to restore events from hash')
+            var hash = window.location.hash.substring(1);
+            var array = JSON.parse(helper.Base64.decode(hash));
+            if (typeof array.forEach !== 'undefined') {
+                console.log('valid hash found')
+                var split;
+                var course;
 
-                        var events = this.parseFromCompact(array);
+                var events = this.parseFromCompact(array);
 
-                        _.dispatch('restoreEventSourceSnapshot', termId, events);
+                _.dispatch('restoreEventSourceSnapshot', termId, events);
 
-                        var html = '';
-                        html += ['<p>', 'Looks like you are accessing the planner via a bookmark link! We have the planner for you!', '</p>'].join('');
-                        html += ['<p>', 'However, if you makes changes to the planner on this page, your will <b>override</b> your planner previously saved in your browser (if you have one already).', '</p>'].join('');
+                var html = '';
+                html += ['<p>', 'Looks like you are accessing the planner via a bookmark link! We have the planner for you!', '</p>'].join('');
+                html += ['<p>', 'However, if you makes changes to the planner on this page, your will <b>override</b> your planner previously saved in your browser (if you have one already).', '</p>'].join('');
 
-                        this.alert()
-                        .okBtn('OK')
-                        .alert(html);
-                    }
-                    return resolve();
-                }catch(e) {
-                    console.log(e);
-                    return resolve();
-                }
-            }.bind(this))
-        }.bind(this))
+                this.alert()
+                .okBtn('OK')
+                .alert(html);
+                return Promise.reject();
+            }else{
+                console.log('fallback to local copy')
+                return Promise.resolve();
+            }
+        }catch(e) {
+            console.log(e);
+            console.log('fallback to local copy')
+            return Promise.resolve();
+        }
     },
     courseHasSections: function(_, courseNumber) {
         var termId = this.termId;
