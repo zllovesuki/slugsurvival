@@ -1,6 +1,6 @@
 {
   "name": "slugsurvival",
-  "version": "1.11.4",
+  "version": "1.11.5",
   "scripts": {
     "test": "./node_modules/.bin/mocha --timeout 30000 --reporter spec",
     "prod": "NODE_ENV=production ./node_modules/browserify/bin/cmd.js -t stringify -t vueify -e src/main.js | ./node_modules/uglifyjs/bin/uglifyjs -c -m > public/prod.js",

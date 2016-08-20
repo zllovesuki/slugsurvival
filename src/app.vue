@@ -15,7 +15,7 @@
         </section>
         <div class="container mb2 clearfix">
             <div class="sm-flex center nowrap mb2 h5">
-                <div class="flex-auto muted" @click="egg">version 1.11.4</div>
+                <div class="flex-auto muted" @click="egg">version 1.11.5</div>
             </div>
         </div>
     </div>
