@@ -10,7 +10,7 @@ COPY . /usr/src/app
 
 WORKDIR /usr/src/app
 
-RUN npm install && npm run prod && npm prune --production
+RUN npm install && npm run prod && npm prune --production && rm -rf .git
 
 EXPOSE 3001
 
