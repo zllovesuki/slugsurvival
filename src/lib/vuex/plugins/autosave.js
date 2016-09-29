@@ -9,8 +9,12 @@ module.exports = function(storage) {
         store.subscribe(function(mutation, state) {
             if (listen.indexOf(mutation.type) !== -1) {
                 var termId = mutation.payload[0];
-                var array = helper.compact(state.events[termId]);
-                storage.setItem(termId, array);
+                if (typeof state.events[termId] !== 'undefined') {
+                    var array = helper.compact(state.events[termId]);
+                    storage.setItem(termId, array);
+                }else{
+                    storage.removeItem(termId);
+                }
             }
         })
     }
