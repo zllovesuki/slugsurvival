@@ -596,6 +596,7 @@ var self = module.exports = {
         });
 
         if (intersectDays.length === 0) return false;
+        
         // O(n^2)
         // sucks
         /*
@@ -633,8 +634,11 @@ var self = module.exports = {
             comingTime = locts[j].t.time;
 
             for (var code in checker) {
+                // check each class in the conflicting
                 for (var day in checker[code]) {
+                    // check each day
                     if (locts[j].t.day.indexOf(day) !== -1) {
+                        // only check the day if it is actually conflicting
                         oldStart = checker[code][day].start.replace(':', '');
                         oldEnd = checker[code][day].end.replace(':', '');
                         newStart = comingTime.start.replace(':', '');
