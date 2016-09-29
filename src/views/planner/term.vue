@@ -57,7 +57,7 @@
         </div>
         <modal :show.sync="searchModal">
             <h4 slot="header">
-                <input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="250" placeholder="ECON 197, Design, Baskin, Mendes, etc...">
+                <input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="250" placeholder="ECON 197, Design, Mendes, etc...">
             </h4>
             <span slot="body">
                 <ul class="list-reset">
@@ -108,9 +108,6 @@ module.exports = {
                     },
                     la: {
                         boost: 2
-                    },
-                    lo: {
-                        boost: 1
                     }
                 }
             };
@@ -147,9 +144,22 @@ module.exports = {
                 html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
                 html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App._showInstructorRMP(\'' + course.ins.f.replace(/'/g, '\\\'') + '\', \'' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
             }
-            html += template('Location', !!!course.loc ? 'TBA': course.loc);
-            html += template('Meeting Day', !!!course.t ? 'TBA' : course.t.day.join(', '));
-            html += template('Meeting Time', !!!course.t ? 'TBA' : this.tConvert(course.t.time.start) + '-' + this.tConvert(course.t.time.end));
+
+            if (course.loct.length === 1) {
+                html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
+                html += template('Meeting Day', !!!course.loct[0].t ? 'TBA' : course.loct[0].t.day.join(', '));
+                html += template('Meeting Time', !!!course.loct[0].t ? 'TBA' : this.tConvert(course.loct[0].t.time.start) + '-' + this.tConvert(course.loct[0].t.time.end));
+            }else{
+                html += '<hr />'
+                var complex = '';
+                for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
+                    html += template('Location', !!!course.loct[j].loc ? 'TBA': course.loct[j].loc);
+                    html += template('Meeting Day', !!!course.loct[j].t ? 'TBA' : course.loct[j].t.day.join(', '));
+                    html += template('Meeting Time', !!!course.loct[j].t ? 'TBA' : this.tConvert(course.loct[j].t.time.start) + '-' + this.tConvert(course.loct[j].t.time.end));
+                    html += '<hr />'
+                }
+            }
+
             if (!isSection) {
                 html += template('Capacity', course.cap);
             }
@@ -249,12 +259,12 @@ module.exports = {
                         string += '<tr class="' + conflictClass + '">';
                     }
                     string += ['<td>', sections[i].sec, '</td>'].join('');
-                    if (!!sections[i].t) {
-                        string += ['<td>', sections[i].t.day.join(', '), '<br>', [this.tConvert(sections[i].t.time.start), this.tConvert(sections[i].t.time.end)].join('-'), '</td>'].join('');
+                    if (!!sections[i].loct[0].t) {
+                        string += ['<td>', sections[i].loct[0].t.day.join(', '), '<br>', [this.tConvert(sections[i].loct[0].t.time.start), this.tConvert(sections[i].loct[0].t.time.end)].join('-'), '</td>'].join('');
                     }else{
                         string += ['<td>', 'TBA', '</td>'].join('');
                     }
-                    string += ['<td>', sections[i].loc, '</td>'].join('');
+                    string += ['<td>', sections[i].loct[0].loc, '</td>'].join('');
                     string += '</a></tr>';
                 }
                 return string;

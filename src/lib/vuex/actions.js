@@ -329,7 +329,7 @@ var self = module.exports = {
         }
 
         // Process course
-        if (!!!course.t) {
+        if (course.loct.length === 1 && !!!course.loct[0].t) {
             // TBA will be in the allDaySlot
             obj.title = [course.c + ' - ' + course.s, courseInfo.ty, course.n].join("\n");
             obj.number = course.num;
@@ -341,15 +341,17 @@ var self = module.exports = {
             events.push(obj);
             obj = {};
         }else{
-            for (var i = 0, days = course.t.day, length = days.length; i < length; i++) {
-                obj.title = [course.c + ' - ' + course.s, courseInfo.ty, course.n].join("\n");
-                obj.number = course.num;
-                obj.allDay = false;
-                obj.start = dateMap[days[i]] + ' ' + course.t.time.start;
-                obj.end = dateMap[days[i]] + ' ' + course.t.time.end;
-                obj.course = course;
-                events.push(obj);
-                obj = {};
+            for (var j = 0, locts = course.loct, length = locts.length; j < length; j++) {
+                for (var i = 0, days = locts[j].t.day, length1 = days.length; i < length1; i++) {
+                    obj.title = [course.c + ' - ' + course.s, courseInfo.ty, course.n].join("\n");
+                    obj.number = course.num;
+                    obj.allDay = false;
+                    obj.start = dateMap[days[i]] + ' ' + locts[j].t.time.start;
+                    obj.end = dateMap[days[i]] + ' ' + locts[j].t.time.end;
+                    obj.course = course;
+                    events.push(obj);
+                    obj = {};
+                }
             }
         }
 
@@ -369,7 +371,7 @@ var self = module.exports = {
         if (section === false) return events;
 
         // We will now process sections
-        if (sectionNumber === null || !!!section.t) {
+        if (sectionNumber === null || (section.loct.length === 1 && !!!section.loct[0].t)) {
             // TBA or Choose Later will be in the allDaySlot
             obj.title = [course.c, 'Section', 'DIS - ' + (sectionNumber === null ? '?' : section.sec)].join("\n");
             obj.number = course.num;
@@ -382,15 +384,15 @@ var self = module.exports = {
             events.push(obj);
             obj = {};
         } else {
-            for (var i = 0, days = section.t.day, length = days.length; i < length; i++) {
+            for (var i = 0, days = section.loct[0].t.day, length = days.length; i < length; i++) {
                 obj.title = [course.c, 'Section', 'DIS - ' + section.sec].join("\n");
                 obj.number = course.num;
                 obj._number = sectionNumber;
                 obj.color = 'grey';
                 obj.course = course;
                 obj.section = section;
-                obj.start = dateMap[days[i]] + ' ' + section.t.time.start;
-                obj.end = dateMap[days[i]] + ' ' + section.t.time.end;
+                obj.start = dateMap[days[i]] + ' ' + section.loct[0].t.time.start;
+                obj.end = dateMap[days[i]] + ' ' + section.loct[0].t.time.end;
                 events.push(obj);
                 obj = {};
             }
@@ -506,7 +508,7 @@ var self = module.exports = {
         var intersectDays = [];
         var existingDays = [];
         var existingTimes = {};
-        var comingTime = {};
+        var comingTime = null;
         var conflict = false;
         if (typeof events === 'undefined') return false;
         for (var i = 0, length = events.length; i < length; i++) {
@@ -518,20 +520,25 @@ var self = module.exports = {
             }
             if (events[i].allDay) continue;
             if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
-                existingDays.push(events[i].section.t.day);
+                existingDays.push(events[i].section.loct[0].t.day);
             } else {
-                existingDays.push(events[i].course.t.day);
+                for (var j = 0, locts = events[j].course.loct, length1 = locts.length; j < length1; j++) {
+                    existingDays.push(locts[j].t.day);
+                }
             }
         }
         if (conflict !== false) return null;
-        if (!!!course.t) {
+
+        if (course.loct.length === 1 && !!!course.loct[0].t) {
             // TBA
             return false;
         }
 
         for (var i = 0, length = existingDays.length; i < length; i++) {
-            if (helper.intersect(existingDays[i], course.t.day)) {
-                intersectDays.push(course.t.day);
+            for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
+                if (helper.intersect(existingDays[i], locts[j].t.day)) {
+                    intersectDays.push(locts[j].t.day);
+                }
             }
         }
 
@@ -551,31 +558,36 @@ var self = module.exports = {
             for (var j = 0, events = _.state.events[termId], eLength = events.length; j < eLength; j++) {
                 if (events[j].allDay) continue;
                 if (typeof events[j].section !== 'undefined' && events[j].section !== null) {
-                    if (events[j].section.t.day.indexOf(intersectDays[i]) !== -1) {
-                        existingTimes[events[j].course.c + ' Section'] = events[j].section.t.time;
+                    if (events[j].section.loct[0].t.day.indexOf(intersectDays[i]) !== -1) {
+                        existingTimes[events[j].course.c + ' Section'] = events[j].section.loct[0].t.time;
                     }
                 } else {
-                    if (events[j].course.t.day.indexOf(intersectDays[i]) !== -1) {
-                        existingTimes[events[j].course.c] = events[j].course.t.time;
+                    for (var m = 0, locts = events[j].course.loct, length1 = locts.length; m < length1; m++) {
+                        for (var k = 0, days = locts[m].t.day, length2 = days.length; k < length2; k++) {
+                            if (days[k].indexOf(intersectDays[i]) !== -1) {
+                                existingTimes[events[j].course.c] = locts[m].t.time;
+                            }
+                        }
                     }
                 }
             }
         }
 
-        comingTime = course.t.time;
         var oldStart, newStart, oldEnd, newEnd;
-        for (var code in existingTimes) {
-            oldStart = existingTimes[code].start.replace(':', '');
-            oldEnd = existingTimes[code].end.replace(':', '');
-            newStart = comingTime.start.replace(':', '');
-            newEnd = comingTime.end.replace(':', '');
 
-            if (this.checkTimeConflict(oldStart, oldEnd, newStart, newEnd)) {
-                conflict = code;
-                break;
+        for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
+            comingTime = locts[j].t.time;
+            for (var code in existingTimes) {
+                oldStart = existingTimes[code].start.replace(':', '');
+                oldEnd = existingTimes[code].end.replace(':', '');
+                newStart = comingTime.start.replace(':', '');
+                newEnd = comingTime.end.replace(':', '');
+                if (this.checkTimeConflict(oldStart, oldEnd, newStart, newEnd)) {
+                    return code;
+                }
             }
-
         }
+
         return conflict;
     },
     checkTimeConflict: function(_, oldStart, oldEnd, newStart, newEnd) {
