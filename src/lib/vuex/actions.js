@@ -549,25 +549,13 @@ var self = module.exports = {
             if (events[i].allDay) continue;
 
             if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
-                day = events[i].section.loct[0].t.day;
-                if (typeof existingTimes[day] === 'undefined') {
-                    existingTimes[day] = [];
-                }
-                existingTimes[day].push(events[i].section.loct[0].t.time);
-                existingTimes[day] = existingTimes[day].filter(function(value, index, self) {
-                    return self.indexOf(value) === index;
-                })
+                day = events[i].section.loct[0].t.day[0];
+                existingDays.push(day);
             } else {
                 for (var j = 0, locts = events[i].course.loct, length1 = locts.length; j < length1; j++) {
                     for (var k = 0, days = locts[j].t.day, length2 = days.length; k < length2; k++) {
                         day = days[k];
-                        if (typeof existingTimes[day] === 'undefined') {
-                            existingTimes[day] = [];
-                        }
-                        existingTimes[day].push(locts[j].t.time);
-                        existingTimes[day] = existingTimes[day].filter(function(value, index, self) {
-                            return self.indexOf(value) === index;
-                        })
+                        existingDays.push(day);
                     }
                 }
             }
@@ -581,7 +569,9 @@ var self = module.exports = {
             return false;
         }
 
-        existingDays = Object.keys(existingTimes);
+        existingDays = existingDays.filter(function(e, i, c) {
+            return c.indexOf(e) === i;
+        });
 
         for (var i = 0, length = existingDays.length; i < length; i++) {
             for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
@@ -596,7 +586,7 @@ var self = module.exports = {
         });
 
         if (intersectDays.length === 0) return false;
-        
+
         // O(n^2)
         // sucks
         /*
