@@ -1,5 +1,6 @@
 var helper = require('./helper'),
-    storage = require('./plugins/storage');
+    storage = require('./plugins/storage'),
+    config = require('../../../config')
 
 var self = module.exports = {
     alert: function(_) {
@@ -26,7 +27,7 @@ var self = module.exports = {
         return Promise.all(promises);
     },
     fetchTerms: function(_) {
-        return fetch('/db/terms.json')
+        return fetch(config.dbURL + '/terms.json')
             .then(function(res) {
                 return res.json();
             })
@@ -36,7 +37,7 @@ var self = module.exports = {
             })
     },
     fetchInstructorNameToTidMapping: function(_) {
-        return fetch('/db/rmp.json')
+        return fetch(config.dbURL + '/rmp.json')
             .then(function(res) {
                 return res.json();
             })
@@ -50,9 +51,9 @@ var self = module.exports = {
             return Promise.resolve(_.state.instructorStats[tid]);
         }
         return Promise.all([
-            fetch('/db/rmp/ratings/' + tid + '.json'),
-            fetch('/db/rmp/scores/' + tid + '.json'),
-            fetch('/db/rmp/stats/' + tid + '.json')
+            fetch(config.dbURL + '/rmp/ratings/' + tid + '.json'),
+            fetch(config.dbURL + '/rmp/scores/' + tid + '.json'),
+            fetch(config.dbURL + '/rmp/stats/' + tid + '.json')
         ])
         .spread(function(ratingsRes, scoresRes, statsRes){
             return Promise.all([
@@ -78,10 +79,10 @@ var self = module.exports = {
             return Promise.resolve();
         }
         return Promise.all([
-            fetch('/db/offered/spring.json'),
-            fetch('/db/offered/summer.json'),
-            fetch('/db/offered/fall.json'),
-            fetch('/db/offered/winter.json')
+            fetch(config.dbURL + '/offered/spring.json'),
+            fetch(config.dbURL + '/offered/summer.json'),
+            fetch(config.dbURL + '/offered/fall.json'),
+            fetch(config.dbURL + '/offered/winter.json')
         ])
         .spread(function(springRes, summerRes, fallRes, winterRes){
             return Promise.all([
@@ -112,9 +113,9 @@ var self = module.exports = {
         var self = this;
         var loadOnlineTimestamp = function() {
             return Promise.all([
-                fetch('/db/timestamp/terms/' + termId + '.json'),
-                fetch('/db/timestamp/courses/' + termId + '.json'),
-                fetch('/db/timestamp/index/' + termId + '.json')
+                fetch(config.dbURL + '/timestamp/terms/' + termId + '.json'),
+                fetch(config.dbURL + '/timestamp/courses/' + termId + '.json'),
+                fetch(config.dbURL + '/timestamp/index/' + termId + '.json')
             ]).spread(function(termsRes, InfoRes, indexRes){
                 return Promise.all([
                     termsRes.json(),
@@ -203,9 +204,9 @@ var self = module.exports = {
         var workaround = this.iOS();
         var self = this;
         return Promise.all([
-            invalid.coursesData ? fetch('/db/terms/' + termId + '.json') : null,
-            invalid.courseInfo ? fetch('/db/courses/' + termId + '.json') : null,
-            workaround ? null : (invalid.index ? fetch('/db/index/' + termId + '.json') : null)
+            invalid.coursesData ? fetch(config.dbURL + '/terms/' + termId + '.json') : null,
+            invalid.courseInfo ? fetch(config.dbURL + '/courses/' + termId + '.json') : null,
+            workaround ? null : (invalid.index ? fetch(config.dbURL + '/index/' + termId + '.json') : null)
         ])
         .spread(function(courseDataRes, courseInfoRes, indexRes){
             return Promise.all([

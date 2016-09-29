@@ -1,6 +1,6 @@
 {
   "name": "slugsurvival",
-  "version": "1.12.3",
+  "version": "1.13.0",
   "scripts": {
     "test": "./node_modules/.bin/mocha --timeout 30000 --reporter spec",
     "prod": "NODE_ENV=production ./node_modules/browserify/bin/cmd.js -t stringify -t vueify -e src/main.js | ./node_modules/uglifyjs/bin/uglifyjs -c -m > public/prod.js",
@@ -14,8 +14,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "debug": "~2.2.0",
-    "express": "~4.14.0",
-    "ucsc": "git+https://git.fm/zllovesuki/ucsc"
+    "express": "~4.14.0"
   },
   "devDependencies": {
     "alertify.js": "^1.0.12",

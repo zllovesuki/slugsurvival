@@ -14,10 +14,8 @@ module.exports = function() {
 
     if (process.env.RDB_HOST) {
         root = __dirname + '/src/static/dev.html'
-        app.use('/db', express.static(path.join(__dirname, '..', 'ucsc', 'db')));
     }else{
         root = __dirname + '/src/static/prod.html';
-        app.use('/db', express.static(path.join(__dirname, 'node_modules', 'ucsc', 'db')));
     }
 
     app.use('/*', function(req, res, next) {
