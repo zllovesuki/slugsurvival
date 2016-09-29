@@ -503,12 +503,40 @@ var self = module.exports = {
             TODO: This method needs a more efficient rewrite
             Who the fuck write so many forLoops anyway?
         */
+        /*
+
+        The original simplistic approach will check times on a different day, thus
+        to address classes with multiple time blocks, a new data structure and algorithm are needed.
+
+        We will use an object with key corresponds to Day of the week, the value containing an array of time slots
+        e.g.
+
+        var existingTimes = {
+            "Tuesday": [
+                "start": "18:00",
+                "end": "20:00"
+            ]
+        }
+
+        Then, we will check for intersecting days between existingTimes and the "new course",
+        put the conflicting days into a new array
+        e.g.
+
+        var intersectDays = [
+            'Tuesday'
+        ];
+
+        Then, we will compare the "new" course with the timeslots for conflict
+
+        */
         var termId = this.termId;
         var events =  _.state.events[termId];
         var intersectDays = [];
         var existingDays = [];
         var existingTimes = {};
+        var checker = {};
         var comingTime = null;
+        var day = null;
         var conflict = false;
         if (typeof events === 'undefined') return false;
         for (var i = 0, length = events.length; i < length; i++) {
@@ -519,14 +547,33 @@ var self = module.exports = {
                 break;
             }
             if (events[i].allDay) continue;
+
             if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
-                existingDays.push(events[i].section.loct[0].t.day);
+                day = events[i].section.loct[0].t.day;
+                if (typeof existingTimes[day] === 'undefined') {
+                    existingTimes[day] = [];
+                }
+                existingTimes[day].push(events[i].section.loct[0].t.time);
+                existingTimes[day] = existingTimes[day].filter(function(value, index, self) {
+                    return self.indexOf(value) === index;
+                })
             } else {
-                for (var j = 0, locts = events[j].course.loct, length1 = locts.length; j < length1; j++) {
-                    existingDays.push(locts[j].t.day);
+                for (var j = 0, locts = events[i].course.loct, length1 = locts.length; j < length1; j++) {
+                    for (var k = 0, days = locts[j].t.day, length2 = days.length; k < length2; k++) {
+                        day = days[k];
+                        if (typeof existingTimes[day] === 'undefined') {
+                            existingTimes[day] = [];
+                        }
+                        existingTimes[day].push(locts[j].t.time);
+                        existingTimes[day] = existingTimes[day].filter(function(value, index, self) {
+                            return self.indexOf(value) === index;
+                        })
+                    }
                 }
             }
+            day = null;
         }
+
         if (conflict !== false) return null;
 
         if (course.loct.length === 1 && !!!course.loct[0].t) {
@@ -534,9 +581,11 @@ var self = module.exports = {
             return false;
         }
 
+        existingDays = Object.keys(existingTimes);
+
         for (var i = 0, length = existingDays.length; i < length; i++) {
             for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
-                if (helper.intersect(existingDays[i], locts[j].t.day)) {
+                if (locts[j].t.day.indexOf(existingDays[i]) !== -1) {
                     intersectDays.push(locts[j].t.day);
                 }
             }
@@ -554,19 +603,24 @@ var self = module.exports = {
                 CONSIDER NESTED LOOP HARMFUL
 
         */
+
         for (var i = 0, length = intersectDays.length; i < length; i++) {
-            for (var j = 0, events = _.state.events[termId], eLength = events.length; j < eLength; j++) {
+            for (var j = 0, eLength = events.length; j < eLength; j++) {
                 if (events[j].allDay) continue;
                 if (typeof events[j].section !== 'undefined' && events[j].section !== null) {
                     if (events[j].section.loct[0].t.day.indexOf(intersectDays[i]) !== -1) {
-                        existingTimes[events[j].course.c + ' Section'] = events[j].section.loct[0].t.time;
+                        if (typeof checker[events[j].course.c + ' Section'] === 'undefined') {
+                            checker[events[j].course.c + ' Section'] = {};
+                        }
+                        checker[events[j].course.c + ' Section'][intersectDays[i]] = events[j].section.loct[0].t.time;
                     }
                 } else {
                     for (var m = 0, locts = events[j].course.loct, length1 = locts.length; m < length1; m++) {
-                        for (var k = 0, days = locts[m].t.day, length2 = days.length; k < length2; k++) {
-                            if (days[k].indexOf(intersectDays[i]) !== -1) {
-                                existingTimes[events[j].course.c] = locts[m].t.time;
+                        if (locts[m].t.day.indexOf(intersectDays[i]) !== -1) {
+                            if (typeof checker[events[j].course.c] === 'undefined') {
+                                checker[events[j].course.c] = {};
                             }
+                            checker[events[j].course.c][intersectDays[i]] = locts[m].t.time;
                         }
                     }
                 }
@@ -577,13 +631,18 @@ var self = module.exports = {
 
         for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
             comingTime = locts[j].t.time;
-            for (var code in existingTimes) {
-                oldStart = existingTimes[code].start.replace(':', '');
-                oldEnd = existingTimes[code].end.replace(':', '');
-                newStart = comingTime.start.replace(':', '');
-                newEnd = comingTime.end.replace(':', '');
-                if (this.checkTimeConflict(oldStart, oldEnd, newStart, newEnd)) {
-                    return code;
+
+            for (var code in checker) {
+                for (var day in checker[code]) {
+                    if (locts[j].t.day.indexOf(day) !== -1) {
+                        oldStart = checker[code][day].start.replace(':', '');
+                        oldEnd = checker[code][day].end.replace(':', '');
+                        newStart = comingTime.start.replace(':', '');
+                        newEnd = comingTime.end.replace(':', '');
+                        if (this.checkTimeConflict(oldStart, oldEnd, newStart, newEnd)) {
+                            return code;
+                        }
+                    }
                 }
             }
         }
