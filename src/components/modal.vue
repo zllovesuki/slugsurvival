@@ -19,7 +19,7 @@
                     <div class="modal-footer white">
                         <slot name="footer">
                             .
-                            <a class="btn h6 right black" @click="show = false">
+                            <a class="btn h6 right black" @click="close">
                                 X
                             </a>
                         </slot>
