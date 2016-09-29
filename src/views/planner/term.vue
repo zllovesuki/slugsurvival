@@ -124,7 +124,7 @@ module.exports = {
             this.search.results = [];
             setTimeout(function() {
                 document.getElementsByClassName('search-box')[0].focus();
-            }, 500);
+            }, 75);
         },
         getCourseDom: function(course, isSection) {
             // TODO: Reduce special cases
