@@ -2,9 +2,9 @@
   "name": "slugsurvival",
   "version": "1.13.0",
   "scripts": {
-    "test": "./node_modules/.bin/mocha --timeout 30000 --reporter spec",
-    "prod": "NODE_ENV=production ./node_modules/browserify/bin/cmd.js -t stringify -t vueify -e src/main.js | ./node_modules/uglifyjs/bin/uglifyjs -c -m > public/prod.js",
-    "watch": "./node_modules/watchify/bin/cmd.js -t stringify -t vueify -e src/main.js -o public/app.js -v"
+    "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
+    "prod": "NODE_ENV=production node node_modules/browserify/bin/cmd.js -t stringify -t vueify -e src/main.js | ./node_modules/uglifyjs/bin/uglifyjs -c -m > public/prod.js",
+    "watch": "node node_modules/watchify/bin/cmd.js -t stringify -t vueify -e src/main.js -o public/app.js -v"
   },
   "repository": {
     "type": "git",
