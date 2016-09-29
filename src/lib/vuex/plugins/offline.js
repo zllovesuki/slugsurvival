@@ -14,7 +14,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch('/db/timestamp/terms/' + termId + '.json')
+                return fetch(config.dbURL + '/timestamp/terms/' + termId + '.json')
                 .then(function(res) {
                     return res.json();
                 })
@@ -34,7 +34,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch('/db/timestamp/courses/' + termId + '.json')
+                return fetch(config.dbURL + '/timestamp/courses/' + termId + '.json')
                 .then(function(res) {
                     return res.json();
                 })
@@ -56,7 +56,7 @@ module.exports = function(storage) {
                 if (skipSaving) return;
 
                 if (!workaround) {
-                    return fetch('/db/timestamp/index/' + termId + '.json')
+                    return fetch(config.dbURL + '/timestamp/index/' + termId + '.json')
                     .then(function(res) {
                         return res.json();
                     })
