@@ -1,3 +1,5 @@
+var config = require('../../../../config');
+
 module.exports = function(storage) {
     return function(store) {
         store.subscribe(function(mutation, state) {
