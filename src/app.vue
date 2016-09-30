@@ -15,7 +15,7 @@
         </section>
         <div class="container mb2 clearfix">
             <div class="sm-flex center nowrap mb2 h5">
-                <div class="flex-auto muted" @click="egg">version 1.13.3</div>
+                <div class="flex-auto muted" @click="egg">version {{ version }}</div>
             </div>
         </div>
     </div>
@@ -31,6 +31,11 @@ module.exports = {
     vuex: {
         getters: getters,
         actions: actions
+    },
+    data: function() {
+        return {
+            version: require('../package.json').version
+        }
     },
     methods: {
         egg: function() {
