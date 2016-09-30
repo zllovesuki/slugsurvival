@@ -554,6 +554,7 @@ var self = module.exports = {
                 existingDays.push(day);
             } else {
                 for (var j = 0, locts = events[i].course.loct, length1 = locts.length; j < length1; j++) {
+                    if (!locts[j].t) continue;
                     for (var k = 0, days = locts[j].t.day, length2 = days.length; k < length2; k++) {
                         day = days[k];
                         existingDays.push(day);
@@ -576,6 +577,7 @@ var self = module.exports = {
 
         for (var i = 0, length = existingDays.length; i < length; i++) {
             for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
+                if (!locts[j].t) continue;
                 if (locts[j].t.day.indexOf(existingDays[i]) !== -1) {
                     intersectDays.push(locts[j].t.day);
                 }
@@ -608,6 +610,7 @@ var self = module.exports = {
                     }
                 } else {
                     for (var m = 0, locts = events[j].course.loct, length1 = locts.length; m < length1; m++) {
+                        if (!locts[m].t) continue;
                         if (locts[m].t.day.indexOf(intersectDays[i]) !== -1) {
                             if (typeof checker[events[j].course.c] === 'undefined') {
                                 checker[events[j].course.c] = {};
@@ -622,6 +625,7 @@ var self = module.exports = {
         var oldStart, newStart, oldEnd, newEnd;
 
         for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
+            if (!locts[j].t) continue;
             comingTime = locts[j].t.time;
 
             for (var code in checker) {
