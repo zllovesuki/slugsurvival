@@ -18,8 +18,21 @@ module.exports = function() {
         root = __dirname + '/src/static/prod.html';
     }
 
+    var html = fs.readFileSync(root).toString('utf-8');
+    var analytics = '';
+
+    if (config.analytics && config.analytics.piwik && config.analytics.piwik.enabled) {
+        analytics = fs.readFileSync(__dirname + '/src/static/piwik.tmpl').toString('utf-8');
+        analytics = analytics.replace('__ENDPOINT__', config.analytics.piwik.endpoint);
+        analytics = analytics.replace('__DOMAIN__', config.analytics.piwik.domain);
+        analytics = analytics.replace('__SITEID__', config.analytics.piwik.siteId);
+        html = html.replace('__ANALYTICS__', analytics);
+    }else{
+        html = html.replace('__ANALYTICS__', '');
+    }
+
     app.use('/*', function(req, res, next) {
-        return res.sendFile(root);
+        return res.end(html);
     });
 
     // production error handler
