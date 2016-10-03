@@ -783,6 +783,10 @@ var self = module.exports = {
         if (typeof events === 'undefined') return;
         var cal = ics();
 
+        /*
+            TODO: This section of the code looks an awful like helper.compact()
+        */
+
         var courses = [], sections = [];
         for (var i = 0, length = events.length; i < length; i++) {
             if (typeof events[i].section !== 'undefined') {
