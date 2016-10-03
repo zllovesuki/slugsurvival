@@ -8,7 +8,10 @@
                 <div class="clearfix">
                     <div class="left">
                         <a class="btn btn-outline red h6" v-on:click="saveCalendarAsImage">
-                            save as image
+                            &#128190; image
+                        </a>
+                        <a class="btn btn-outline red h6 ml1" v-on:click="saveCalendarAsICS">
+                            &#128190; ics
                         </a>
                     </div>
                     <div class="right">
@@ -322,13 +325,26 @@ module.exports = {
                 }
             })
         },
+        loadFileSaverBundle: function(callback) {
+            $script([dist + 'canvas/canvas-toBlob.js', dist + 'canvas/FileSaver.min.js'], 'fileSaverBundle')
+            $script.ready('fileSaverBundle', callback)
+        },
         loadCanvasBundle: function(callback) {
             var self = this;
             $script(dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.min.js', 'canvasRootDep');
             $script.ready('canvasRootDep', function() {
                 self.loading.go(60);
-                $script([dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.svg.min.js', dist + 'canvas/canvas-toBlob.js', dist + 'canvas/FileSaver.min.js'], 'canvasBundle')
-                $script.ready('canvasBundle', callback)
+                $script(dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.svg.min.js', 'canvasBundle')
+                $script.ready('canvasBundle', function() {
+                    self.loadFileSaverBundle(callback);
+                })
+            })
+        },
+        loadICSBundle: function(callback) {
+            var self = this;
+            $script(dist + 'ics.js/connorbode/ics.js', 'ics.js');
+            $script.ready('ics.js', function() {
+                self.loadFileSaverBundle(callback);
             })
         },
         saveCalendarAsImage: function() {
@@ -344,6 +360,14 @@ module.exports = {
                         saveAs(blob, 'Schedule for ' + self.termName + '.png');
                     });
                 })
+            })
+        },
+        saveCalendarAsICS: function() {
+            var self = this;
+            this.loading.go(50);
+            this.loadICSBundle(function() {
+                self.loading.go(100);
+                self.exportICS();
             })
         },
         bookmark: function() {

@@ -774,5 +774,79 @@ var self = module.exports = {
             time[0] = +time[0] % 12 || 12; // Adjust hours
         }
         return time.join(''); // return adjusted time or original string
-    } // http://stackoverflow.com/questions/13898423/javascript-convert-24-hour-time-of-day-string-to-12-hour-time-with-am-pm-and-no
+    }, // http://stackoverflow.com/questions/13898423/javascript-convert-24-hour-time-of-day-string-to-12-hour-time-with-am-pm-and-no
+    exportICS: function(_) {
+        var termId = this.termId;
+        var events = _.state.events[termId];
+        var single;
+        var startDate, endDate, startTime, endTime;
+        if (typeof events === 'undefined') return;
+        var cal = ics();
+
+        var courses = [], sections = [];
+        for (var i = 0, length = events.length; i < length; i++) {
+            if (typeof events[i].section !== 'undefined') {
+                for (var j = 0, locts = events[i].section.loct, length1 = locts.length; j < length1; j++) {
+                    sections.push(events[i].course.num + '-' + events[i].section.num);
+                }
+            }else{
+                for (var j = 0, locts = events[i].course.loct, length1 = locts.length; j < length1; j++) {
+                    courses.push(events[i].course.num + '-');
+                }
+            }
+        }
+
+        courses = courses.filter(function(e, i, c) {
+            return c.indexOf(e) === i;
+        });
+
+        sections = sections.filter(function(e, i, c) {
+            return c.indexOf(e) === i;
+        });
+
+        var split = [], course, courseInfo;
+
+        for (var i = 0, length = courses.length; i < length; i++) {
+            split = courses[i].split('-');
+            course = _.state.flatCourses[termId][split[0]];
+            courseInfo = _.state.courseInfo[termId][split[0]];
+            endDate = courseInfo.md.end;
+
+            for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
+                startDate = helper.determineActualStartDate(courseInfo.md.start, locts[j].t.day);
+                startTime = locts[j].t.time.start;
+                endTime = locts[j].t.time.end;
+                cal.addEvent(course.c + ' - ' + courseInfo.ty, course.n, locts[j].loc, [startDate, startTime].join(' '), [startDate, endTime].join(' '), {
+                    freq: 'WEEKLY',
+                    until: endDate,
+                    interval: 1,
+                    byday: helper.long2short(locts[j].t.day)
+                })
+            }
+        }
+
+        for (var i = 0, length = sections.length; i < length; i++) {
+            split = sections[i].split('-');
+            course = _.state.flatCourses[termId][split[0]];
+            courseInfo = _.state.courseInfo[termId][split[0]];
+            endDate = courseInfo.md.end;
+
+            for (var j = 0, sec = courseInfo.sec, length1 = sec.length; j < length1; j++) {
+                if (sec[j].num != split[1]) continue;
+                for (var k = 0, locts = sec[j].loct, length2 = locts.length; k < length2; k++) {
+                    startDate = helper.determineActualStartDate(courseInfo.md.start, locts[k].t.day);
+                    startTime = locts[k].t.time.start;
+                    endTime = locts[k].t.time.end;
+                    cal.addEvent(course.c + ' - Section', course.n, locts[k].loc, [startDate, startTime].join(' '), [startDate, endTime].join(' '), {
+                        freq: 'WEEKLY',
+                        until: endDate,
+                        interval: 1,
+                        byday: helper.long2short(locts[k].t.day)
+                    })
+                }
+            }
+        }
+
+        cal.download('Schedule for ' + _.state.termName);
+    }
 }

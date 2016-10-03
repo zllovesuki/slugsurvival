@@ -129,6 +129,72 @@ var self = module.exports = {
             }
             return t
         }
-    }
+    },
+    long2short: function(array) {
+        return array.map(function(el) {
+            if (el == 'Monday') return 'MO';
+            if (el == 'Tuesday') return 'TU';
+            if (el == 'Wednesday') return 'WE';
+            if (el == 'Thursday') return 'TH';
+            if (el == 'Friday') return 'FR';
+            return 'SA';
+        })
+    },
+    dayToNum: function(el) {
+        if (el == 'Monday') return 1
+        if (el == 'Tuesday') return 2
+        if (el == 'Wednesday') return 3
+        if (el == 'Thursday') return 4
+        if (el == 'Friday') return 5
+    },
+    formattedDate: function(date) {
+        var d = new Date(date || Date.now()),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
 
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [month, day, year].join('/');
+    }, // http://stackoverflow.com/questions/13459866/javascript-change-date-into-format-of-dd-mm-yyyy
+    determineActualStartDate: function(termStartDate, courseMeetingDays) {
+        var _tmp = new Date(termStartDate);
+        var day = _tmp.getDay();
+        /*
+        SU  MO  TU   W  TH  FR  SA
+         0   1   2   3   4   5   6
+
+        if the termStartDate is less than one of the meeting day, that means they meet next week
+
+        say, 09/22/2016 is the term starting date, and ECON 111A meets Tuesday and Thursday
+        09/22/2016 is Thursday, so ECON 111A only has class on Thursday on the first week
+
+        but for LIT 61R, the meeting days are Monday and Wedsnesday
+        since both of them are *before* Thursday, then they start next week
+        */
+        var days = courseMeetingDays.map(self.dayToNum);
+        var startingDate = new Date(termStartDate);
+        var thisWeek = 0;
+        var total = days.length;
+        for (var i = 0; i < total; i++) {
+            if (days[i] >= day) thisWeek++;
+        }
+        if (thisWeek === 0) {
+            for (var i = 0; i < total; i++) {
+                if (days[i] < day) {
+                    startingDate.setDate(startingDate.getDate() + (7 - day + days[i]));
+                    break;
+                }
+            }
+        }else{
+            for (var i = 0; i < total; i++) {
+                if (days[i] >= day) {
+                    startingDate.setDate(startingDate.getDate() + (days[i] - day));
+                    break;
+                }
+            }
+        }
+        return self.formattedDate(startingDate)
+    }
 }
