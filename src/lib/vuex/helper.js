@@ -180,21 +180,17 @@ var self = module.exports = {
         for (var i = 0; i < total; i++) {
             if (days[i] >= day) thisWeek++;
         }
-        if (thisWeek === 0) {
-            for (var i = 0; i < total; i++) {
-                if (days[i] < day) {
-                    startingDate.setDate(startingDate.getDate() + (7 - day + days[i]));
-                    break;
-                }
+        for (var i = 0; i < total; i++) {
+            if (thisWeek === 0 && days[i] < day) {
+                startingDate.setDate(startingDate.getDate() + (7 - day + days[i]));
+                break;
             }
-        }else{
-            for (var i = 0; i < total; i++) {
-                if (days[i] >= day) {
-                    startingDate.setDate(startingDate.getDate() + (days[i] - day));
-                    break;
-                }
+            if (thisWeek > 0 && days[i] >= day) {
+                startingDate.setDate(startingDate.getDate() + (days[i] - day));
+                break;
             }
         }
+        
         return self.formattedDate(startingDate)
     }
 }
