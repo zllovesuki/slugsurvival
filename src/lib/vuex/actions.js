@@ -106,7 +106,7 @@ var self = module.exports = {
             }
         }.bind(this))
     },
-    loadFromLocal: function(_) {
+    loadCourseDataFromLocal: function(_) {
         var online;
         var termId = this.termId;
         var workaround = this.iOS();
@@ -199,7 +199,7 @@ var self = module.exports = {
             })
         })
     },
-    loadFromOnline: function(_, invalid) {
+    loadCourseDataFromOnline: function(_, invalid) {
         var termId = this.termId;
         var workaround = this.iOS();
         var self = this;
@@ -230,10 +230,10 @@ var self = module.exports = {
         var termId = this.termId;
         _.dispatch('setTermName', _.state.termsList[termId])
         if (typeof _.state.flatCourses[termId] === 'undefined') {
-            return this.loadFromLocal()
+            return this.loadCourseDataFromLocal()
             .catch(function(invalid) {
                 if (invalid.yes) {
-                    return this.loadFromOnline(invalid)
+                    return this.loadCourseDataFromOnline(invalid)
                 }
             }.bind(this))
         } else {
