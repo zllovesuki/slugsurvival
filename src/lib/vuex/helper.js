@@ -190,7 +190,19 @@ var self = module.exports = {
                 break;
             }
         }
-        
+
         return self.formattedDate(startingDate)
+    },
+    addCal: function(cal, course, courseInfo, type, loct) {
+        var startDate = self.determineActualStartDate(courseInfo.md.start, loct.t.day);
+        var endDate = courseInfo.md.end;
+        var startTime = loct.t.time.start;
+        var endTime = loct.t.time.end;
+        cal.addEvent(course.c + ' - ' + type, course.n, loct.loc, [startDate, startTime].join(' '), [startDate, endTime].join(' '), {
+            freq: 'WEEKLY',
+            until: endDate,
+            interval: 1,
+            byday: self.long2short(loct.t.day)
+        })
     }
 }
