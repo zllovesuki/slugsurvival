@@ -8,7 +8,7 @@ module.exports = {
     setTermName: function(state, name) {
         state.termName = name;
     },
-    saveTermsList: function(state, terms) {
+    saveTermsList: function(state, terms, skipSaving) {
         state.flatTermsList = terms;
         terms.forEach(function(term) {
             state.termsList[term.code] = term.name;
@@ -31,7 +31,7 @@ module.exports = {
             })
         })
     },
-    saveInstructorNameToTidMapping: function(state, mapping) {
+    saveInstructorNameToTidMapping: function(state, mapping, skipSaving) {
         state.instructorNameToTidMapping = mapping;
     },
     saveInstructorStats: function(state, stats) {

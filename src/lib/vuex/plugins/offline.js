@@ -47,6 +47,46 @@ module.exports = function(storage) {
 
                 break;
 
+                case 'saveInstructorNameToTidMapping':
+
+                var rmp = mutation.payload[0];
+                var skipSaving = mutation.payload[1] || false;
+
+                if (skipSaving) return;
+
+                return fetch(config.dbURL + '/timestamp/rmp.json')
+                .then(function(res) {
+                    return res.json();
+                })
+                .then(function(onlineTimestamp) {
+                    return Promise.all([
+                        storage.setItem('rmpTimestamp', onlineTimestamp),
+                        storage.setItem('rmp', rmp)
+                    ])
+                })
+
+                break;
+
+                case 'saveTermsList':
+
+                var termsList = mutation.payload[0];
+                var skipSaving = mutation.payload[1] || false;
+
+                if (skipSaving) return;
+
+                return fetch(config.dbURL + '/timestamp/terms.json')
+                .then(function(res) {
+                    return res.json();
+                })
+                .then(function(onlineTimestamp) {
+                    return Promise.all([
+                        storage.setItem('termsListTimestamp', onlineTimestamp),
+                        storage.setItem('termsList', termsList)
+                    ])
+                })
+
+                break;
+
                 case 'buildIndexedSearch':
 
                 var index = mutation.payload[1];

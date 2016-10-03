@@ -17,34 +17,7 @@ var self = module.exports = {
         return false;
     }, // http://stackoverflow.com/questions/3007480/determine-if-user-navigated-from-mobile-safari
     ensureDataLoaded: function(_) {
-        var promises = []
-        if (_.state.flatTermsList.length === 0) {
-            promises.push(this.fetchTerms());
-        }
-        if (Object.keys(_.state.instructorNameToTidMapping).length === 0) {
-            promises.push(this.fetchInstructorNameToTidMapping());
-        }
-        return Promise.all(promises);
-    },
-    fetchTerms: function(_) {
-        return fetch(config.dbURL + '/terms.json')
-            .then(function(res) {
-                return res.json();
-            })
-            .then(function(data) {
-                _.dispatch('saveTermsList', data);
-                return data;
-            })
-    },
-    fetchInstructorNameToTidMapping: function(_) {
-        return fetch(config.dbURL + '/rmp.json')
-            .then(function(res) {
-                return res.json();
-            })
-            .then(function(data) {
-                _.dispatch('saveInstructorNameToTidMapping', data);
-                return data;
-            })
+        return this.fetchTermsListAndRMP();
     },
     fetchThreeStatsByTid: function(_, tid) {
         if (typeof _.state.instructorStats[tid] !== 'undefined') {
@@ -106,6 +79,117 @@ var self = module.exports = {
             }
         }.bind(this))
     },
+    loadTermsAndRMPFromLocal: function(_) {
+        var online;
+        var self = this;
+        var loadOnlineTimestamp = function() {
+            return Promise.all([
+                fetch(config.dbURL + '/timestamp/terms.json'),
+                fetch(config.dbURL + '/timestamp/rmp.json')
+            ]).spread(function(termsRes, rmpRes){
+                return Promise.all([
+                    termsRes.json(),
+                    rmpRes.json()
+                ])
+            })
+        }
+        var loadOfflineTimestamp = function() {
+            return Promise.all([
+                storage.getItem('termsListTimestamp'),
+                storage.getItem('rmpTimestamp')
+            ])
+        }
+        var loadFromStorage = function(invalid) {
+            return Promise.all([
+                !invalid.termsList ? storage.getItem('termsList') : null,
+                !invalid.rmp ? storage.getItem('rmp') : null
+            ]).spread(function(termsList, rmp) {
+                return self.dispatchSaveTermsAndRMP(termsList, rmp, true);
+            })
+        }
+        return loadOnlineTimestamp()
+        .then(function(timestamp) {
+            online = timestamp;
+            console.log('fetched online timestamp')
+        })
+        .catch(function(e) {
+            console.log('fail to fetch online timestamp, checking local copy');
+        })
+        .finally(function() {
+            return loadOfflineTimestamp().then(function(offline) {
+                var invalid = {
+                    yes: false,
+                    termsList: false,
+                    rmp: false
+                }
+                if (typeof online !== 'undefined') {
+                    // loadOnlineTimestamp() success
+                    if (online[0] !== offline[0]) {
+                        invalid.yes = true;
+                        invalid.termsList = true;
+                        console.log('terms list timestamp differs');
+                    }
+                    if (online[1] !== offline[1]) {
+                        invalid.yes = true;
+                        invalid.rmp = true;
+                        console.log('rmp mapping timestamp differs');
+                    }
+                }else{
+                    // possibly no connectivity
+                    if (offline[0] === null
+                        || offline[1] === null) {
+                        // We don't have a local copy
+                        console.log(('no local copies to fallback'));
+                        invalid = {
+                            yes: true,
+                            termsList: true,
+                            rmp: true
+                        }
+                        return Promise.reject(invalid)
+                    }
+                }
+
+                if (invalid.yes) console.log('some or all local copies are outdated')
+                else console.log('local copies valid')
+
+                return loadFromStorage(invalid).then(function () {
+                    return Promise.reject(invalid);
+                })
+            })
+        })
+    },
+    loadTermsAndRMPFromOnline: function(_, invalid) {
+        var self = this;
+        return Promise.all([
+            invalid.termsList ? fetch(config.dbURL + '/terms.json') : null,
+            invalid.rmp ? fetch(config.dbURL + '/rmp.json') : null
+        ])
+        .spread(function(termsRes, rmpRes){
+            return Promise.all([
+                invalid.termsList ? termsRes.json() : null,
+                invalid.rmp ? rmpRes.json() : null
+            ])
+        })
+        .spread(function(termsList, rmp) {
+            return self.dispatchSaveTermsAndRMP(termsList, rmp, false);
+        })
+    },
+    dispatchSaveTermsAndRMP: function(_, termsList, rmp, skipSaving) {
+        if (termsList !== null) _.dispatch('saveTermsList', termsList, skipSaving);
+        if (rmp !== null) _.dispatch('saveInstructorNameToTidMapping', rmp, skipSaving);
+    },
+    fetchTermsListAndRMP: function(_) {
+        if (_.state.flatTermsList.length === 0) {
+            return this.loadTermsAndRMPFromLocal()
+            .catch(function(invalid) {
+                if (invalid.yes) {
+                    return this.loadTermsAndRMPFromOnline(invalid)
+                }
+            }.bind(this))
+        } else {
+            return Promise.resolve()
+        }
+    },
     loadCourseDataFromLocal: function(_) {
         var online;
         var termId = this.termId;
@@ -137,7 +221,7 @@ var self = module.exports = {
                 !invalid.courseInfo ? storage.getItem('termCourseInfo-' + termId) : null,
                 workaround ? null : (!invalid.index ? storage.getItem('termIndex-' + termId) : null)
             ]).spread(function(coursesData, courseInfo, index) {
-                return self.dispatchSave(coursesData, courseInfo, index, true);
+                return self.dispatchSaveCourseData(coursesData, courseInfo, index, true);
             })
         }
         return loadOnlineTimestamp()
@@ -216,10 +300,10 @@ var self = module.exports = {
             ])
         })
         .spread(function(coursesData, courseInfo, index) {
-            return self.dispatchSave(coursesData, courseInfo, index, false);
+            return self.dispatchSaveCourseData(coursesData, courseInfo, index, false);
         })
     },
-    dispatchSave: function(_, coursesData, courseInfo, index, skipSaving) {
+    dispatchSaveCourseData: function(_, coursesData, courseInfo, index, skipSaving) {
         var termId = this.termId;
         var workaround = this.iOS();
         if (coursesData !== null) _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
