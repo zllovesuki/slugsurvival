@@ -30,7 +30,7 @@
 			</div>
             <div class="m0 p1 border-top">
 				<div class="clearfix">
-					<span class="btn black h5">Will notify: </span>
+					<span class="btn black h5">Will notify for {{ termsList[monitoredTerm] }}: </span>
 				</div>
 				<div class="clearfix">
 					<table class="h6 col col-12">
@@ -74,6 +74,7 @@
 <script>
 var getters = require('../../lib/vuex/getters.js')
 var actions = require('../../lib/vuex/actions.js')
+var config = require('../../../config')
 
 module.exports = {
     vuex: {
@@ -82,6 +83,7 @@ module.exports = {
     },
     data: function() {
         return {
+            monitoredTerm: config.monitoredTerm,
             courses: [
                 {
                     num: 1234,

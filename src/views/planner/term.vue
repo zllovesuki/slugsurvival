@@ -58,19 +58,7 @@
                 </div>
             </div>
         </div>
-        <modal :show.sync="searchModal">
-            <h4 slot="header">
-                <input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="250" placeholder="ECON 197, Design, Mendes, etc...">
-            </h4>
-            <span slot="body">
-                <ul class="list-reset">
-                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="promptAddClass(result)" v-for="result in search.results" track-by="num">
-                        {{ result.c }} - {{ result.s }}  - {{ result.n }}
-                    </li>
-                    <li v-show="search.string.length > 0 && search.results.length === 0">No results.</li>
-                </ul>
-            </span>
-        </modal>
+        <search :show.sync="searchModal" :callback="promptAddClass" :selected-term-id="termId"></search>
     </div>
 </template>
 
@@ -87,44 +75,12 @@ module.exports = {
     data: function() {
         return {
             ready: false,
-            searchModal: false,
-            search: {
-                string: '',
-                results: []
-            }
-        }
-    },
-    watch: {
-        'search.string': function(val, oldVal) {
-            if (val.length < 1) return;
-            var self = this;
-            var options = {
-                fields: {
-                    c: {
-                        boost: 5
-                    },
-                    n: {
-                        boost: 3
-                    },
-                    f: {
-                        boost: 2
-                    },
-                    la: {
-                        boost: 2
-                    }
-                }
-            };
-            val = val.split(/(\d+)/).filter(Boolean).map(function(el) { return el.trim(); }).join(" ");
-            this.search.results = this.indexSearch[this.termId].search(val, options).map(function(result) {
-                return self.flatCourses[self.termId][result.ref]
-            });
+            searchModal: false
         }
     },
     methods: {
         showSearchModal: function() {
             this.searchModal = true;
-            this.search.string = '';
-            this.search.results = [];
             setTimeout(function() {
                 document.getElementsByClassName('search-box')[0].focus();
             }, 75);
