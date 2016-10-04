@@ -190,9 +190,9 @@ var self = module.exports = {
             return Promise.resolve()
         }
     },
-    loadCourseDataFromLocal: function(_) {
+    loadCourseDataFromLocal: function(_, termId) {
+        termId = termId || this.termId;
         var online;
-        var termId = this.termId;
         var workaround = this.iOS();
         var self = this;
         var loadOnlineTimestamp = function() {
@@ -221,7 +221,7 @@ var self = module.exports = {
                 !invalid.courseInfo ? storage.getItem('termCourseInfo-' + termId) : null,
                 workaround ? null : (!invalid.index ? storage.getItem('termIndex-' + termId) : null)
             ]).spread(function(coursesData, courseInfo, index) {
-                return self.dispatchSaveCourseData(coursesData, courseInfo, index, true);
+                return self.dispatchSaveCourseData(coursesData, courseInfo, index, true, termId);
             })
         }
         return loadOnlineTimestamp()
@@ -283,8 +283,8 @@ var self = module.exports = {
             })
         })
     },
-    loadCourseDataFromOnline: function(_, invalid) {
-        var termId = this.termId;
+    loadCourseDataFromOnline: function(_, invalid, termId) {
+        termId = termId || this.termId;
         var workaround = this.iOS();
         var self = this;
         return Promise.all([
@@ -300,24 +300,24 @@ var self = module.exports = {
             ])
         })
         .spread(function(coursesData, courseInfo, index) {
-            return self.dispatchSaveCourseData(coursesData, courseInfo, index, false);
+            return self.dispatchSaveCourseData(coursesData, courseInfo, index, false, termId);
         })
     },
-    dispatchSaveCourseData: function(_, coursesData, courseInfo, index, skipSaving) {
-        var termId = this.termId;
+    dispatchSaveCourseData: function(_, coursesData, courseInfo, index, skipSaving, termId) {
+        termId = termId || this.termId;
         var workaround = this.iOS();
         if (coursesData !== null) _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
         if (courseInfo !== null) _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
         if (workaround || index !== null) _.dispatch('buildIndexedSearch', termId, index, workaround, skipSaving);
     },
-    fetchTermCourses: function(_) {
-        var termId = this.termId;
+    fetchTermCourses: function(_, termId) {
+        termId =  termId || this.termId;
         _.dispatch('setTermName', _.state.termsList[termId])
         if (typeof _.state.flatCourses[termId] === 'undefined') {
-            return this.loadCourseDataFromLocal()
+            return this.loadCourseDataFromLocal(termId)
             .catch(function(invalid) {
                 if (invalid.yes) {
-                    return this.loadCourseDataFromOnline(invalid)
+                    return this.loadCourseDataFromOnline(invalid, termId)
                 }
             }.bind(this))
         } else {

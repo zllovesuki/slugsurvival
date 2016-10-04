@@ -32,7 +32,6 @@ module.exports = {
             twoWay: true
         },
         selectedTermId: {
-            type: String,
             required: true
         },
         callback: {

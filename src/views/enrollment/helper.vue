@@ -17,7 +17,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="overflow-hidden bg-white rounded mb2">
+		<div class="overflow-hidden bg-white rounded mb2" v-if="ready">
 			<div class="m0 p1">
 				<div class="clearfix">
 					<span class="btn black h5">Notify Me When Available: </span>
@@ -46,7 +46,7 @@
 			</div>
 			<div class="m0 p2 border-top">
 				<div class="clearfix">
-                    <a class="muted h6 ml1 mb1 bold btn btn-outline red">Add Classes</a>
+                    <a class="muted h6 ml1 mb1 bold btn btn-outline red" @click="showSearchModal">Add Classes</a>
 					<a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via SMS</a>
                     <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via Email</a>
                     <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via Push Notifications</a>
@@ -68,6 +68,7 @@
 				</div>
 			</div>
 		</div>-->
+        <search :show.sync="searchModal" :callback="addToNotifyList" :selected-term-id="monitoredTerm"></search>
     </div>
 </template>
 
@@ -83,7 +84,9 @@ module.exports = {
     },
     data: function() {
         return {
-            monitoredTerm: config.monitoredTerm,
+            ready: false,
+            searchModal: false,
+            monitoredTerm: config.monitoredTerm + '',
             courses: [
                 {
                     num: 1234,
@@ -93,13 +96,29 @@ module.exports = {
         }
     },
     methods: {
-
+        showSearchModal: function() {
+            this.searchModal = true;
+            setTimeout(function() {
+                document.getElementsByClassName('search-box')[0].focus();
+            }, 75);
+        },
+        addToNotifyList: function(course) {
+            console.log(course);
+        }
     },
     created: function() {
 
     },
     ready: function() {
+        var self = this;
+        this.loading.go(30);
         this.setTitle('Tracker');
+
+        this.fetchTermCourses(this.monitoredTerm)
+        .then(function() {
+            self.loading.go(100);
+            self.ready = true;
+        })
     }
 }
 </script>
