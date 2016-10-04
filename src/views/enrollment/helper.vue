@@ -30,7 +30,7 @@
 			</div>
             <div class="m0 p1 border-top">
 				<div class="clearfix">
-                    <span class="btn black h5">First, add the classes that you want to be notified about: </span>
+                    <span class="btn black h5">First, add the classes that you want to be notified for: </span>
                 </div>
                 <div class="m0 p2">
                     <div class="clearfix">
