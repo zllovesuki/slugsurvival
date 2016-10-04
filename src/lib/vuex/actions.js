@@ -830,7 +830,7 @@ var self = module.exports = {
                 html += '<hr />';
                 html += template('Waitlisted', seat.waitTotal);
                 html += template('Waitlist Cap.', seat.waitCap);
-                html += '<p><span class="muted h6">Last Updated: ' + new Date(latest.date * 1000).toLocaleString() + '</span></p>';
+                html += '<p><span class="muted h6">Last Changed: ' + new Date(latest.date * 1000).toLocaleString() + '</span></p>';
 
                 this.alert()
                 .okBtn('Cool')

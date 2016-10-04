@@ -229,7 +229,7 @@ module.exports = {
                 + generateRows(course.sec)
                 + '</tbody>'
                 + '</table>'
-                + '<p><span class="muted h6">Last Updated: ' + lastUpdated + '</span></p>';
+                + '<p><span class="muted h6">Last Changed: ' + lastUpdated + '</span></p>';
 
                 this.loading.go(100);
 
