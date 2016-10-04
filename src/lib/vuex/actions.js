@@ -192,7 +192,6 @@ var self = module.exports = {
         }
     },
     loadCourseDataFromLocal: function(_, termId) {
-        termId = termId || this.termId;
         var online;
         var workaround = this.iOS();
         var self = this;
@@ -285,7 +284,6 @@ var self = module.exports = {
         })
     },
     loadCourseDataFromOnline: function(_, invalid, termId) {
-        termId = termId || this.termId;
         var workaround = this.iOS();
         var self = this;
         return Promise.all([
@@ -305,7 +303,6 @@ var self = module.exports = {
         })
     },
     dispatchSaveCourseData: function(_, coursesData, courseInfo, index, skipSaving, termId) {
-        termId = termId || this.termId;
         var workaround = this.iOS();
         if (coursesData !== null) _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
         if (courseInfo !== null) _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
