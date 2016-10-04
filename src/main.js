@@ -31,6 +31,16 @@ router.map({
                 component: require('./views/planner/term.vue')
             }
         }
+    },
+    '/enrollment': {
+        name: 'enrollment',
+        component: require('./views/enrollment/index.vue'),
+        subRoutes: {
+            '/': {
+                name: 'enrollHelper',
+                component: require('./views/enrollment/helper.vue')
+            }
+        }
     }
 })
 

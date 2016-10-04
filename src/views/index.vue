@@ -14,7 +14,7 @@
                     <div class="clearfix">
                         <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" v-link="{ name: 'termsList' }">Interactive Planner</a>
                         <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" @click="comingSoon">Major/Minor Requirements</a>
-                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" @click="comingSoon">Enrollment Opening Tracker</a>
+                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}"  v-link="{ name: 'enrollHelper' }">Enrollment Opening Tracker</a>
                     </div>
                 </div>
             </div>
