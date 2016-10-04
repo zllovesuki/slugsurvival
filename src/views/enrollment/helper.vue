@@ -30,14 +30,24 @@
 			</div>
             <div class="m0 p1 border-top">
 				<div class="clearfix">
-					<span class="btn black h5">Will notify for {{ termsList[monitoredTerm] }}: </span>
+                    <span class="btn black h5">First, add the classes that you want to be notified about: </span>
+                </div>
+                <div class="m0 p2">
+                    <div class="clearfix">
+                        <a class="muted h6 ml1 mb1 bold btn btn-outline black" @click="showSearchModal">search anything</a>
+                        &nbsp; or,
+                        <a class="muted h6 ml1 mb1 bold btn btn-outline black" @click="importPlanner">Import from Planner</a>
+                    </div>
+                </div>
+                <div class="clearfix">
+                    <span class="btn black h5">For {{ termName }}: </span>
 				</div>
 				<div class="clearfix">
 					<table class="h6 col col-12">
 						<template v-for="course in courses" track-by="num">
 							<tr>
 								<td class="col col-6">
-									<span class="btn not-clickable left">{{ course.c }}</span>
+									<span class="btn clickable left" @click="showCourse(monitoredTerm, course)">{{ course.c }}</span>
 								</td>
 							</tr>
 						</template>
@@ -49,13 +59,17 @@
 					</table>
 				</div>
 			</div>
-			<div class="m0 p2 border-top">
-				<div class="clearfix">
-                    <a class="muted h6 ml1 mb1 bold btn btn-outline red" @click="showSearchModal">Add Classes</a>
-					<a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via SMS</a>
-                    <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via Email</a>
-                    <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via Push Notifications</a>
-				</div>
+			<div class="m0 p1 border-top">
+                <div class="clearfix">
+                    <span class="btn black h5">Then, select one or more ways to be notified. </span>
+                </div>
+                <div class="m0 p2">
+    				<div class="clearfix">
+    					<a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via SMS</a>
+                        <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via Email</a>
+                        <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via Push Notifications</a>
+    				</div>
+                </div>
 			</div>
 		</div><!--
 		<div class="overflow-hidden bg-white rounded mb2">
@@ -102,16 +116,51 @@ module.exports = {
                 document.getElementsByClassName('search-box')[0].focus();
             }, 75);
         },
-        addToNotifyList: function(course) {
-            var html = this.getCourseDom(this.monitoredTerm, course);
+        showCourse: function(termId, course) {
+            var html = this.getCourseDom(termId, course);
             return this.alert()
-            .okBtn('Add Class')
+            .okBtn('Remove Class')
             .cancelBtn("Go Back")
             .confirm(html)
             .then(function(resolved) {
                 resolved.event.preventDefault();
                 if (resolved.buttonClicked !== 'ok') return;
-
+                return this.alert()
+                .okBtn("Yes")
+                .cancelBtn("No")
+                .confirm('Remove ' + course.c + ' from the list?')
+                .then(function(resolved) {
+                    resolved.event.preventDefault();
+                    if (resolved.buttonClicked !== 'ok') return;
+                    this.removeFromList(course);
+                    this.alert().success('Removed!');
+                }.bind(this));
+            }.bind(this));
+        },
+        removeFromList: function(course) {
+            this.courses = this.courses.filter(function(el) {
+                return el.num !== course.num
+            })
+        },
+        importPlanner: function() {
+            var constructir = function() {
+                if (!this.eventSource[this.monitoredTerm]) {
+                    return this.loadAutosave(this.monitoredTerm + '', false);
+                }else{
+                    return Promise.resolve();
+                }
+            }
+        },
+        addToNotifyList: function(course) {
+            var html = this.getCourseDom(this.monitoredTerm, course);
+            return this.alert()
+            .okBtn('Notify')
+            .cancelBtn("Go Back")
+            .confirm(html)
+            .then(function(resolved) {
+                resolved.event.preventDefault();
+                if (resolved.buttonClicked !== 'ok') return;
+                this.alert().success(course.c + ' added to the list!');
                 this.courses.push(course);
             }.bind(this));
         }

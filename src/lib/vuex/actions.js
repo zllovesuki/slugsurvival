@@ -69,13 +69,14 @@ var self = module.exports = {
             _.dispatch('saveHistoricData', spring, summer, fall, winter);
         })
     },
-    loadAutosave: function(_) {
-        var termId = this.termId;
+    loadAutosave: function(_, termId, alert) {
+        termId = termId || this.termId;
+        alert = (typeof alert === 'undefined' ? true : alert);
         return storage.getItem(termId).then(function(array) {
             if (array !== null) {
-                var events = this.parseFromCompact(array);
+                var events = this.parseFromCompact(termId, array);
                 _.dispatch('restoreEventSourceSnapshot', termId, events);
-                this.alert().okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
+                if (alert) this.alert().okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
             }
         }.bind(this))
     },
@@ -335,16 +336,16 @@ var self = module.exports = {
         var termId = this.termId;
         _.dispatch('replaceHash', termId);
     },
-    parseFromCompact: function(_, array) {
+    parseFromCompact: function(_, termId, array) {
         var events = [];
         array.forEach(function(obj) {
             obj = obj + '';
             split = obj.split('-')
             if (typeof split[1] !== 'undefined') {
                 if (split[1] == 'null') split[1] = null;
-                events = events.concat(this.getEventObjectsByCourse(split[0], split[1]))
+                events = events.concat(this.getEventObjectsByCourse(termId, split[0], split[1]))
             }else{
-                events = events.concat(this.getEventObjectsByCourse(split[0]));
+                events = events.concat(this.getEventObjectsByCourse(termId, split[0]));
             }
         }.bind(this));
 
@@ -361,7 +362,7 @@ var self = module.exports = {
                 var split;
                 var course;
 
-                var events = this.parseFromCompact(array);
+                var events = this.parseFromCompact(termId, array);
 
                 _.dispatch('restoreEventSourceSnapshot', termId, events);
 
@@ -394,8 +395,7 @@ var self = module.exports = {
         var termId = this.termId;
         return _.state.events[termId]
     },
-    getEventObjectsByCourse: function(_, input1, input2) {
-        var termId = this.termId;
+    getEventObjectsByCourse: function(_, termId, input1, input2) {
         var dateMap = _.state.dateMap;
         var events = [];
         var obj = {};
@@ -494,7 +494,7 @@ var self = module.exports = {
         var courses = _.state.flatCourses[termId];
         var events = [];
 
-        events = this.getEventObjectsByCourse(course);
+        events = this.getEventObjectsByCourse(termId, course);
         _.dispatch('mergeEventSource', termId, events);
 
         return Promise.resolve();
@@ -521,7 +521,7 @@ var self = module.exports = {
             }
         }
 
-        events = this.getEventObjectsByCourse(courseNumber, sectionNumber);
+        events = this.getEventObjectsByCourse(termId, courseNumber, sectionNumber);
         _.dispatch('mergeEventSource', termId, events);
 
         // Since this method can only be called outside of Vue context
