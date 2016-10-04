@@ -269,7 +269,7 @@ module.exports = {
 
                 this.loading.go(70);
 
-                if (res.ok) {
+                if (res.ok && res.results[0] && res.results[0].seats) {
                     secSeats = res.results[0].seats.sec;
                     lastUpdated = new Date(res.results[0].date * 1000).toLocaleString();
                 }

@@ -823,7 +823,7 @@ var self = module.exports = {
         this.fetchRealTimeEnrollment(termCode, courseNum)
         .then(function(res) {
             this.loading.go(70);
-            if (res.ok) {
+            if (res.ok && res.results[0] && res.results[0].seats) {
                 var latest = res.results[0];
                 var seat = latest.seats;
 
