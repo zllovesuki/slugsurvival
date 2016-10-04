@@ -103,7 +103,17 @@ module.exports = {
             }, 75);
         },
         addToNotifyList: function(course) {
-            this.courses.push(course);
+            var html = this.getCourseDom(this.monitoredTerm, course);
+            return this.alert()
+            .okBtn('Add Class')
+            .cancelBtn("Go Back")
+            .confirm(html)
+            .then(function(resolved) {
+                resolved.event.preventDefault();
+                if (resolved.buttonClicked !== 'ok') return;
+
+                this.courses.push(course);
+            }.bind(this));
         }
     },
     created: function() {

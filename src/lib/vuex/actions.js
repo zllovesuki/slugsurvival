@@ -383,8 +383,7 @@ var self = module.exports = {
             return Promise.resolve();
         }
     },
-    courseHasSections: function(_, courseNumber) {
-        var termId = this.termId;
+    courseHasSections: function(_, termId, courseNumber) {
         return _.state.courseInfo[termId][courseNumber].sec.length > 0;
     },
     refreshCalendar: function(_) {
@@ -852,7 +851,7 @@ var self = module.exports = {
         // TODO: Reduce special cases
         isSection = isSection || false;
         if (!isSection) {
-            var courseHasSections = this.courseHasSections(course.num);
+            var courseHasSections = this.courseHasSections(termId, course.num);
         }
         var html = '';
         var template = function(key, value) {

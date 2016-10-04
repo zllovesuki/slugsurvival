@@ -125,7 +125,7 @@ module.exports = {
         },
         promptAddClass: function(course) {
             var termId = this.route.params.termId;
-            var courseHasSections = this.courseHasSections(course.num);
+            var courseHasSections = this.courseHasSections(termId, course.num);
             var code = this.checkForConflict(course);
             var alertHandle = function() {};
 
