@@ -85,47 +85,6 @@ module.exports = {
                 document.getElementsByClassName('search-box')[0].focus();
             }, 75);
         },
-        getCourseDom: function(course, isSection) {
-            // TODO: Reduce special cases
-            var termId = this.route.params.termId;
-            isSection = isSection || false;
-            if (!isSection) {
-                var courseHasSections = this.courseHasSections(course.num);
-            }
-            var html = '';
-            var template = function(key, value) {
-                return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
-            }
-            if (isSection) {
-                html += template('Section', 'DIS - ' + course.sec);
-                html += template('TA', course.ins);
-            }else{
-                html += template('Course Number', course.num);
-                html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
-                html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App._showInstructorRMP(\'' + course.ins.f.replace(/'/g, '\\\'') + '\', \'' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
-            }
-
-            if (course.loct.length === 1) {
-                html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
-                html += template('Meeting Day', !!!course.loct[0].t ? 'TBA' : course.loct[0].t.day.join(', '));
-                html += template('Meeting Time', !!!course.loct[0].t ? 'TBA' : this.tConvert(course.loct[0].t.time.start) + '-' + this.tConvert(course.loct[0].t.time.end));
-            }else{
-                html += '<hr />'
-                var complex = '';
-                for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
-                    html += template('Location', !!!course.loct[j].loc ? 'TBA': course.loct[j].loc);
-                    html += template('Meeting Day', !!!course.loct[j].t ? 'TBA' : course.loct[j].t.day.join(', '));
-                    html += template('Meeting Time', !!!course.loct[j].t ? 'TBA' : this.tConvert(course.loct[j].t.time.start) + '-' + this.tConvert(course.loct[j].t.time.end));
-                    html += '<hr />'
-                }
-            }
-
-            if (!isSection) {
-                html += template('Enrollment', '<span class="muted clickable rainbow" onclick="window.App._showRealTimeEnrollment(\'' + termId + '\', \'' + course.num + '\')">Check Real Time</span>');
-            }
-
-            return html;
-        },
         promptToRemove: function(calEvent) {
             var termId = this.route.params.termId;
             this.alert()
@@ -142,13 +101,14 @@ module.exports = {
             }.bind(this));
         },
         promptForAction: function(calEvent) {
+            var termId = this.route.params.termId;
             var isSection = typeof calEvent.section !== 'undefined';
             var course = isSection ? calEvent.section : calEvent.course;
             if (isSection && course === null) {
                 // Choose later
                 return this.promptSections(calEvent.number, null);
             }
-            var html = this.getCourseDom(course, isSection);
+            var html = this.getCourseDom(termId, course, isSection);
             return this.alert()
             .okBtn(isSection ? 'Change Section' : 'Remove Class')
             .cancelBtn("Go Back")
@@ -164,11 +124,12 @@ module.exports = {
             }.bind(this));
         },
         promptAddClass: function(course) {
+            var termId = this.route.params.termId;
             var courseHasSections = this.courseHasSections(course.num);
             var code = this.checkForConflict(course);
             var alertHandle = function() {};
 
-            var html = this.getCourseDom(course);
+            var html = this.getCourseDom(termId, course);
 
             if (code !== false || code === null) {
                 alertHandle = function() {

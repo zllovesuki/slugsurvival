@@ -41,6 +41,11 @@
 								</td>
 							</tr>
 						</template>
+                        <tr v-show="courses.length === 0">
+                            <td class="col col-6">
+                                <span class="btn not-clickable left muted">(none)</span>
+                            </td>
+                        </tr>
 					</table>
 				</div>
 			</div>
@@ -86,13 +91,8 @@ module.exports = {
         return {
             ready: false,
             searchModal: false,
-            monitoredTerm: config.monitoredTerm + '',
-            courses: [
-                {
-                    num: 1234,
-                    c: 'ECON 2'
-                }
-            ]
+            monitoredTerm: config.monitoredTerm,
+            courses: []
         }
     },
     methods: {
@@ -103,7 +103,7 @@ module.exports = {
             }, 75);
         },
         addToNotifyList: function(course) {
-            console.log(course);
+            this.courses.push(course);
         }
     },
     created: function() {
