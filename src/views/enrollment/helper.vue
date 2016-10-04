@@ -94,6 +94,7 @@
 <script>
 var getters = require('../../lib/vuex/getters.js')
 var actions = require('../../lib/vuex/actions.js')
+var helper = require('../../lib/vuex/helper.js')
 var config = require('../../../config')
 
 module.exports = {
@@ -143,13 +144,27 @@ module.exports = {
             })
         },
         importPlanner: function() {
-            var constructir = function() {
+            var p = function() {
                 if (!this.eventSource[this.monitoredTerm]) {
                     return this.loadAutosave(this.monitoredTerm + '', false);
                 }else{
                     return Promise.resolve();
                 }
-            }
+            }.bind(this);
+            return p()
+            .then(function() {
+                var events = this.eventSource[this.monitoredTerm];
+                if (!events) return;
+                this.courses = [];
+                var compact = helper.compact(events);
+                var split = [], course, courseInfo;
+
+                for (var i = 0, length = compact.length; i < length; i++) {
+                    split = compact[i].split('-');
+                    course = this.flatCourses[this.monitoredTerm][split[0]];
+                    this.courses.push(course)
+                }
+            }.bind(this))
         },
         addToNotifyList: function(course) {
             var html = this.getCourseDom(this.monitoredTerm, course);
