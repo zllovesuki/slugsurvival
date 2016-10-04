@@ -47,7 +47,7 @@
 						<template v-for="course in courses" track-by="num">
 							<tr>
 								<td class="col col-6">
-									<span class="btn clickable left" @click="showCourse(monitoredTerm, course)">{{ course.c }}</span>
+									<span class="btn clickable left" @click="showCourse(monitoredTerm, course)">{{ course.c }} - {{ course.s }}</span>
 								</td>
 							</tr>
 						</template>
