@@ -11,7 +11,7 @@
                             &#128190; image
                         </a>
                         <a class="btn btn-outline red h6 ml1" v-on:click="saveCalendarAsICS">
-                            &#128190; ics
+                            &#128190; calendar
                         </a>
                     </div>
                     <div class="right">
