@@ -804,5 +804,48 @@ var self = module.exports = {
         }
 
         cal.download('Schedule for ' + _.state.termName);
-    }
+    },
+    fetchRealTimeEnrollment: function(_, termCode, courseNum) {
+        return fetch(config.trackingURL + '/fetch/' + termCode + '/' + courseNum)
+        .then(function(res) {
+            return res.json();
+        })
+        .catch(function(e) {
+            return {ok: false}
+        })
+    },
+    _showRealTimeEnrollment: function(_, termCode, courseNum) {
+        this.loading.go(30);
+        var html = '';
+        var template = function(key, value) {
+            return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
+        }
+        this.fetchRealTimeEnrollment(termCode, courseNum)
+        .then(function(res) {
+            this.loading.go(70);
+            if (res.ok) {
+                var latest = res.results[0];
+                var seat = latest.seats;
+
+                html += template('Status', seat.status);
+                html += template('Available', seat.avail);
+                html += template('Enrolled', seat.enrolled);
+                html += template('Capacity', seat.cap);
+                html += '<hr />';
+                html += template('Waitlisted', seat.waitTotal);
+                html += template('Waitlist Cap.', seat.waitCap);
+                html += '<p><span class="muted h6">Last Updated: ' + new Date(latest.date * 1000).toLocaleString() + '</span></p>';
+
+                this.alert()
+                .okBtn('Cool')
+                .alert(html)
+                .then(function(resolved) {
+                    resolved.event.preventDefault();
+                })
+            }else{
+                this.alert().error('Cannot fetch real time data!')
+            }
+            this.loading.go(100);
+        }.bind(this))
+    },
 }

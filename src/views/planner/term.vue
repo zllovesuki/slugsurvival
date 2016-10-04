@@ -131,6 +131,7 @@ module.exports = {
         },
         getCourseDom: function(course, isSection) {
             // TODO: Reduce special cases
+            var termId = this.route.params.termId;
             isSection = isSection || false;
             if (!isSection) {
                 var courseHasSections = this.courseHasSections(course.num);
@@ -164,7 +165,7 @@ module.exports = {
             }
 
             if (!isSection) {
-                html += template('Capacity', course.cap);
+                html += template('Enrollment', '<span class="muted clickable rainbow" onclick="window.App._showRealTimeEnrollment(\'' + termId + '\', \'' + course.num + '\')">Check Real Time</span>');
             }
 
             return html;
@@ -243,63 +244,95 @@ module.exports = {
             return alertHandle()
         },
         promptSections: function(courseNumber, edit, initial) {
+            this.loading.go(30);
             edit = (typeof edit === 'undefined' ? false : edit);
             initial = (typeof initial === 'undefined' ? false: initial);
 
-            var course = this.courseInfo[this.termId][courseNumber];
+            var termId = this.termId;
+            var course = this.courseInfo[termId][courseNumber];
             // TODO: customize display (like NOT hard coding it)
             var headTemplate = function(name) {
                 return ['<th>', name, '</th>'].join('');
             }
             var conflictClass = 'muted not-clickable';
             var notConflictClass = 'clickable';
-            var generateRows = function(sections) {
-                var string = '';
-                for (var i = 0, length = sections.length; i < length; i++) {
-                    if (this.checkForConflict(sections[i]) === false) {
-                        string += '<tr class="' + notConflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + sections[i].num + ', ' + edit + ')">';
-                    }else{
-                        string += '<tr class="' + conflictClass + '">';
-                    }
-                    string += ['<td>', sections[i].sec, '</td>'].join('');
-                    if (!!sections[i].loct[0].t) {
-                        string += ['<td>', sections[i].loct[0].t.day.join(', '), '<br>', [this.tConvert(sections[i].loct[0].t.time.start), this.tConvert(sections[i].loct[0].t.time.end)].join('-'), '</td>'].join('');
-                    }else{
-                        string += ['<td>', 'TBA', '</td>'].join('');
-                    }
-                    string += ['<td>', sections[i].loct[0].loc, '</td>'].join('');
-                    string += '</a></tr>';
-                }
-                return string;
-            }.bind(this)
-            var table = '<p>' + (edit ? 'Choose another section' : 'Choose a section') + '</p>'
-            + '<table class="table-light h6">'
-            + '<thead>'
-            + headTemplate('Section')
-            + headTemplate('Meeting Time')
-            + headTemplate('Location')
-            + '</thead>'
-            + '<tbody>'
-            + generateRows(course.sec)
-            + '</tbody>'
-            + '</table>';
+            var secSeats = null;
+            var lastUpdated = 'Error';
+            var getSeatBySectionNum = function(seats, secNum) {
+                return seats.filter(function(el) {
+                    return el.num == secNum;
+                })[0];
+            }
 
-            this.alert()
-            .okBtn("Choose Later")
-            .cancelBtn("Go Back")
-            .confirm(table)
-            .then(function(resolved) {
-                resolved.event.preventDefault();
-                if (resolved.buttonClicked !== 'ok') return;
-                // Check if are adding the class for the first time
-                if (initial) {
-                    // Not first time, so edit = false
-                    this._pushSectionToEventSource(courseNumber, null, false);
-                }else{
-                    // First time, so edit = null
-                    this._pushSectionToEventSource(courseNumber, null, null);
+            this.fetchRealTimeEnrollment(termId, courseNumber)
+            .then(function(res) {
+
+                this.loading.go(70);
+
+                if (res.ok) {
+                    secSeats = res.results[0].seats.sec;
+                    lastUpdated = new Date(res.results[0].date * 1000).toLocaleString();
                 }
-            }.bind(this));
+                var generateRows = function(sections) {
+                    var string = '';
+                    var seat;
+                    for (var i = 0, length = sections.length; i < length; i++) {
+                        if (this.checkForConflict(sections[i]) === false) {
+                            string += '<tr class="' + notConflictClass + '" onclick="window.App._pushSectionToEventSource(' + courseNumber + ', ' + sections[i].num + ', ' + edit + ')">';
+                        }else{
+                            string += '<tr class="' + conflictClass + '">';
+                        }
+                        string += ['<td>', sections[i].sec, '</td>'].join('');
+                        if (!!sections[i].loct[0].t) {
+                            string += ['<td>', sections[i].loct[0].t.day.join(', '), '<br>', [this.tConvert(sections[i].loct[0].t.time.start), this.tConvert(sections[i].loct[0].t.time.end)].join('-'), '</td>'].join('');
+                        }else{
+                            string += ['<td>', 'TBA', '</td>'].join('');
+                        }
+                        string += ['<td>', sections[i].loct[0].loc, '</td>'].join('');
+                        if (secSeats !== null) {
+                            seat = getSeatBySectionNum(secSeats, sections[i].num);
+                            string += ['<td>', seat.status + '<br>' + (seat.cap - seat.enrolled) + ' avail.', '</td>'].join('');
+                        }else{
+                            string += ['<td>', '<span class="muted">Error</span>', '</td>'].join('');
+                        }
+                        string += '</a></tr>';
+                    }
+                    return string;
+                }.bind(this)
+
+                var table = '<p>' + (edit ? 'Choose another section' : 'Choose a section') + '</p>'
+                + '<table class="table-light h6">'
+                + '<thead>'
+                + headTemplate('Section')
+                + headTemplate('Meeting Time')
+                + headTemplate('Location')
+                + headTemplate('Enrollment')
+                + '</thead>'
+                + '<tbody>'
+                + generateRows(course.sec)
+                + '</tbody>'
+                + '</table>'
+                + '<p><span class="muted h6">Last Updated: ' + lastUpdated + '</span></p>';
+
+                this.loading.go(100);
+
+                this.alert()
+                .okBtn("Choose Later")
+                .cancelBtn("Go Back")
+                .confirm(table)
+                .then(function(resolved) {
+                    resolved.event.preventDefault();
+                    if (resolved.buttonClicked !== 'ok') return;
+                    // Check if are adding the class for the first time
+                    if (initial) {
+                        // Not first time, so edit = false
+                        this._pushSectionToEventSource(courseNumber, null, false);
+                    }else{
+                        // First time, so edit = null
+                        this._pushSectionToEventSource(courseNumber, null, null);
+                    }
+                }.bind(this));
+            }.bind(this))
         },
         initializeCalendar: function() {
             var self = this;
