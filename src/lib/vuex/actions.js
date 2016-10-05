@@ -9,6 +9,9 @@ var self = module.exports = {
     setTitle: function(_, title) {
         _.dispatch('setTitle', title)
     },
+    comingSoon: function(_) {
+        this.alert().alert('Coming soon')
+    },
     iOS: function(_) {
         var userAgent = window.navigator.userAgent;
         if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i)) {

@@ -65,9 +65,9 @@
                 </div>
                 <div class="m0 p2">
     				<div class="clearfix">
-    					<a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via SMS</a>
-                        <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via Email</a>
-                        <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}">Via Push Notifications</a>
+    					<a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}" @click="showSub">Via SMS</a>
+                        <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}" @click="showSub">Via Email</a>
+                        <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}" @click="comingSoon">Via Push Notifications</a>
     				</div>
                 </div>
 			</div>
@@ -88,6 +88,23 @@
 			</div>
 		</div>-->
         <search :show.sync="searchModal" :callback="addToNotifyList" :selected-term-id="monitoredTerm"></search>
+        <modal :show.sync="sub.modal">
+			<h4 slot="header">Subscribe to changes</h4>
+			<span slot="body">
+				<form v-on:submit.prevent class="h5">
+                    <label for="recipient" class="mt2 block">
+                        <input type="text" class="col-8 mb2 field inline-block" v-model="sub.recipient" placeholder="15554443333/hello@me.com">
+                        <button type="submit" class="col-3 btn btn-primary ml1 mb2 inline-block" :disabled="sub.verified || (!sub.recipient.length > 0 || sub.sent)" @click="sendVerify">{{ sub.text }}</button>
+                    </label>
+                    <label for="code" class="mt2 block" v-if="sub.sent">
+                        <input type="text" class="col-8 mb2 field inline-block" v-model="sub.code" placeholder="passcode received">
+                        <button type="submit" class="col-3 btn btn-primary ml1 mb2 inline-block" :disabled="sub.verified || sub.verifyInflight" @click="verifyCode">Verify</button>
+                    </label>
+                    <hr />
+					<span class="block mb1">We take privacy seriously. <a>Learn More</a></span>
+				</form>
+			</span>
+		</modal>
     </div>
 </template>
 
@@ -107,10 +124,152 @@ module.exports = {
             ready: false,
             searchModal: false,
             monitoredTerm: config.monitoredTerm,
-            courses: []
+            courses: [],
+            sub: {
+                modal: false,
+                recipient: '',
+                text: 'Get code',
+                counter: 300,
+                sent: false,
+                verified: false,
+                verifyInflight: false,
+                shouldResend: false,
+                timer: null
+            }
         }
     },
     methods: {
+        showSub: function() {
+            this.sub.recipient = '';
+            this.sub.modal = true;
+        },
+        sendVerify: function() {
+            var self = this;
+            self.loading.go(30);
+            return fetch(config.notifyURL + '/verify/' + (self.sub.shouldResend ? 'resend' : 'new'), {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    recipient: self.sub.recipient
+                })
+            })
+            .then(function(res) {
+                self.loading.go(50);
+                return res.json()
+                .catch(function(e) {
+                    return res.text();
+                })
+            })
+            .then(function(res) {
+                self.loading.go(100);
+                if (!res.ok) {
+                    return self.alert().error(res.message);
+                }
+                self.sub.sent = true;
+                self.sub.timer = setInterval(function() {
+                    if (self.sub.counter === 0) {
+                        self.sub.text = 'Resend';
+                        self.sub.shouldResend = true;
+                        self.sub.sent = false;
+                        self.sub.counter = 300;
+                        return clearInterval(self.sub.timer);
+                    }
+                    self.sub.text = 'Resend (' + self.sub.counter + ')'
+                    self.sub.counter--;
+                }, 1000)
+            })
+            .catch(function(e) {
+                console.log(e);
+                self.loading.go(100);
+                self.alert().error('An error has occurred.')
+            })
+        },
+        verifyCode: function() {
+            var self = this;
+            self.loading.go(30);
+            self.sub.verifyInflight = true;
+            return fetch(config.notifyURL + '/verify/check', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    recipient: self.sub.recipient,
+                    code: self.sub.code
+                })
+            })
+            .then(function(res) {
+                self.loading.go(50);
+                return res.json()
+                .catch(function(e) {
+                    return res.text();
+                })
+            })
+            .then(function(res) {
+                self.loading.go(70);
+                if (!res.ok) {
+                    self.loading.go(100);
+                    self.sub.verifyInflight = false;
+                    return self.alert().error(res.message);
+                }
+                self.updateWatch()
+                .then(function() {
+                    clearInterval(self.sub.timer);
+                    self.sub.verified = true;
+                    self.sub.verifyInflight = false;
+                    self.sub.text = 'Verified';
+                    self.sub.shouldResend = false;
+                    self.sub.sent = false;
+                    self.sub.counter = 300;
+                    self.sub.modal = false;
+                    self.loading.go(100);
+                })
+            })
+            .catch(function(e) {
+                console.log(e);
+                self.loading.go(100);
+                self.sub.verifyInflight = false;
+                self.alert().error('An error has occurred.')
+            })
+        },
+        updateWatch: function() {
+            var self = this;
+            return fetch(config.notifyURL + '/watch/update', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    recipient: self.sub.recipient,
+                    code: self.sub.code,
+                    courses: self.courses.map(function(el) {
+                        return el.num
+                    })
+                })
+            })
+            .then(function(res) {
+                return res.json()
+                .catch(function(e) {
+                    return res.text();
+                })
+            })
+            .then(function(res) {
+                if (!res.ok) {
+                    return self.alert().error(res.message);
+                }
+                self.alert().success('Subscribed to changes!')
+            })
+            .catch(function(e) {
+                console.log(e);
+                self.loading.go(100);
+                self.alert().error('An error has occurred.')
+            })
+        },
         showSearchModal: function() {
             this.searchModal = true;
             setTimeout(function() {

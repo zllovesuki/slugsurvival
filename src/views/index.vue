@@ -47,11 +47,6 @@ module.exports = {
         getters: getters,
         actions: actions
     },
-    methods: {
-        comingSoon: function() {
-            this.alert().alert('Coming soon')
-        }
-    },
     ready: function() {
         this.setTitle('Main')
     }
