@@ -39,7 +39,7 @@ module.exports = {
     },
     methods: {
         egg: function() {
-            this.alert().alert('<img src="https://img.s3.fmt01.sdapi.net/16360519.gif" alt="" />');
+            this.alert().okBtn('WTF').alert('<img src="https://img.s3.fmt01.sdapi.net/16360519.gif" alt="" />');
         }
     },
     ready: function() {
