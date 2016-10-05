@@ -10,7 +10,7 @@ var self = module.exports = {
         _.dispatch('setTitle', title)
     },
     comingSoon: function(_) {
-        this.alert().alert('Coming soon')
+        this.alert().okBtn('OK').alert('Coming soon')
     },
     iOS: function(_) {
         var userAgent = window.navigator.userAgent;
