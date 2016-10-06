@@ -886,5 +886,37 @@ var self = module.exports = {
         }
 
         return html;
+    },
+    updateWatch: function(_, recipient, code, courses) {
+        var self = this;
+        return fetch(config.notifyURL + '/watch/update', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                recipient: recipient,
+                code: code,
+                courses: courses.map(function(el) {
+                    return el.num
+                })
+            })
+        })
+        .then(function(res) {
+            return res.json()
+            .catch(function(e) {
+                return res.text();
+            })
+        })
+        .then(function(res) {
+            if (!res.ok) {
+                return self.alert().error(res.message);
+            }
+        })
+        .catch(function(e) {
+            console.log(e);
+            self.alert().error('An error has occurred.')
+        })
     }
 }

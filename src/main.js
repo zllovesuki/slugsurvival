@@ -39,6 +39,10 @@ router.map({
             '/': {
                 name: 'enrollHelper',
                 component: require('./views/enrollment/helper.vue')
+            },
+            '/manage': {
+                name: 'enrollManage',
+                component: require('./views/enrollment/manage.vue')
             }
         }
     }

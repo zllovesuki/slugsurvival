@@ -24,7 +24,12 @@
 				</div>
 				<div class="clearfix">
 					<span class="ml1 btn black h6 muted not-clickable">
-                        SlugSurvival will notify you when your desired classes are opened for enrollment.
+                        SlugSurvival will notify you when your desired classes are opened for enrollment or when significant changes happen.
+                    </span>
+				</div>
+                <div class="clearfix">
+					<span class="ml1 btn black h6 muted not-clickable">
+                        <a class="h6 bold btn btn-outline red" v-link="{ name: 'enrollManage' }" target="_blank">But I Signed Up Already</a>
                     </span>
 				</div>
 			</div>
@@ -59,7 +64,7 @@
 					</table>
 				</div>
 			</div>
-			<div class="m0 p1 border-top">
+			<div class="m0 p1 border-top" v-show="courses.length > 0">
                 <div class="clearfix">
                     <span class="btn black h5">Then, select one or more ways to be notified. </span>
                 </div>
@@ -71,34 +76,19 @@
     				</div>
                 </div>
 			</div>
-		</div><!--
-		<div class="overflow-hidden bg-white rounded mb2">
-			<div class="m0 p1">
-				<div class="clearfix">
-					<span class="btn black h5">Security: </span>
-				</div>
-				<div class="clearfix">
-					<span class="ml1 btn black h6 muted not-clickable">Safeguarding your emails' authenticity and integrity.</span>
-				</div>
-			</div>
-			<div class="m0 p2 border-top">
-				<div class="clearfix">
-					<a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}" v-link="{ name: 'settingSPFDKIMDMARC' }">SPF, DKIM, and DMARC</a>
-				</div>
-			</div>
-		</div>-->
+		</div>
         <search :show.sync="searchModal" :callback="addToNotifyList" :selected-term-id="monitoredTerm"></search>
         <modal :show.sync="sub.modal">
-			<h4 slot="header">Subscribe to changes</h4>
+			<h4 slot="header">Subscribe to Changes</h4>
 			<span slot="body">
 				<form v-on:submit.prevent class="h5">
                     <label for="recipient" class="mt2 block">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.recipient" placeholder="15554443333/hello@me.com">
-                        <button type="submit" class="col-3 btn btn-primary ml1 mb2 inline-block" :disabled="sub.verified || (!sub.recipient.length > 0 || sub.sent)" @click="sendVerify">{{ sub.text }}</button>
+                        <button type="submit" class="col-3 btn btn-primary ml1 mb2 inline-block" :disabled="sub.verified || !sub.recipient.length > 0 || sub.sent" @click="sendVerify">{{ sub.text }}</button>
                     </label>
                     <label for="code" class="mt2 block" v-if="sub.sent">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.code" placeholder="passcode received">
-                        <button type="submit" class="col-3 btn btn-primary ml1 mb2 inline-block" :disabled="sub.verified || sub.verifyInflight" @click="verifyCode">Verify</button>
+                        <button type="submit" class="col-3 btn btn-primary ml1 mb2 inline-block" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
                     </label>
                     <hr />
 					<span class="block mb1">We take privacy seriously. <a>Learn More</a></span>
@@ -128,6 +118,7 @@ module.exports = {
             sub: {
                 modal: false,
                 recipient: '',
+                code: '',
                 text: 'Get code',
                 counter: 300,
                 sent: false,
@@ -216,7 +207,7 @@ module.exports = {
                     self.sub.verifyInflight = false;
                     return self.alert().error(res.message);
                 }
-                self.updateWatch()
+                self.updateWatch(self.sub.recipient, self.sub.code, self.courses)
                 .then(function() {
                     clearInterval(self.sub.timer);
                     self.sub.verified = true;
@@ -227,46 +218,14 @@ module.exports = {
                     self.sub.counter = 300;
                     self.sub.modal = false;
                     self.loading.go(100);
+                    self.route.router.go({ name: 'enrollManage'})
+                    self.alert().success('Subscribed to changes!');
                 })
             })
             .catch(function(e) {
                 console.log(e);
                 self.loading.go(100);
                 self.sub.verifyInflight = false;
-                self.alert().error('An error has occurred.')
-            })
-        },
-        updateWatch: function() {
-            var self = this;
-            return fetch(config.notifyURL + '/watch/update', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    recipient: self.sub.recipient,
-                    code: self.sub.code,
-                    courses: self.courses.map(function(el) {
-                        return el.num
-                    })
-                })
-            })
-            .then(function(res) {
-                return res.json()
-                .catch(function(e) {
-                    return res.text();
-                })
-            })
-            .then(function(res) {
-                if (!res.ok) {
-                    return self.alert().error(res.message);
-                }
-                self.alert().success('Subscribed to changes!')
-            })
-            .catch(function(e) {
-                console.log(e);
-                self.loading.go(100);
                 self.alert().error('An error has occurred.')
             })
         },

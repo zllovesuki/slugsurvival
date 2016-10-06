@@ -8,6 +8,11 @@
                     Enrollment Tracker
                 </span>
             </span>
+            <span v-if="route.name === 'enrollManage'">
+                <span class="btn button-narrow mxn1">
+                    Manage Tracker
+                </span>
+            </span>
         </div>
         <div class="mt2 mb1">
             <router-view transition="fade"></router-view>
