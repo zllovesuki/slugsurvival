@@ -1,9 +1,8 @@
 {
-    "port": 3001,
     "siteURL": "https://slugsurvival.com",
     "dbURL": "https://db.slugsurvival.com",
     "trackingURL": "https://tracking.slugsurvival.com",
-    "notifyURL": "http://127.0.0.1:3005",
+    "notifyURL": "https://notify.slugsurvival.com",
     "monitoredTerm": 2168,
     "analytics": {
         "piwik": {
