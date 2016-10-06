@@ -1,0 +1,20 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: slugsurvival-map
+  namespace: slug
+  annotations:
+    kubernetes.io/tls-acme: "true"
+spec:
+  tls:
+  - secretName: slugsurvival-tls
+    hosts:
+    - slugsurvival.com
+  rules:
+  - host: slugsurvival.com
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: slugsurvival
+          servicePort: 3001
