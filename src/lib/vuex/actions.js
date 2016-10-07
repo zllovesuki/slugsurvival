@@ -883,7 +883,7 @@ var self = module.exports = {
         }
 
         if (!isSection) {
-            html += template('Enrollment', '<span class="muted clickable rainbow" onclick="window.App._showRealTimeEnrollment(\'' + termId + '\', \'' + course.num + '\')">Check Real Time</span>');
+            html += template('Is It Open', '<span class="muted clickable rainbow" onclick="window.App._showRealTimeEnrollment(\'' + termId + '\', \'' + course.num + '\')">Check Real Time</span>');
         }
 
         return html;

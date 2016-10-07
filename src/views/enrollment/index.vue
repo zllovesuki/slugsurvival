@@ -5,12 +5,12 @@
             <chevron-right></chevron-right>
             <span v-if="route.name === 'enrollHelper'">
                 <span class="btn button-narrow mxn1">
-                    Enrollment Tracker
+                    Course Opening Tracker
                 </span>
             </span>
             <span v-if="route.name === 'enrollManage'">
                 <span class="btn button-narrow mxn1">
-                    Manage Tracker
+                    Manage Notification
                 </span>
             </span>
         </div>

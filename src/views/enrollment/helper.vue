@@ -3,11 +3,11 @@
         <div class="overflow-hidden bg-white rounded mb2">
 			<div class="m0 p1">
 				<div class="clearfix">
-					<span class="btn black h5">Real Time Enrollment Cheker: </span>
+					<span class="btn black h5">Check Openings in Real Time: </span>
 				</div>
 				<div class="clearfix">
 					<span class="ml1 btn black h6 muted not-clickable">
-                        You can instantly check the real time enrollment status when you search for classes in the planner.
+                        You can check the openings in real time when you search for classes in the planner.
                     </span>
 				</div>
 			</div>
@@ -20,11 +20,11 @@
 		<div class="overflow-hidden bg-white rounded mb2" v-if="ready">
 			<div class="m0 p1">
 				<div class="clearfix">
-					<span class="btn black h5">Notify Me When Available: </span>
+					<span class="btn black h5">Notify Me When There Are Changes: </span>
 				</div>
 				<div class="clearfix">
 					<span class="ml1 btn black h6 muted not-clickable">
-                        SlugSurvival will notify you when your desired classes are opened for enrollment or when significant changes happen.
+                        SlugSurvival will notify you when your desired classes have significant changes (eg. Open -> Closed, 25% seats remaining, etc).
                     </span>
 				</div>
                 <div class="clearfix">
