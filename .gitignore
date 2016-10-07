@@ -1,6 +1,6 @@
 .DS_Store
 node_modules/
-dist/static/
+config/
 npm-debug.log
 public/app.js
 public/prod.js

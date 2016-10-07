@@ -9,6 +9,9 @@ var self = module.exports = {
     setTitle: function(_, title) {
         _.dispatch('setTitle', title)
     },
+    comingSoon: function(_) {
+        this.alert().okBtn('OK').alert('Coming soon')
+    },
     iOS: function(_) {
         var userAgent = window.navigator.userAgent;
         if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i)) {
@@ -69,13 +72,14 @@ var self = module.exports = {
             _.dispatch('saveHistoricData', spring, summer, fall, winter);
         })
     },
-    loadAutosave: function(_) {
-        var termId = this.termId;
+    loadAutosave: function(_, termId, alert) {
+        termId = termId || this.termId;
+        alert = (typeof alert === 'undefined' ? true : alert);
         return storage.getItem(termId).then(function(array) {
             if (array !== null) {
-                var events = this.parseFromCompact(array);
+                var events = this.parseFromCompact(termId, array);
                 _.dispatch('restoreEventSourceSnapshot', termId, events);
-                this.alert().okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
+                if (alert) this.alert().okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
             }
         }.bind(this))
     },
@@ -190,9 +194,8 @@ var self = module.exports = {
             return Promise.resolve()
         }
     },
-    loadCourseDataFromLocal: function(_) {
+    loadCourseDataFromLocal: function(_, termId) {
         var online;
-        var termId = this.termId;
         var workaround = this.iOS();
         var self = this;
         var loadOnlineTimestamp = function() {
@@ -221,7 +224,7 @@ var self = module.exports = {
                 !invalid.courseInfo ? storage.getItem('termCourseInfo-' + termId) : null,
                 workaround ? null : (!invalid.index ? storage.getItem('termIndex-' + termId) : null)
             ]).spread(function(coursesData, courseInfo, index) {
-                return self.dispatchSaveCourseData(coursesData, courseInfo, index, true);
+                return self.dispatchSaveCourseData(coursesData, courseInfo, index, true, termId);
             })
         }
         return loadOnlineTimestamp()
@@ -283,8 +286,7 @@ var self = module.exports = {
             })
         })
     },
-    loadCourseDataFromOnline: function(_, invalid) {
-        var termId = this.termId;
+    loadCourseDataFromOnline: function(_, invalid, termId) {
         var workaround = this.iOS();
         var self = this;
         return Promise.all([
@@ -300,24 +302,23 @@ var self = module.exports = {
             ])
         })
         .spread(function(coursesData, courseInfo, index) {
-            return self.dispatchSaveCourseData(coursesData, courseInfo, index, false);
+            return self.dispatchSaveCourseData(coursesData, courseInfo, index, false, termId);
         })
     },
-    dispatchSaveCourseData: function(_, coursesData, courseInfo, index, skipSaving) {
-        var termId = this.termId;
+    dispatchSaveCourseData: function(_, coursesData, courseInfo, index, skipSaving, termId) {
         var workaround = this.iOS();
         if (coursesData !== null) _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
         if (courseInfo !== null) _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
         if (workaround || index !== null) _.dispatch('buildIndexedSearch', termId, index, workaround, skipSaving);
     },
-    fetchTermCourses: function(_) {
-        var termId = this.termId;
+    fetchTermCourses: function(_, termId) {
+        termId =  termId || this.termId;
         _.dispatch('setTermName', _.state.termsList[termId])
         if (typeof _.state.flatCourses[termId] === 'undefined') {
-            return this.loadCourseDataFromLocal()
+            return this.loadCourseDataFromLocal(termId)
             .catch(function(invalid) {
                 if (invalid.yes) {
-                    return this.loadCourseDataFromOnline(invalid)
+                    return this.loadCourseDataFromOnline(invalid, termId)
                 }
             }.bind(this))
         } else {
@@ -335,16 +336,16 @@ var self = module.exports = {
         var termId = this.termId;
         _.dispatch('replaceHash', termId);
     },
-    parseFromCompact: function(_, array) {
+    parseFromCompact: function(_, termId, array) {
         var events = [];
         array.forEach(function(obj) {
             obj = obj + '';
             split = obj.split('-')
             if (typeof split[1] !== 'undefined') {
                 if (split[1] == 'null') split[1] = null;
-                events = events.concat(this.getEventObjectsByCourse(split[0], split[1]))
+                events = events.concat(this.getEventObjectsByCourse(termId, split[0], split[1]))
             }else{
-                events = events.concat(this.getEventObjectsByCourse(split[0]));
+                events = events.concat(this.getEventObjectsByCourse(termId, split[0]));
             }
         }.bind(this));
 
@@ -361,7 +362,7 @@ var self = module.exports = {
                 var split;
                 var course;
 
-                var events = this.parseFromCompact(array);
+                var events = this.parseFromCompact(termId, array);
 
                 _.dispatch('restoreEventSourceSnapshot', termId, events);
 
@@ -383,8 +384,7 @@ var self = module.exports = {
             return Promise.resolve();
         }
     },
-    courseHasSections: function(_, courseNumber) {
-        var termId = this.termId;
+    courseHasSections: function(_, termId, courseNumber) {
         return _.state.courseInfo[termId][courseNumber].sec.length > 0;
     },
     refreshCalendar: function(_) {
@@ -395,8 +395,7 @@ var self = module.exports = {
         var termId = this.termId;
         return _.state.events[termId]
     },
-    getEventObjectsByCourse: function(_, input1, input2) {
-        var termId = this.termId;
+    getEventObjectsByCourse: function(_, termId, input1, input2) {
         var dateMap = _.state.dateMap;
         var events = [];
         var obj = {};
@@ -495,7 +494,7 @@ var self = module.exports = {
         var courses = _.state.flatCourses[termId];
         var events = [];
 
-        events = this.getEventObjectsByCourse(course);
+        events = this.getEventObjectsByCourse(termId, course);
         _.dispatch('mergeEventSource', termId, events);
 
         return Promise.resolve();
@@ -522,7 +521,7 @@ var self = module.exports = {
             }
         }
 
-        events = this.getEventObjectsByCourse(courseNumber, sectionNumber);
+        events = this.getEventObjectsByCourse(termId, courseNumber, sectionNumber);
         _.dispatch('mergeEventSource', termId, events);
 
         // Since this method can only be called outside of Vue context
@@ -777,26 +776,26 @@ var self = module.exports = {
     }, // http://stackoverflow.com/questions/13898423/javascript-convert-24-hour-time-of-day-string-to-12-hour-time-with-am-pm-and-no
     exportICS: function(_) {
         var termId = this.termId;
+        var termDates = _.state.termDates[termId];
         var events = _.state.events[termId];
 
         if (typeof events === 'undefined') return;
         var cal = ics();
 
         var compact = helper.compact(events);
-        var split = [], course, courseInfo;
+        var split = [], course;
 
         for (var i = 0, length = compact.length; i < length; i++) {
             split = compact[i].split('-');
             course = _.state.flatCourses[termId][split[0]];
-            courseInfo = _.state.courseInfo[termId][split[0]];
 
             for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
-                helper.addCal(cal, course, courseInfo, courseInfo.ty, locts[j]);
+                helper.addCal(cal, termDates, course, courseInfo.ty, locts[j]);
                 if (split[1]) {
                     for (var k = 0, sec = courseInfo.sec, length2 = sec.length; k < length2; k++) {
                         if (sec[k].num != split[1]) continue;
                         for (var m = 0, secLocts = sec[k].loct, length3 = secLocts.length; m < length3; m++) {
-                            helper.addCal(cal, course, courseInfo, 'Section', secLocts[m]);
+                            helper.addCal(cal, termDates, course, 'Section', secLocts[m]);
                         }
                     }
                 }
@@ -834,7 +833,7 @@ var self = module.exports = {
                 html += '<hr />';
                 html += template('Waitlisted', seat.waitTotal);
                 html += template('Waitlist Cap.', seat.waitCap);
-                html += '<p><span class="muted h6">Last Updated: ' + new Date(latest.date * 1000).toLocaleString() + '</span></p>';
+                html += '<p><span class="muted h6">Last Changed: ' + new Date(latest.date * 1000).toLocaleString() + '</span></p>';
 
                 this.alert()
                 .okBtn('Cool')
@@ -848,4 +847,76 @@ var self = module.exports = {
             this.loading.go(100);
         }.bind(this))
     },
+    getCourseDom: function(_, termId, course, isSection) {
+        // TODO: Reduce special cases
+        isSection = isSection || false;
+        if (!isSection) {
+            var courseHasSections = this.courseHasSections(termId, course.num);
+        }
+        var html = '';
+        var template = function(key, value) {
+            return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
+        }
+        if (isSection) {
+            html += template('Section', 'DIS - ' + course.sec);
+            html += template('TA', course.ins);
+        }else{
+            html += template('Course Number', course.num);
+            html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
+            html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App._showInstructorRMP(\'' + course.ins.f.replace(/'/g, '\\\'') + '\', \'' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
+        }
+
+        if (course.loct.length === 1) {
+            html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
+            html += template('Meeting Day', !!!course.loct[0].t ? 'TBA' : course.loct[0].t.day.join(', '));
+            html += template('Meeting Time', !!!course.loct[0].t ? 'TBA' : this.tConvert(course.loct[0].t.time.start) + '-' + this.tConvert(course.loct[0].t.time.end));
+        }else{
+            html += '<hr />'
+            var complex = '';
+            for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
+                html += template('Location', !!!course.loct[j].loc ? 'TBA': course.loct[j].loc);
+                html += template('Meeting Day', !!!course.loct[j].t ? 'TBA' : course.loct[j].t.day.join(', '));
+                html += template('Meeting Time', !!!course.loct[j].t ? 'TBA' : this.tConvert(course.loct[j].t.time.start) + '-' + this.tConvert(course.loct[j].t.time.end));
+                html += '<hr />'
+            }
+        }
+
+        if (!isSection) {
+            html += template('Enrollment', '<span class="muted clickable rainbow" onclick="window.App._showRealTimeEnrollment(\'' + termId + '\', \'' + course.num + '\')">Check Real Time</span>');
+        }
+
+        return html;
+    },
+    updateWatch: function(_, recipient, code, courses) {
+        var self = this;
+        return fetch(config.notifyURL + '/watch/update', {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                recipient: recipient,
+                code: code,
+                courses: courses.map(function(el) {
+                    return el.num
+                })
+            })
+        })
+        .then(function(res) {
+            return res.json()
+            .catch(function(e) {
+                return res.text();
+            })
+        })
+        .then(function(res) {
+            if (!res.ok) {
+                return self.alert().error(res.message);
+            }
+        })
+        .catch(function(e) {
+            console.log(e);
+            self.alert().error('An error has occurred.')
+        })
+    }
 }

@@ -14,8 +14,8 @@ RUN cd $(npm root -g)/npm \
  && npm install fs-extra \
  && sed -i -e s/graceful-fs/fs-extra/ -e s/fs\.rename/fs.move/ ./lib/utils/rename.js
 
-RUN npm install && npm run prod && npm prune --production && rm -rf .git
+RUN rm -rf .git
 
 EXPOSE 3001
 
-CMD ["pm2", "start", "app.json", "--no-daemon"]
+CMD npm install && npm run prod && npm prune --production && pm2 start app.json --no-daemon

@@ -4,6 +4,7 @@ var alertify = require('alertify.js'),
 module.exports = {
     termsList: {},
     flatTermsList: [],
+    termDates: {},
     termName: '',
 
     flatCourses: {},

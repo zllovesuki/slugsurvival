@@ -58,19 +58,7 @@
                 </div>
             </div>
         </div>
-        <modal :show.sync="searchModal">
-            <h4 slot="header">
-                <input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="250" placeholder="ECON 197, Design, Mendes, etc...">
-            </h4>
-            <span slot="body">
-                <ul class="list-reset">
-                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="promptAddClass(result)" v-for="result in search.results" track-by="num">
-                        {{ result.c }} - {{ result.s }}  - {{ result.n }}
-                    </li>
-                    <li v-show="search.string.length > 0 && search.results.length === 0">No results.</li>
-                </ul>
-            </span>
-        </modal>
+        <search :show.sync="searchModal" :callback="promptAddClass" :selected-term-id="termId"></search>
     </div>
 </template>
 
@@ -87,88 +75,15 @@ module.exports = {
     data: function() {
         return {
             ready: false,
-            searchModal: false,
-            search: {
-                string: '',
-                results: []
-            }
-        }
-    },
-    watch: {
-        'search.string': function(val, oldVal) {
-            if (val.length < 1) return;
-            var self = this;
-            var options = {
-                fields: {
-                    c: {
-                        boost: 5
-                    },
-                    n: {
-                        boost: 3
-                    },
-                    f: {
-                        boost: 2
-                    },
-                    la: {
-                        boost: 2
-                    }
-                }
-            };
-            val = val.split(/(\d+)/).filter(Boolean).map(function(el) { return el.trim(); }).join(" ");
-            this.search.results = this.indexSearch[this.termId].search(val, options).map(function(result) {
-                return self.flatCourses[self.termId][result.ref]
-            });
+            searchModal: false
         }
     },
     methods: {
         showSearchModal: function() {
             this.searchModal = true;
-            this.search.string = '';
-            this.search.results = [];
             setTimeout(function() {
                 document.getElementsByClassName('search-box')[0].focus();
             }, 75);
-        },
-        getCourseDom: function(course, isSection) {
-            // TODO: Reduce special cases
-            var termId = this.route.params.termId;
-            isSection = isSection || false;
-            if (!isSection) {
-                var courseHasSections = this.courseHasSections(course.num);
-            }
-            var html = '';
-            var template = function(key, value) {
-                return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
-            }
-            if (isSection) {
-                html += template('Section', 'DIS - ' + course.sec);
-                html += template('TA', course.ins);
-            }else{
-                html += template('Course Number', course.num);
-                html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
-                html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App._showInstructorRMP(\'' + course.ins.f.replace(/'/g, '\\\'') + '\', \'' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
-            }
-
-            if (course.loct.length === 1) {
-                html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
-                html += template('Meeting Day', !!!course.loct[0].t ? 'TBA' : course.loct[0].t.day.join(', '));
-                html += template('Meeting Time', !!!course.loct[0].t ? 'TBA' : this.tConvert(course.loct[0].t.time.start) + '-' + this.tConvert(course.loct[0].t.time.end));
-            }else{
-                html += '<hr />'
-                var complex = '';
-                for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
-                    html += template('Location', !!!course.loct[j].loc ? 'TBA': course.loct[j].loc);
-                    html += template('Meeting Day', !!!course.loct[j].t ? 'TBA' : course.loct[j].t.day.join(', '));
-                    html += template('Meeting Time', !!!course.loct[j].t ? 'TBA' : this.tConvert(course.loct[j].t.time.start) + '-' + this.tConvert(course.loct[j].t.time.end));
-                    html += '<hr />'
-                }
-            }
-
-            if (!isSection) {
-                html += template('Enrollment', '<span class="muted clickable rainbow" onclick="window.App._showRealTimeEnrollment(\'' + termId + '\', \'' + course.num + '\')">Check Real Time</span>');
-            }
-
-            return html;
         },
         promptToRemove: function(calEvent) {
             var termId = this.route.params.termId;
@@ -186,13 +101,14 @@ module.exports = {
             }.bind(this));
         },
         promptForAction: function(calEvent) {
+            var termId = this.route.params.termId;
             var isSection = typeof calEvent.section !== 'undefined';
             var course = isSection ? calEvent.section : calEvent.course;
             if (isSection && course === null) {
                 // Choose later
                 return this.promptSections(calEvent.number, null);
             }
-            var html = this.getCourseDom(course, isSection);
+            var html = this.getCourseDom(termId, course, isSection);
             return this.alert()
             .okBtn(isSection ? 'Change Section' : 'Remove Class')
             .cancelBtn("Go Back")
@@ -208,11 +124,12 @@ module.exports = {
             }.bind(this));
         },
         promptAddClass: function(course) {
-            var courseHasSections = this.courseHasSections(course.num);
+            var termId = this.route.params.termId;
+            var courseHasSections = this.courseHasSections(termId, course.num);
             var code = this.checkForConflict(course);
             var alertHandle = function() {};
 
-            var html = this.getCourseDom(course);
+            var html = this.getCourseDom(termId, course);
 
             if (code !== false || code === null) {
                 alertHandle = function() {
@@ -312,7 +229,7 @@ module.exports = {
                 + generateRows(course.sec)
                 + '</tbody>'
                 + '</table>'
-                + '<p><span class="muted h6">Last Updated: ' + lastUpdated + '</span></p>';
+                + '<p><span class="muted h6">Last Changed: ' + lastUpdated + '</span></p>';
 
                 this.loading.go(100);
 
