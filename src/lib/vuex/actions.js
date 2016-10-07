@@ -337,11 +337,32 @@ var self = module.exports = {
         _.dispatch('replaceHash', termId);
     },
     parseFromCompact: function(_, termId, array) {
+        var termId = this.termId;
         var events = [];
+        var index, split = [], courseNum, course, courseInfo;
         array.forEach(function(obj) {
             obj = obj + '';
-            split = obj.split('-')
-            if (typeof split[1] !== 'undefined') {
+            index = obj.indexOf('-');
+            if (index === -1) {
+                split[0] = obj;
+                delete split[1];
+            }else{
+                split[0] = obj.substring(0, index);
+                split[1] = obj.substring(index + 1);
+            }
+            if (split[0] / 100000 >= 1) {
+                /*
+                we found a traitor!
+
+                be careful here, we don't want to override any localized course num,
+                so we are going to reassign course number for the customize events
+                */
+                courseNum = this.findNextCourseNum(termId, 100000);
+                course = JSON.parse(split[1]);
+                courseInfo = this.generateCourseInfoObjectFromExtra(termId, courseNum, {});
+                this.populateLocalEntriesWithExtra(termId, courseNum, course, courseInfo);
+            }
+            if (typeof split[1] !== 'undefined' && split[0] / 100000 < 1) {
                 if (split[1] == 'null') split[1] = null;
                 events = events.concat(this.getEventObjectsByCourse(termId, split[0], split[1]))
             }else{
@@ -368,7 +389,7 @@ var self = module.exports = {
 
                 var html = '';
                 html += ['<p>', 'Looks like you are accessing the planner via a bookmark link! We have the planner for you!', '</p>'].join('');
-                html += ['<p>', 'However, if you makes changes to the planner on this page, your will <b>override</b> your planner previously saved in your browser (if you have one already).', '</p>'].join('');
+                html += ['<p>', 'However, you will <b>not</b> be able to make changes if you are viewing the planner via a bookmark link.', '</p>'].join('');
 
                 this.alert()
                 .okBtn('OK')
@@ -394,6 +415,9 @@ var self = module.exports = {
     returnEventSourceSnapshot: function(_) {
         var termId = this.termId;
         return _.state.events[termId]
+    },
+    emptyEventSource: function(_, termId) {
+        _.dispatch('emptyEventSource', termId);
     },
     getEventObjectsByCourse: function(_, termId, input1, input2) {
         var dateMap = _.state.dateMap;
@@ -427,12 +451,13 @@ var self = module.exports = {
         }else{
             for (var j = 0, locts = course.loct, length = locts.length; j < length; j++) {
                 for (var i = 0, days = locts[j].t.day, length1 = days.length; i < length1; i++) {
-                    obj.title = [course.c + ' - ' + course.s, courseInfo.ty, course.n].join("\n");
+                    obj.title = [(typeof course.s === 'undefined' ? course.c : course.c + ' - ' + course.s), courseInfo.ty, course.n].join("\n");
                     obj.number = course.num;
                     obj.allDay = false;
                     obj.start = dateMap[days[i]] + ' ' + locts[j].t.time.start;
                     obj.end = dateMap[days[i]] + ' ' + locts[j].t.time.end;
                     obj.course = course;
+                    if (course.custom) obj.color = '#7D1347';
                     events.push(obj);
                     obj = {};
                 }
@@ -858,17 +883,23 @@ var self = module.exports = {
         var template = function(key, value) {
             return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
         }
+
+        if (course.custom) {
+            html += template('Title', course.c);
+            html += template('Desc', course.n);
+        }
+
         if (isSection) {
             html += template('Section', 'DIS - ' + course.sec);
             html += template('TA', course.ins);
-        }else{
+        }else if (course.custom !== true){
             html += template('Course Number', course.num);
             html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
             html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App._showInstructorRMP(\'' + course.ins.f.replace(/'/g, '\\\'') + '\', \'' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
         }
 
         if (course.loct.length === 1) {
-            html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
+            if (course.custom !== true) html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
             html += template('Meeting Day', !!!course.loct[0].t ? 'TBA' : course.loct[0].t.day.join(', '));
             html += template('Meeting Time', !!!course.loct[0].t ? 'TBA' : this.tConvert(course.loct[0].t.time.start) + '-' + this.tConvert(course.loct[0].t.time.end));
         }else{
@@ -882,7 +913,7 @@ var self = module.exports = {
             }
         }
 
-        if (!isSection) {
+        if (!isSection && course.custom !== true) {
             html += template('Is It Open', '<span class="muted clickable rainbow" onclick="window.App._showRealTimeEnrollment(\'' + termId + '\', \'' + course.num + '\')">Check Real Time</span>');
         }
 
@@ -919,5 +950,56 @@ var self = module.exports = {
             console.log(e);
             self.alert().error('An error has occurred.')
         })
+    },
+    findNextCourseNum: function(_, termId, currentNum) {
+        if (typeof _.state.flatCourses[termId][currentNum] === 'undefined') {
+            return currentNum;
+        }
+        return this.findNextCourseNum(termId, currentNum + 1);
+    },
+    generateCourseObjectFromExtra: function(_, termId, courseNum, extra){
+        var course = {
+            c: extra.title,
+            n: extra.description,
+            num: courseNum,
+            loct: [],
+            custom: true
+        };
+        var locObj = {
+            loc: '',
+            t: {
+                day: [],
+                time: {
+                    start: '',
+                    end: ''
+                }
+            }
+        };
+        locObj.loc = extra.location;
+        locObj.t.time.start = extra.time.start;
+        locObj.t.time.end = extra.time.end;
+        if (extra.repeat.M) locObj.t.day.push('Monday');
+        if (extra.repeat.Tu) locObj.t.day.push('Tuesday');
+        if (extra.repeat.W) locObj.t.day.push('Wednesday');
+        if (extra.repeat.Th) locObj.t.day.push('Thursday');
+        if (extra.repeat.F) locObj.t.day.push('Friday');
+        course.loct.push(locObj);
+        return course;
+    },
+    generateCourseInfoObjectFromExtra: function(_, termId, courseNum, extra){
+        var courseInfo = {
+            ty: '',
+            cr: '0',
+            ge: [],
+            desc: '',
+            re: null,
+            com: [],
+            sec: []
+        };
+        return courseInfo;
+    },
+    populateLocalEntriesWithExtra: function(_, termId, courseNum, course, courseInfo) {
+        _.dispatch('appendCourse', termId, courseNum, course);
+        _.dispatch('appendCourseInfo', termId, courseNum, courseInfo);
     }
 }

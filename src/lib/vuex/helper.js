@@ -15,6 +15,7 @@ var self = module.exports = {
     compact: function(events) {
         var array = [];
         var tracker = {};
+        var extra = {};
         tracker.coursesWithoutSections = {};
         tracker.eventsWithSections = {};
         events.forEach(function(event) {
@@ -22,6 +23,9 @@ var self = module.exports = {
                 tracker.eventsWithSections[event.number] = event._number;
             }else{
                 tracker.coursesWithoutSections[event.number] = true;
+                if (event.number / 100000 >= 1) {
+                    extra[event.number] = event.course;
+                }
             }
         });
         tracker.coursesWithSections = [];
@@ -33,7 +37,12 @@ var self = module.exports = {
 
         for (var courseNumber in tracker.coursesWithoutSections) {
             if (tracker.coursesWithSections.indexOf(courseNumber) === -1) {
-                array.push(courseNumber);
+                if (courseNumber / 100000 >= 1) {
+                    // we got a traitor!
+                    array.push(courseNumber + '-' + JSON.stringify(extra[courseNumber]));
+                }else{
+                    array.push(courseNumber);
+                }
             }
         }
 

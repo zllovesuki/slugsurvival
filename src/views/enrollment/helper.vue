@@ -41,7 +41,7 @@
                     <div class="clearfix">
                         <a class="muted h6 ml1 mb1 bold btn btn-outline black" @click="showSearchModal">search anything</a>
                         &nbsp; or,
-                        <a class="muted h6 ml1 mb1 bold btn btn-outline black" @click="importPlanner">Import from Planner</a>
+                        <a class="muted h6 ml1 mb1 bold btn btn-outline black" @click="importPlanner">Import from Local Planner</a>
                     </div>
                 </div>
                 <div class="clearfix">
@@ -262,14 +262,10 @@ module.exports = {
             })
         },
         importPlanner: function() {
-            var p = function() {
-                if (!this.eventSource[this.monitoredTerm]) {
-                    return this.loadAutosave(this.monitoredTerm + '', false);
-                }else{
-                    return Promise.resolve();
-                }
-            }.bind(this);
-            return p()
+            // In case the user is accessing via a bookmark link
+            this.emptyEventSource(this.monitoredTerm);
+            // Force to load from local
+            return this.loadAutosave(this.monitoredTerm + '', false)
             .then(function() {
                 var events = this.eventSource[this.monitoredTerm];
                 if (!events) return;

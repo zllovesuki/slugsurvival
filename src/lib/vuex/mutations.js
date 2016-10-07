@@ -32,6 +32,9 @@ module.exports = {
             })
         })
     },
+    appendCourse: function(state, termId, courseNum, course) {
+        state.flatCourses[termId][courseNum] = course;
+    },
     saveInstructorNameToTidMapping: function(state, mapping, skipSaving) {
         state.instructorNameToTidMapping = mapping;
     },
@@ -43,6 +46,9 @@ module.exports = {
     },
     saveCourseInfo: function(state, termId, courses, skipSaving) {
         state.courseInfo[termId] = courses;
+    },
+    appendCourseInfo: function(state, termId, courseNum, courseInfo) {
+        state.courseInfo[termId][courseNum] = courseInfo;
     },
     saveHistoricData: function(state, spring, summer, fall, winter) {
         state.historicData.spring = spring;
@@ -94,6 +100,9 @@ module.exports = {
     },
     restoreEventSourceSnapshot: function(state, termId, events) {
         state.events[termId] = events;
+    },
+    emptyEventSource: function(state, termId) {
+        delete state.events[termId];
     },
     removeFromSource: function(state, termId, courseNumber) {
         if (typeof state.events[termId] === 'undefined') return;

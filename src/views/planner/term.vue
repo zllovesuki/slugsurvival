@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="overflow-hidden bg-white rounded mb2 clearfix">
+        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-show="!lock">
             <div class="m0 p2" v-show="!ready">
                 Loading...
             </div>
@@ -35,11 +35,14 @@
                         <a class="btn btn-outline white h6" style="background-color: #9f9f9f">
                             Section
                         </a>
+                        <a class="btn btn-outline white h6" style="background-color: #7D1347">
+                            Other
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="overflow-hidden bg-white rounded mb2 clearfix">
+        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-show="!lock">
             <div class="m0 p2">
                 <div class="clearfix">
                     <div class="right">
@@ -50,7 +53,7 @@
                 </div>
             </div>
         </div>
-        <search :show.sync="searchModal" :callback="promptAddClass" :selected-term-id="termId"></search>
+        <search :show.sync="searchModal" :show-extra="true" :callback="promptAddClass" :selected-term-id="termId"></search>
         <modal :show.sync="shareModal" max-width="16em">
             <h4 slot="header">
                 Share...
@@ -90,7 +93,8 @@ module.exports = {
         return {
             ready: false,
             searchModal: false,
-            shareModal: false
+            shareModal: false,
+            lock: false
         }
     },
     methods: {
@@ -116,6 +120,7 @@ module.exports = {
             }.bind(this));
         },
         promptForAction: function(calEvent) {
+            if (this.lock) return;
             var termId = this.route.params.termId;
             var isSection = typeof calEvent.section !== 'undefined';
             var course = isSection ? calEvent.section : calEvent.course;
@@ -125,7 +130,7 @@ module.exports = {
             }
             var html = this.getCourseDom(termId, course, isSection);
             return this.alert()
-            .okBtn(isSection ? 'Change Section' : 'Remove Class')
+            .okBtn(isSection ? 'Change Section' : 'Remove')
             .cancelBtn("Go Back")
             .confirm(html)
             .then(function(resolved) {
@@ -385,6 +390,7 @@ module.exports = {
                 })
                 .catch(function() {
                     // hash was used instead of local copy
+                    self.lock = true;
                 })
             }).then(function() {
                 window.location.hash = '';
