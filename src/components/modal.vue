@@ -2,7 +2,7 @@
     <span>
         <div class="modal-mask" @click="close" v-show="show">
             <div class="modal-wrapper">
-                <div class="modal-container" @click.stop>
+                <div class="modal-container" v-bind:style="{ maxWidth: maxWidth }" @click.stop>
 
                     <div class="modal-header">
                         <slot name="header">
@@ -18,11 +18,12 @@
 
                     <div class="modal-footer white">
                         <slot name="footer">
-                            .
-                            <a class="btn h6 right black" @click="close">
-                                X
-                            </a>
+
                         </slot>
+                        .
+                        <a class="btn h6 right black" @click="close">
+                            X
+                        </a>
                     </div>
                 </div>
             </div>
@@ -37,6 +38,10 @@ module.exports = {
             type: Boolean,
             required: true,
             twoWay: true
+        },
+        maxWidth: {
+            type: String,
+            default: '24em'
         }
     },
     methods: {
@@ -82,7 +87,6 @@ module.exports = {
 }
 
 .modal-container {
-    max-width: 24em;
     margin: 0px auto;
     padding: 20px 30px;
     background-color: #fff;
@@ -111,7 +115,7 @@ module.exports = {
 }
 
 .modal-footer {
-    margin: -1em -1em 0 0;
+    margin: 0;
 }
 
 /*
