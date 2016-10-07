@@ -46,7 +46,7 @@
             <div class="m0 p2">
                 <div class="clearfix">
                     <div class="right">
-                        <a class="btn btn-outline green h6" @click="shareModal = true">
+                        <a class="btn btn-outline green h6" @click="showShareMenu">
                             click here to bring your planner anywhere
                         </a>
                     </div>
@@ -54,28 +54,6 @@
             </div>
         </div>
         <search :show.sync="searchModal" :show-extra="true" :callback="promptAddClass" :selected-term-id="termId"></search>
-        <modal :show.sync="shareModal" max-width="16em">
-            <h4 slot="header">
-                Share...
-            </h4>
-            <span slot="body">
-                <span class="block mt2">
-                    <a class="btn btn-outline {{ color }} h6" v-on:click="saveCalendarAsImage">
-                        save as image
-                    </a>
-                </span>
-                <span class="block mt2">
-                    <a class="btn btn-outline {{ color }} h6" v-on:click="saveCalendarAsICS">
-                        save as calendar
-                    </a>
-                </span>
-                <span class="block mt2">
-                    <a class="btn btn-outline {{ color }} h6" v-on:click="bookmark">
-                        get a bookmark link
-                    </a>
-                </span>
-            </span>
-        </modal>
     </div>
 </template>
 
@@ -93,7 +71,6 @@ module.exports = {
         return {
             ready: false,
             searchModal: false,
-            shareModal: false,
             lock: false
         }
     },
@@ -354,7 +331,6 @@ module.exports = {
             .alert(html)
             .then(function(resolved) {
                 window.location.hash = '';
-                console.log('click')
             })
 
             setTimeout(function() {
@@ -364,6 +340,32 @@ module.exports = {
                     element.setSelectionRange(0, element.value.length)
                 }catch(e) {}
             }, 500);
+        },
+        showShareMenu: function() {
+            window._vueContext = {};
+            window._vueContext.saveCalendarAsImage = this.saveCalendarAsImage;
+            window._vueContext.saveCalendarAsICS = this.saveCalendarAsICS;
+            window._vueContext.bookmark = this.bookmark
+
+            var html = '<p>Share...</p>';
+            html += '<span class="block mt2">';
+            html += '<a class="btn btn-outline {{ color }} h6" onclick="window._vueContext.saveCalendarAsImage()">';
+            html += 'save as image';
+            html += '</a></span>';
+
+            html += '<span class="block mt2">';
+            html += '<a class="btn btn-outline {{ color }} h6" onclick="window._vueContext.saveCalendarAsICS()">';
+            html += 'save as calendar';
+            html += '</a></span>';
+
+            html += '<span class="block mt2">';
+            html += '<a class="btn btn-outline {{ color }} h6" onclick="window._vueContext.bookmark()">';
+            html += 'get a bookmark link';
+            html += '</a></span>';
+
+            this.alert()
+            .okBtn('OK')
+            .alert(html)
         }
     },
     created: function() {
