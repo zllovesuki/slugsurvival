@@ -37,19 +37,19 @@
                         <input type="text" class="col-4 field inline-block" v-model="extra.time.start" placeholder="8:00">&nbsp; - &nbsp;<input type="text" class="col-4 field inline-block" v-model="extra.time.end" placeholder="13:00">
                     </label>
                     <label for="repeat" class="mt1 block">
-                        <a class="btn btn-primary h6" v-bind:class="{ 'bg-green': !extra.repeat.M, 'bg-red': extra.repeat.M }" @click="extra.repeat.M = !extra.repeat.M">
+                        <a class="btn btn-primary h6 mr1" v-bind:class="{ 'bg-green': !extra.repeat.M, 'bg-red': extra.repeat.M }" @click="extra.repeat.M = !extra.repeat.M">
                             M
                         </a>
-                        <a class="btn btn-primary h6" v-bind:class="{ 'bg-green': !extra.repeat.Tu, 'bg-red': extra.repeat.Tu }" @click="extra.repeat.Tu = !extra.repeat.Tu">
+                        <a class="btn btn-primary h6 mr1" v-bind:class="{ 'bg-green': !extra.repeat.Tu, 'bg-red': extra.repeat.Tu }" @click="extra.repeat.Tu = !extra.repeat.Tu">
                             Tu
                         </a>
-                        <a class="btn btn-primary h6" v-bind:class="{ 'bg-green': !extra.repeat.W, 'bg-red': extra.repeat.W }" @click="extra.repeat.W = !extra.repeat.W">
+                        <a class="btn btn-primary h6 mr1" v-bind:class="{ 'bg-green': !extra.repeat.W, 'bg-red': extra.repeat.W }" @click="extra.repeat.W = !extra.repeat.W">
                             W
                         </a>
-                        <a class="btn btn-primary h6" v-bind:class="{ 'bg-green': !extra.repeat.Th, 'bg-red': extra.repeat.Th }" @click="extra.repeat.Th = !extra.repeat.Th">
+                        <a class="btn btn-primary h6 mr1" v-bind:class="{ 'bg-green': !extra.repeat.Th, 'bg-red': extra.repeat.Th }" @click="extra.repeat.Th = !extra.repeat.Th">
                             Th
                         </a>
-                        <a class="btn btn-primary h6" v-bind:class="{ 'bg-green': !extra.repeat.F, 'bg-red': extra.repeat.F }" @click="extra.repeat.F = !extra.repeat.F">
+                        <a class="btn btn-primary h6 mr1" v-bind:class="{ 'bg-green': !extra.repeat.F, 'bg-red': extra.repeat.F }" @click="extra.repeat.F = !extra.repeat.F">
                             F
                         </a>
                     </label>
