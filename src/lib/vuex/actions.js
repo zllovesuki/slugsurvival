@@ -988,7 +988,7 @@ var self = module.exports = {
     },
     generateCourseInfoObjectFromExtra: function(_, termId, courseNum, extra){
         var courseInfo = {
-            ty: '',
+            ty: 'Other',
             cr: '0',
             ge: [],
             desc: '',
