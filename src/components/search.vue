@@ -34,7 +34,9 @@
                         <input type="text" class="col-12 field inline-block" v-model="extra.location" placeholder="location">
                     </label>
                     <label for="time" class="mt1 block">
-                        <input type="text" class="col-4 field inline-block" v-model="extra.time.start" placeholder="8:00">&nbsp; - &nbsp;<input type="text" class="col-4 field inline-block" v-model="extra.time.end" placeholder="13:00">
+                        <input type="text" class="col-4 field inline-block" v-model="extra.time.start" placeholder="8:00" @focusout="autoFormat('start')">
+                        &nbsp; - &nbsp;
+                        <input type="text" class="col-4 field inline-block" v-model="extra.time.end" placeholder="13:00" @focusout="autoFormat('end')">
                     </label>
                     <label for="repeat" class="mt1 block">
                         <a class="btn btn-primary h6 mr1" v-bind:class="{ 'bg-green': !extra.repeat.M, 'bg-red': extra.repeat.M }" @click="extra.repeat.M = !extra.repeat.M">
@@ -164,6 +166,40 @@ module.exports = {
             this.extraModal = false;
             this.resetExtra();
             this.alert().success('Schedule added to the planner!');
+        },
+        formatTime: function(string) {
+            string = string.replace(/\s/g, '');
+            var colin = string.indexOf(':');
+            var hour, minute;
+            if (colin === -1) {
+                // it could be 7 - 8
+                // or it could be 715 - 850; 1450 - 1540
+                if (string.length < 3) {
+                    hour = ('0' + string).slice(-2);
+                    minute = '00';
+                }else{
+                    minute = string.slice(-2);
+                    hour = ('0' + string.slice(0, -2)).slice(-2);
+                }
+            }else{
+                hour = string.substring(0, colin);
+                minute = string.substring(colin + 1);
+                hour = ('0' + hour).slice(-2);
+                minute = ('0' + minute).slice(-2);
+            }
+
+            if (minute > 59) {
+                hour++;
+                minute = '00';
+            }
+            if (hour > 23) hour = '00';
+            if (hour < 0) hour = '00';
+            if (minute < 0) minute = '00';
+
+            return hour + ':' + minute;
+        },
+        autoFormat: function(type) {
+            this.extra.time[type] = this.formatTime(this.extra.time[type]);
         }
     },
     created: function() {
