@@ -783,11 +783,12 @@ var self = module.exports = {
         var cal = ics();
 
         var compact = helper.compact(events);
-        var split = [], course;
+        var split = [], course, courseInfo;
 
         for (var i = 0, length = compact.length; i < length; i++) {
             split = compact[i].split('-');
             course = _.state.flatCourses[termId][split[0]];
+            courseInfo = _.state.courseInfo[termId][split[0]];
 
             for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
                 helper.addCal(cal, termDates, course, courseInfo.ty, locts[j]);
