@@ -109,6 +109,11 @@ module.exports = {
         state.events[termId] = state.events[termId].filter(function(event) {
             return event.number != courseNumber;
         })
+        if (courseNumber / 100000 >= 1) {
+            // remove the traitor!
+            delete state.flatCourses[termId][courseNumber];
+            delete state.courseInfo[termId][courseNumber];
+        }
         if (state.events[termId].length === 0) {
             delete state.events[termId];
         }
