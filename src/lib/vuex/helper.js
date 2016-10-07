@@ -193,9 +193,9 @@ var self = module.exports = {
 
         return self.formattedDate(startingDate)
     },
-    addCal: function(cal, course, courseInfo, type, loct) {
-        var startDate = self.determineActualStartDate(courseInfo.md.start, loct.t.day);
-        var endDate = courseInfo.md.end;
+    addCal: function(cal, termDates, course, type, loct) {
+        var startDate = self.determineActualStartDate(termDates.start, loct.t.day);
+        var endDate = termDates.end;
         var startTime = loct.t.time.start;
         var endTime = loct.t.time.end;
         cal.addEvent(course.c + ' - ' + type, course.n, loct.loc, [startDate, startTime].join(' '), [startDate, endTime].join(' '), {

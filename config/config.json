@@ -2,7 +2,7 @@
     "siteURL": "https://slugsurvival.com",
     "dbURL": "https://db.slugsurvival.com",
     "trackingURL": "https://tracking.slugsurvival.com",
-    "notifyURL": "https://notify.slugsurvival.com",
+    "notifyURL": "https://notification.slugsurvival.com",
     "monitoredTerm": 2168,
     "analytics": {
         "piwik": {

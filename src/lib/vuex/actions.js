@@ -776,26 +776,26 @@ var self = module.exports = {
     }, // http://stackoverflow.com/questions/13898423/javascript-convert-24-hour-time-of-day-string-to-12-hour-time-with-am-pm-and-no
     exportICS: function(_) {
         var termId = this.termId;
+        var termDates = _.state.termDates[termId];
         var events = _.state.events[termId];
 
         if (typeof events === 'undefined') return;
         var cal = ics();
 
         var compact = helper.compact(events);
-        var split = [], course, courseInfo;
+        var split = [], course;
 
         for (var i = 0, length = compact.length; i < length; i++) {
             split = compact[i].split('-');
             course = _.state.flatCourses[termId][split[0]];
-            courseInfo = _.state.courseInfo[termId][split[0]];
 
             for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
-                helper.addCal(cal, course, courseInfo, courseInfo.ty, locts[j]);
+                helper.addCal(cal, termDates, course, courseInfo.ty, locts[j]);
                 if (split[1]) {
                     for (var k = 0, sec = courseInfo.sec, length2 = sec.length; k < length2; k++) {
                         if (sec[k].num != split[1]) continue;
                         for (var m = 0, secLocts = sec[k].loct, length3 = secLocts.length; m < length3; m++) {
-                            helper.addCal(cal, course, courseInfo, 'Section', secLocts[m]);
+                            helper.addCal(cal, termDates, course, 'Section', secLocts[m]);
                         }
                     }
                 }

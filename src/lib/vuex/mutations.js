@@ -12,6 +12,7 @@ module.exports = {
         state.flatTermsList = terms;
         terms.forEach(function(term) {
             state.termsList[term.code] = term.name;
+            state.termDates[term.code] = term.date;
         })
     },
     saveTermCourses: function(state, termId, courses, skipSaving) {
