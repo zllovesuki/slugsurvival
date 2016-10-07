@@ -6,14 +6,6 @@
             </div>
             <div class="m0 p2" v-show="ready">
                 <div class="clearfix">
-                    <div class="left">
-                        <a class="btn btn-outline red h6" v-on:click="saveCalendarAsImage">
-                            &#128190; image
-                        </a>
-                        <a class="btn btn-outline red h6 ml1" v-on:click="saveCalendarAsICS">
-                            &#128190; calendar
-                        </a>
-                    </div>
                     <div class="right">
                         <a class="btn btn-outline h6 m0 {{ color }}" v-on:click.prevent.stop="showSearchModal">
                             search anything
@@ -51,7 +43,7 @@
             <div class="m0 p2">
                 <div class="clearfix">
                     <div class="right">
-                        <a class="btn btn-outline green h6" @click="bookmark">
+                        <a class="btn btn-outline green h6" @click="shareModal = true">
                             click here to bring your planner anywhere
                         </a>
                     </div>
@@ -59,6 +51,28 @@
             </div>
         </div>
         <search :show.sync="searchModal" :callback="promptAddClass" :selected-term-id="termId"></search>
+        <modal :show.sync="shareModal" max-width="16em">
+            <h4 slot="header">
+                Share...
+            </h4>
+            <span slot="body">
+                <span class="block mt2">
+                    <a class="btn btn-outline {{ color }} h6" v-on:click="saveCalendarAsImage">
+                        save as image
+                    </a>
+                </span>
+                <span class="block mt2">
+                    <a class="btn btn-outline {{ color }} h6" v-on:click="saveCalendarAsICS">
+                        save as calendar
+                    </a>
+                </span>
+                <span class="block mt2">
+                    <a class="btn btn-outline {{ color }} h6" v-on:click="bookmark">
+                        get a bookmark link
+                    </a>
+                </span>
+            </span>
+        </modal>
     </div>
 </template>
 
@@ -75,7 +89,8 @@ module.exports = {
     data: function() {
         return {
             ready: false,
-            searchModal: false
+            searchModal: false,
+            shareModal: false
         }
     },
     methods: {
