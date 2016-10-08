@@ -1,4 +1,5 @@
 {
+    "port": 80,
     "siteURL": "https://slugsurvival.com",
     "dbURL": "https://db.slugsurvival.com",
     "trackingURL": "https://tracking.slugsurvival.com",

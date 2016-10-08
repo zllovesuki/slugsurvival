@@ -7,14 +7,15 @@
                         <span class="btn black h4">Classes: </span>
                     </div>
                     <div class="clearfix">
-                        <span class="ml1 btn black h5 muted not-clickable">my.ucsc.edu is too slow? Plan your classes here!</span>
+                        <span class="ml1 btn black h5 muted not-clickable">Here are the tools to save you from my.ucsc.edu</span>
                     </div>
                 </div>
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
                         <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" v-link="{ name: 'termsList' }">Interactive Planner</a>
+                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}"  v-link="{ name: 'enrollHelper' }">Notify Me When My Classes Are Open</a>
+                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}"  v-link="{ name: 'analyticsHelper' }">Enrollment Analytics</a>
                         <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" @click="comingSoon">Major/Minor Requirements</a>
-                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}"  v-link="{ name: 'enrollHelper' }">Course Opening Tracker</a>
                     </div>
                 </div>
             </div>
