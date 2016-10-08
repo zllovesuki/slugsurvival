@@ -26,6 +26,11 @@
                         <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/own.gif" alt="" />
                     </p>
                     <hr />
+                    <h3>Instantly Checks For Schedule Conflicts (!)</h3>
+                    <p>
+                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/conflict.gif" alt="" />
+                    </p>
+                    <hr />
                     <h3>Be Notified for Changes</h3>
                     <p>
                         <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/tracker.gif" alt="" />
