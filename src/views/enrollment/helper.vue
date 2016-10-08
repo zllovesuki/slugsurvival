@@ -275,6 +275,7 @@ module.exports = {
 
                 for (var i = 0, length = compact.length; i < length; i++) {
                     split = compact[i].split('-');
+                    if (split[0] / 100000 >= 1) continue;
                     course = this.flatCourses[this.monitoredTerm][split[0]];
                     this.courses.push(course)
                 }
