@@ -63,7 +63,11 @@ module.exports = {
                             scaleLabel: {
                                 display: true,
                                 labelString: 'Seats'
-                            }
+                            },
+                            ticks: {
+                                 beginAtZero: true,
+                                 callback: function(value) {if (value % 1 === 0) {return value;}}
+                             } //http://stackoverflow.com/questions/15751571/how-to-change-the-y-axis-values-from-real-numbers-to-integer-in-chartjs
                         }]
                     }
                 }
