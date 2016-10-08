@@ -1,6 +1,6 @@
 module.exports = {
     apiVersion: 2,
-    port: 80,
+    port: require('./config/config.json').port || 3001,
     siteURL: require('./config/config.json').siteURL,
     dbURL: require('./config/config.json').dbURL,
     trackingURL: require('./config/config.json').trackingURL,
