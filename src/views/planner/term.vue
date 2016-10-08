@@ -385,6 +385,7 @@ module.exports = {
         $script.ready('calendar', function() {
             self.loading.go(70);
             self.fetchTermCourses().then(function() {
+                self.emptyEventSource(self.termId);
                 return self.decodeHash()
                 .then(function() {
                     // no valid was decoded
