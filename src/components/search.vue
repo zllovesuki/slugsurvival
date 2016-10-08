@@ -169,6 +169,7 @@ module.exports = {
         },
         formatTime: function(string) {
             string = string.replace(/\s/g, '');
+            if (string.length === 0) return '';
             var colin = string.indexOf(':');
             var hour, minute;
             if (colin === -1) {
