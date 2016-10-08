@@ -18,6 +18,20 @@ router.map({
         name: 'index',
         component: require('./views/index.vue')
     },
+    '/explain': {
+        name: 'explain',
+        component: require('./views/explain/index.vue'),
+        subRoutes: {
+            '/': {
+                name: 'explainText',
+                component: require('./views/explain/text.vue')
+            },
+            '/gif': {
+                name: 'explainGif',
+                component: require('./views/explain/gif.vue')
+            }
+        }
+    },
     '/planner': {
         name: 'planner',
         component: require('./views/planner/index.vue'),

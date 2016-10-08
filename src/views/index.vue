@@ -34,6 +34,21 @@
                     </div>
                 </div>
             </div>
+            <div class="overflow-hidden bg-white rounded mb2">
+                <div class="m0 p1">
+                    <div class="clearfix">
+                        <span class="btn black h4">Links: </span>
+                    </div>
+                    <div class="clearfix">
+                        <span class="ml1 btn black h5 muted not-clickable">Of course I have to talk about other things.</span>
+                    </div>
+                </div>
+                <div class="m0 p2 border-top">
+                    <div class="clearfix">
+                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" v-link="{ name: 'explain' }">What is SlugSurvival?</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
