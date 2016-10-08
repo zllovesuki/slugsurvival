@@ -7,7 +7,7 @@
                         <span class="btn black h4">Classes: </span>
                     </div>
                     <div class="clearfix">
-                        <span class="ml1 btn black h5 muted not-clickable">my.ucsc.edu is too slow? Plan your classes here!</span>
+                        <span class="ml1 btn black h5 muted not-clickable">Here are the tools to save you from my.ucsc.edu</span>
                     </div>
                 </div>
                 <div class="m0 p2 border-top">
