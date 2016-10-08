@@ -337,7 +337,6 @@ var self = module.exports = {
         _.dispatch('replaceHash', termId);
     },
     parseFromCompact: function(_, termId, array) {
-        var termId = this.termId;
         var events = [];
         var index, split = [], courseNum, course, courseInfo;
         array.forEach(function(obj) {
