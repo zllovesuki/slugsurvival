@@ -11,10 +11,15 @@
                     </span>
 				</div>
 			</div>
-			<div class="m0 p2 border-top">
-				<div class="clearfix">
-				    <a class="muted h6 ml1 mb1 bold btn btn-outline black" @click="showSearchModal">search anything</a>
+			<div class="m0 p1 border-top">
+                <div class="clearfix">
+                    <span class="btn black h6 not-clickable"><i>Currently we have the data for {{ termName }}: </i></span>
 				</div>
+                <div class="m0 p1">
+    				<div class="clearfix">
+    				    <a class="muted h6 ml1 mb1 bold btn btn-outline black" @click="showSearchModal">search anything</a>
+    				</div>
+                </div>
 			</div>
 		</div>
         <search :show.sync="searchModal" :callback="openAnalytics" :selected-term-id="monitoredTerm"></search>

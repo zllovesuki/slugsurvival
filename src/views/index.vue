@@ -13,9 +13,9 @@
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
                         <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" v-link="{ name: 'termsList' }">Interactive Planner</a>
-                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" @click="comingSoon">Major/Minor Requirements</a>
-                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}"  v-link="{ name: 'enrollHelper' }">Course Opening Tracker</a>
+                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}"  v-link="{ name: 'enrollHelper' }">Notify Me When My Classes Are Open</a>
                         <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}"  v-link="{ name: 'analyticsHelper' }">Enrollment Analytics</a>
+                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" @click="comingSoon">Major/Minor Requirements</a>
                     </div>
                 </div>
             </div>
