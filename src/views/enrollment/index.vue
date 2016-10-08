@@ -5,7 +5,7 @@
             <chevron-right></chevron-right>
             <span v-if="route.name === 'enrollHelper'">
                 <span class="btn button-narrow mxn1">
-                    Course Opening Tracker
+                    Course Opening Tracker (beta)
                 </span>
             </span>
             <span v-if="route.name === 'enrollManage'">

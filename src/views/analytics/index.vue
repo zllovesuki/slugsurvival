@@ -4,7 +4,7 @@
             <span class="btn button-narrow mxn2 muted" v-link="{ name: 'analytics' }">A</span>
             <chevron-right></chevron-right>
             <span class="btn button-narrow mxn1">
-                Analytics
+                Analytics (alpha)
             </span>
         </div>
         <div class="mt2 mb1">
