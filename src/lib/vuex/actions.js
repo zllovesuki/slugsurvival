@@ -376,7 +376,11 @@ var self = module.exports = {
         try {
             console.log('trying to restore events from hash')
             var hash = window.location.hash.substring(1);
-            var array = JSON.parse(helper.Base64.decode(hash));
+            var string = LZString.decompressFromEncodedURIComponent(hash);
+            if (string.length === 0) {
+                string = helper.Base64.decode(hash);
+            }
+            var array = JSON.parse(string);
             if (typeof array.forEach !== 'undefined') {
                 console.log('valid hash found')
                 var split;

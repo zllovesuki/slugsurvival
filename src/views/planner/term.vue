@@ -370,7 +370,7 @@ module.exports = {
     },
     created: function() {
         var self = this;
-        $script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'moment/2.14.1/moment.min.js'], 'jQuery', function() {
+        $script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'moment/2.14.1/moment.min.js', dist + 'lz-string/1.4.4/lz-string.min.js'], 'jQuery', function() {
             $script(dist + 'fullcalender/2.9.1/fullcalendar.min.js', 'calendar')
         })
     },

@@ -138,6 +138,6 @@ module.exports = {
 
         var array = helper.compact(state.events[termId]);
 
-        window.location.hash = '#' + helper.Base64.encode(JSON.stringify(array));
+        window.location.hash = '#' + LZString.compressToEncodedURIComponent(JSON.stringify(array));
     }
 }
