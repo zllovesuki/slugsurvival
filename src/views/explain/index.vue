@@ -4,7 +4,7 @@
             <span class="btn button-narrow mxn2 muted" v-link="{ name: 'explain' }">?</span>
             <chevron-right></chevron-right>
             <span class="btn button-narrow mxn1">
-                What is SlugSurvival?
+                Explaining Things
             </span>
         </div>
         <div class="mt2 mb1">

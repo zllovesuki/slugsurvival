@@ -29,6 +29,10 @@ router.map({
             '/gif': {
                 name: 'explainGif',
                 component: require('./views/explain/gif.vue')
+            },
+            '/privacy': {
+                name: 'explainPrivacy',
+                component: require('./views/explain/privacy.vue')
             }
         }
     },

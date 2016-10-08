@@ -91,7 +91,10 @@
                         <button type="submit" class="col-3 btn btn-primary ml1 mb2 inline-block" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
                     </label>
                     <hr />
-					<span class="block mb1">We take privacy seriously. <a>Learn More</a></span>
+					<span class="block mb1">
+                        We take privacy seriously.
+                        <a class="h6 bold {{ color }}" v-link="{ name: 'explainPrivacy' }" target="_blank"> Learn More</a>
+                    </span>
 				</form>
 			</span>
 		</modal>

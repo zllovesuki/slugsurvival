@@ -7,7 +7,10 @@
                     <p>
                         <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/add.gif" alt="" />
                     </p>
-                    <hr />
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
                     <h3>Check Openings in Real Time</h3>
                     <p>
                         <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/choose-section.gif" alt="" />
@@ -15,27 +18,42 @@
                     <p>
                         <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/real-time.gif" alt="" />
                     </p>
-                    <hr />
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
                     <h3>... and RateMyProfessors</h3>
                     <p>
                         <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/rmp.gif" alt="" />
                     </p>
-                    <hr />
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
                     <h3>You Have Other Obligations?</h3>
                     <p>
                         <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/own.gif" alt="" />
                     </p>
-                    <hr />
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
                     <h3>Instantly Checks For Schedule Conflicts (!)</h3>
                     <p>
                         <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/conflict.gif" alt="" />
                     </p>
-                    <hr />
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
                     <h3>Be Notified for Changes</h3>
                     <p>
                         <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/tracker.gif" alt="" />
                     </p>
-                    <hr />
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
                     <h3>Of Course You Can Unsubscribe</h3>
                     <p>
                         <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/manage.gif" alt="" />

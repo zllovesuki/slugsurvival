@@ -46,6 +46,7 @@
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
                         <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" v-link="{ name: 'explain' }">What is SlugSurvival?</a>
+                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" v-link="{ name: 'explainPrivacy' }">Privacy Policy</a>
                     </div>
                 </div>
             </div>

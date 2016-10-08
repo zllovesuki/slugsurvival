@@ -3,11 +3,20 @@
         <div class="overflow-hidden bg-white rounded mb2 clearfix">
             <div class="m0 p2">
                 <div class="clearfix">
-                    <h3>Short Answer</h3>
+                    <h3>What is this "SlugSurvival" thing?</h3>
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
+                    <h3 class="muted">Short Answer</h3>
                     <p>
                         It's an awesome tool to help you to plan courses.
                     </p>
-                    <h3>Long Answer</h3>
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
+                    <h3 class="muted">Long Answer</h3>
                     <ol>
                         <li>
                             SlugSurvival aims to solve the annoying part of the school's AIS (Academic Information System)
@@ -31,7 +40,11 @@
                             <b>Students can choose to be notified (via SMS and/or Email) on course openings changes.</b>
                         </li>
                     </ol>
-                    <h3>TL; DR. Can I just watch a video?</h3>
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
+                    <h3 class="muted">TL; DR. Can I just watch a video?</h3>
                     <p>
                         <a class="h6 ml2 mt1 bold btn btn-outline green" v-link="{ name: 'explainGif' }">Sure</a>
                     </p>
