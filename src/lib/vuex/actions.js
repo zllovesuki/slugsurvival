@@ -902,7 +902,7 @@ var self = module.exports = {
         }
 
         if (course.loct.length === 1) {
-            if (course.custom !== true) html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
+            html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
             html += template('Meeting Day', !!!course.loct[0].t ? 'TBA' : course.loct[0].t.day.join(', '));
             html += template('Meeting Time', !!!course.loct[0].t ? 'TBA' : this.tConvert(course.loct[0].t.time.start) + '-' + this.tConvert(course.loct[0].t.time.end));
         }else{
