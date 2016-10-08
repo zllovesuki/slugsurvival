@@ -1,6 +1,11 @@
 <template>
     <div>
         <div class="overflow-hidden bg-white rounded mb2 clearfix">
+            <div class="m0 p2" v-show="!ready">
+                <div class="clearfix">
+                    Loading...
+                </div>
+            </div>
             <div class="m0 p2" v-if="ready">
                 <div class="clearfix">
                     <canvas v-bind:id="canvasId"></canvas>
@@ -53,11 +58,14 @@ module.exports = {
         var self = this;
         this.setTitle('Analytics');
         $script.ready('Chart.js', function() {
-            fetch(config.trackingURL + '/fetch/2168/' + self.route.params.courseNum).then(function(res) {
+            fetch(config.trackingURL + '/fetch/' + self.route.params.termId + '/' + self.route.params.courseNum).then(function(res) {
                 return res.json();
             }).then(function(res) {
                 if (!res.ok) {
                     return self.alert().error('An error has occurred');
+                }
+                if (res.results && res.results.length === 0) {
+                    return self.alert().error('No data found.');
                 }
                 self.graphData = res.results;
                 var numOfSections = (res.results[0] ? (res.results[0].seats.sec ? res.results[0].seats.sec.length : 0) : 0);
