@@ -18,6 +18,16 @@ router.map({
         name: 'index',
         component: require('./views/index.vue')
     },
+    '/analytics': {
+        name: 'analytics',
+        component: require('./views/analytics/index.vue'),
+        subRoutes: {
+            '/:courseNum': {
+                name: 'analyticsCourse',
+                component: require('./views/analytics/course.vue')
+            }
+        }
+    },
     '/explain': {
         name: 'explain',
         component: require('./views/explain/index.vue'),
