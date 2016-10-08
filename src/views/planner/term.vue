@@ -395,8 +395,6 @@ module.exports = {
                     self.lock = true;
                 })
             }).then(function() {
-                window.location.hash = '';
-
                 self.ready = true;
                 self.$nextTick(function() {
                     self.initializeCalendar();
