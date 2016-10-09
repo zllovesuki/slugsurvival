@@ -84,11 +84,11 @@
 				<form v-on:submit.prevent class="h5">
                     <label for="recipient" class="mt2 block">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.recipient" placeholder="15554443333/hello@me.com">
-                        <button type="submit" class="col-3 btn btn-primary ml1 mb2 inline-block" :disabled="sub.verified || !sub.recipient.length > 0 || sub.sent" @click="sendVerify">{{ sub.text }}</button>
+                        <button type="submit" class="col-3 btn btn-outline ml1 mb2 inline-block {{ color }}" :disabled="sub.verified || !sub.recipient.length > 0 || sub.sent || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
                     </label>
                     <label for="code" class="mt2 block" v-if="sub.sent">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.code" placeholder="passcode received">
-                        <button type="submit" class="col-3 btn btn-primary ml1 mb2 inline-block" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
+                        <button type="submit" class="col-3 btn btn-outline ml1 mb2 inline-block {{ color }}" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
                     </label>
                     <hr />
 					<span class="block mb1">
@@ -125,6 +125,7 @@ module.exports = {
                 text: 'Get code',
                 counter: 300,
                 sent: false,
+                sendInflight: false,
                 verified: false,
                 verifyInflight: false,
                 shouldResend: false,
@@ -140,6 +141,7 @@ module.exports = {
         sendVerify: function() {
             var self = this;
             self.loading.go(30);
+            self.sub.sendInflight = true;
             return fetch(config.notifyURL + '/verify/' + (self.sub.shouldResend ? 'resend' : 'new'), {
                 method: 'POST',
                 headers: {
@@ -159,6 +161,7 @@ module.exports = {
             })
             .then(function(res) {
                 self.loading.go(100);
+                self.sub.sendInflight = false;
                 if (!res.ok) {
                     return self.alert().error(res.message);
                 }
@@ -178,6 +181,7 @@ module.exports = {
             .catch(function(e) {
                 console.log(e);
                 self.loading.go(100);
+                self.sub.sendInflight = false;
                 self.alert().error('An error has occurred.')
             })
         },
@@ -205,16 +209,15 @@ module.exports = {
             })
             .then(function(res) {
                 self.loading.go(70);
+                self.sub.verifyInflight = false;
                 if (!res.ok) {
                     self.loading.go(100);
-                    self.sub.verifyInflight = false;
                     return self.alert().error(res.message);
                 }
                 self.updateWatch(self.sub.recipient, self.sub.code, self.courses)
                 .then(function() {
                     clearInterval(self.sub.timer);
                     self.sub.verified = true;
-                    self.sub.verifyInflight = false;
                     self.sub.text = 'Verified';
                     self.sub.shouldResend = false;
                     self.sub.sent = false;
