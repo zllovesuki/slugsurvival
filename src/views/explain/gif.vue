@@ -5,7 +5,7 @@
                 <div class="clearfix">
                     <h3>Instantly Search For Classes</h3>
                     <p>
-                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/add.gif" alt="" />
+                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/add-new.gif" alt="" />
                     </p>
                 </div>
             </div>
