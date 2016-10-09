@@ -12,8 +12,8 @@
                     <li v-show="search.string.length > 0 && search.results.length === 0">No results.</li>
                 </ul>
             </span>
-            <span slot="footer" v-if="showExtra">
-                <a class="btn btn-outline h6 green ml1" v-on:click.prevent.stop="extraModal = true">
+            <span slot="footer">
+                <a class="btn h6 green ml1" v-on:click.prevent.stop="extraModal = true" v-if="showExtra">
                     add my own schedule
                 </a>
             </span>
@@ -59,8 +59,16 @@
 					<span class="block mb1 muted">
                         SlugSurvival allows you to add your own schedule to the planner, so you can plan your courses around other obligations.
                     </span>
-					<button type="submit" class="btn btn-outline {{ color }}">Add</button>
+					<button type="submit" class="btn btn-outline {{ color }}" :disabled="!extraValid">Add</button>
 				</form>
+            </span>
+        </modal>
+        <modal :show.sync="GEModal">
+            <h4 slot="header">
+                How do I search by GE?
+            </h4>
+            <span slot="body">
+
             </span>
         </modal>
     </span>
@@ -101,6 +109,22 @@ module.exports = {
             },
             extraModal: false,
             extra: {}
+        }
+    },
+    computed: {
+        extraValid: function() {
+            return this.extra.title.length > 0
+                && this.extra.description.length > 0
+                && this.extra.location.length > 0
+                && this.extra.time.start.length > 0
+                && this.extra.time.end.length > 0
+                && !(
+                    this.extra.repeat.M === false
+                    && this.extra.repeat.Tu === false
+                    && this.extra.repeat.W === false
+                    && this.extra.repeat.Th === false
+                    && this.extra.repeat.F === false
+                );
         }
     },
     watch: {
