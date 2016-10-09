@@ -29,7 +29,6 @@
 <script>
 var getters = require('../../lib/vuex/getters.js')
 var actions = require('../../lib/vuex/actions.js')
-var helper = require('../../lib/vuex/helper.js')
 var config = require('../../../config')
 
 module.exports = {

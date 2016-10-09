@@ -3,6 +3,9 @@ var helper = require('./helper'),
     config = require('../../../config')
 
 var self = module.exports = {
+    helper: function(_) {
+        return helper;
+    },
     alert: function(_) {
         return _.state.alert;
     },

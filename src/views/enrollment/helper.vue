@@ -104,7 +104,6 @@
 <script>
 var getters = require('../../lib/vuex/getters.js')
 var actions = require('../../lib/vuex/actions.js')
-var helper = require('../../lib/vuex/helper.js')
 var config = require('../../../config')
 
 module.exports = {
@@ -276,7 +275,7 @@ module.exports = {
                 var events = this.eventSource[this.monitoredTerm];
                 if (!events) return;
                 this.courses = [];
-                var compact = helper.compact(events);
+                var compact = this.helper().compact(events);
                 var split = [], course, courseInfo;
 
                 for (var i = 0, length = compact.length; i < length; i++) {
