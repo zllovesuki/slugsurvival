@@ -94,7 +94,7 @@ module.exports = {
         if (typeof state.events[termId] === 'undefined') state.events[termId] = [];
         state.events[termId].push(obj);
     },*/
-    mergeEventSource: function(state, termId, events) {
+    mergeEventSource: function(state, termId, events, skipSaving) {
         if (typeof state.events[termId] === 'undefined') state.events[termId] = [];
         state.events[termId] = state.events[termId].concat(events);
     },
@@ -123,7 +123,7 @@ module.exports = {
         state.events[termId] = state.events[termId].filter(function(event) {
             if (event.number !== courseNumber)
                 return true;
-            if (event.number == courseNumber && typeof(event._number) !== 'undefined')
+            if (event.number == courseNumber && typeof(event.sectionNum) !== 'undefined')
                 return false;
         })
         if (state.events[termId].length === 0) {

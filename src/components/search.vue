@@ -13,7 +13,7 @@
                 </ul>
             </span>
             <span slot="footer">
-                <a class="btn h6 blue ml1" v-on:click.prevent.stop="showGE">
+                <a class="btn h6 blue ml1" v-on:click.prevent.stop="showGE" v-if="false === true">
                     GE
                 </a>
                 <a class="btn h6 green ml1" v-on:click.prevent.stop="extraModal = true" v-if="showExtra">

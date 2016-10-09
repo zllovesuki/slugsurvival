@@ -7,7 +7,7 @@ var self = module.exports = {
         return helper;
     },
     alert: function(_) {
-        return _.state.alert;
+        return _.state.alert.delay(0);
     },
     setTitle: function(_, title) {
         _.dispatch('setTitle', title)
@@ -425,11 +425,16 @@ var self = module.exports = {
     emptyEventSource: function(_, termId) {
         _.dispatch('emptyEventSource', termId);
     },
-    getEventObjectsByCourse: function(_, termId, input1, input2) {
+    getEventObjectsByCourse: function(_, termId, input1, input2, awaitSelection, secSeats) {
+        /*
+            To be DRY, this function is unnecessarily huge
+        */
         var dateMap = _.state.dateMap;
         var events = [];
         var obj = {};
-        var courseNumber, course, courseInfo, sectionNumber, section;
+        var courseNumber, course, courseInfo, sectionNumber, section, conflict;
+
+        awaitSelection = (typeof awaitSelection === 'undefined' ? false : true);
 
         // We are not sure that if input1 is a course object or course number
         if (typeof input1.num !== 'undefined') {
@@ -440,6 +445,23 @@ var self = module.exports = {
             courseNumber = input1;
             course = _.state.flatCourses[termId][courseNumber];
             courseInfo = _.state.courseInfo[termId][courseNumber];
+        }
+
+        if (awaitSelection) {
+            var color = '#3D9970';
+
+            obj.title = 'Click Here To Choose a Section For ' + course.c + ' Later';
+            obj.number = course.num;
+            obj.sectionNum = null;
+            obj.color = color;
+            obj.course = course;
+            obj.section = false;
+            obj.conflict = false;
+            obj.awaitSelection = true;
+            obj.start = dateMap['Monday'];
+            obj.end = dateMap['Saturday'];
+            events.push(obj);
+            obj = {};
         }
 
         // Process course
@@ -473,99 +495,109 @@ var self = module.exports = {
         // We are going to process section as well if provided
         if (typeof input2 !== 'undefined' && input2 !== null) {
             sectionNumber = input2;
-            section = courseInfo.sec.filter(function(section) {
-                return section.num == sectionNumber;
-            });
-            section = section[0];
-        }else if (input2 === null) {
+        }else if (input2 === null && awaitSelection !== true) {
             sectionNumber = null;
         }else{
             section = false;
         }
 
-        if (section === false) return events;
+        if (section === false && awaitSelection !== true) return events;
 
-        // We will now process sections
-        if (sectionNumber === null || (section.loct.length === 1 && !!!section.loct[0].t)) {
-            // TBA or Choose Later will be in the allDaySlot
-            obj.title = [course.c, 'Section', 'DIS - ' + (sectionNumber === null ? '?' : section.sec)].join("\n");
-            obj.number = course.num;
-            obj._number = (sectionNumber === null ? null : section.num);
-            obj.color = (sectionNumber === null ? 'black' : 'green');
-            obj.course = course;
-            obj.section = null;
-            obj.start = dateMap['Monday'];
-            obj.end = dateMap['Saturday'];
-            events.push(obj);
-            obj = {};
-        } else {
-            for (var i = 0, days = section.loct[0].t.day, length = days.length; i < length; i++) {
-                obj.title = [course.c, 'Section', 'DIS - ' + section.sec].join("\n");
+        var seat = null;
+
+        var getSeatBySectionNum = function(seats, secNum) {
+            return seats.filter(function(el) {
+                return el.num == secNum;
+            })[0];
+        }
+
+        for (var i = 0, sections = courseInfo.sec, length = sections.length; i < length; i++) {
+            if (!awaitSelection && sectionNumber !== null && sections[i].num != sectionNumber) continue;
+            if (sectionNumber === null || (sections[i].loct.length === 1 && !!!sections[i].loct[0].t)) {
+                // TBA in the allDaySlot
+                obj.title = [course.c, 'Section', 'DIS - ' + (sectionNumber === null ? '?' : sections[i].sec)].join("\n");
                 obj.number = course.num;
-                obj._number = sectionNumber;
-                obj.color = 'grey';
+                obj.sectionNum = (sectionNumber === null ? null : sections[i].num);
+                obj.color = (sectionNumber === null ? 'black' : (awaitSelection ? color: 'green') );
                 obj.course = course;
-                obj.section = section;
-                obj.start = dateMap[days[i]] + ' ' + section.loct[0].t.time.start;
-                obj.end = dateMap[days[i]] + ' ' + section.loct[0].t.time.end;
+                obj.section = sections[i];
+                obj.conflict = false;
+                obj.awaitSelection = awaitSelection;
+                obj.start = dateMap['Monday'];
+                obj.end = dateMap['Saturday'];
                 events.push(obj);
                 obj = {};
+                if (sectionNumber === null); break;
+            } else {
+                for (var j = 0, days = sections[i].loct[0].t.day, length2 = days.length; j < length2; j++) {
+                    conflict = this.checkForConflict(sections[i]);
+                    obj.title = [course.c, 'Section ' + sections[i].sec].join("\n")
+                    if (secSeats && awaitSelection) {
+                        seat = getSeatBySectionNum(secSeats, sections[i].num);
+                        obj.title = ['DIS - ' + sections[i].sec, seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
+                    }
+                    obj.number = course.num;
+                    obj.sectionNum = sections[i].num;
+                    obj.color =  (awaitSelection ? color: 'grey')
+                    obj.course = course;
+                    obj.section = sections[i];
+                    obj.conflict = conflict;
+                    obj.awaitSelection = awaitSelection;
+                    obj.start = dateMap[days[j]] + ' ' + sections[i].loct[0].t.time.start;
+                    obj.end = dateMap[days[j]] + ' ' + sections[i].loct[0].t.time.end;
+                    events.push(obj);
+                    obj = {};
+                    conflict = false;
+                }
             }
         }
 
         return events;
     },
     /*
-        pushToEventSource() and _pushSectionToEventSource() are mutually exclusive
+        pushToEventSource() and pushSectionToEventSource() are mutually exclusive
         You can call either one (but not both)
     */
-    pushToEventSource: function(_, course, edit, changed) {
-
+    pushToEventSource: function(_, course) {
         var termId = this.termId;
-        var courses = _.state.flatCourses[termId];
         var events = [];
+
+        this.removeFromSource(termId, course.num);
 
         events = this.getEventObjectsByCourse(termId, course);
         _.dispatch('mergeEventSource', termId, events);
 
         return Promise.resolve();
     },
-    _pushSectionToEventSource: function(_, courseNumber, sectionNumber, edit) {
-        /*
-            edit denotes the operation
-            true: it is an editing operation
-            false: it is NOT an editing operatin (possibly first time adding the class)
-            null: user has selected choose later, prompts something else
-        */
+    pushSectionToEventSource: function(_, courseNum, sectionNum) {
         var termId = this.termId;
-        var course = _.state.flatCourses[termId][courseNumber];
         var events = [];
 
-        if (edit === true || edit === null) {
-            // Let's check if user selects "Choose Later" again
-            if (sectionNumber === null) {
-                // Choose Later, so we remove the *old* TBA section
-                this.removeEmptySection(termId, course.num);
-            }else{
-                // Or, remove every old event
-                this.removeFromSource(termId, course.num);
-            }
-        }
+        this.removeFromSource(termId, courseNum);
 
-        events = this.getEventObjectsByCourse(termId, courseNumber, sectionNumber);
+        events = this.getEventObjectsByCourse(termId, courseNum, sectionNum);
         _.dispatch('mergeEventSource', termId, events);
 
-        // Since this method can only be called outside of Vue context
-        // Thus the notifications are called inside this function
-        // Also, this function will refresh the calendar
-        this.refreshCalendar();
-        if (edit === true || edit === null) {
-            this.alert().success(course.c + ' edited!')
-        } else {
-            this.alert().success(course.c + ' added to the planner!')
-        }
-
         return Promise.resolve();
+    },
+    pushAwaitSectionsToEventSource: function(_, termId, courseNum) {
+        this.loading.go(30);
+        var events = [];
+        var secSeats = null;
+
+        this.fetchRealTimeEnrollment(termId, courseNum)
+        .then(function(res) {
+            if (res.ok && res.results[0] && res.results[0].seats) {
+                secSeats = res.results[0].seats.sec;
+            }
+            this.loading.go(50);
+            events = this.getEventObjectsByCourse(termId, courseNum, null, true, secSeats);
+            _.dispatch('mergeEventSource', termId, events, true);
+
+            this.refreshCalendar();
+            this.loading.go(100);
+            this.alert().success('Choose a Section!')
+        }.bind(this))
     },
     removeFromSource: function(_, termId, courseNumber) {
         _.dispatch('removeFromSource', termId, courseNumber);
@@ -626,6 +658,12 @@ var self = module.exports = {
         }
         return epochTimes;
     },
+    noAwaitSection: function(_, termId) {
+        if (typeof _.state.events[termId] === 'undefined') return true;
+        return _.state.events[termId].filter(function(el){
+            return el.awaitSelection === true;
+        }).length === 0;
+    },
     checkForConflict: function(_, course) {
         /*
             Instead of doing some ugly loops and intersects and shits, why don't we just compare the epoch time?
@@ -651,6 +689,7 @@ var self = module.exports = {
                 break;
             }
             if (events[i].allDay) continue;
+            if (events[i].awaitSelection) continue;
 
             if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
 

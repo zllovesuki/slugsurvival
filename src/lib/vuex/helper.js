@@ -19,8 +19,8 @@ var self = module.exports = {
         tracker.coursesWithoutSections = {};
         tracker.eventsWithSections = {};
         events.forEach(function(event) {
-            if (typeof event._number !== 'undefined' || event.section === null) {
-                tracker.eventsWithSections[event.number] = event._number;
+            if (typeof event.sectionNum !== 'undefined' || event.section === null) {
+                tracker.eventsWithSections[event.number] = event.sectionNum;
             }else{
                 tracker.coursesWithoutSections[event.number] = true;
                 if (event.number / 100000 >= 1) {
