@@ -104,12 +104,12 @@ module.exports = {
     emptyEventSource: function(state, termId) {
         delete state.events[termId];
     },
-    removeFromSource: function(state, termId, courseNumber) {
+    removeFromSource: function(state, termId, courseNumber, doNotRemove) {
         if (typeof state.events[termId] === 'undefined') return;
         state.events[termId] = state.events[termId].filter(function(event) {
             return event.number != courseNumber;
         })
-        if (courseNumber / 100000 >= 1) {
+        if (courseNumber / 100000 >= 1 && doNotRemove !== true) {
             // remove the traitor!
             delete state.flatCourses[termId][courseNumber];
             delete state.courseInfo[termId][courseNumber];

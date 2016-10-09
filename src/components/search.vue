@@ -197,7 +197,7 @@ module.exports = {
             }
             var courseInfo = this.generateCourseInfoObjectFromExtra(termId, courseNum, this.extra);
             this.populateLocalEntriesWithExtra(termId, courseNum, course, courseInfo);
-            this.pushToEventSource(course);
+            this.pushToEventSource(course, true);
             this.refreshCalendar();
             this.extraModal = false;
             this.resetExtra();

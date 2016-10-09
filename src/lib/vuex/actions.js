@@ -558,11 +558,11 @@ var self = module.exports = {
         pushToEventSource() and pushSectionToEventSource() are mutually exclusive
         You can call either one (but not both)
     */
-    pushToEventSource: function(_, course) {
+    pushToEventSource: function(_, course, doNotRemove) {
         var termId = this.termId;
         var events = [];
 
-        this.removeFromSource(termId, course.num);
+        this.removeFromSource(termId, course.num, doNotRemove);
 
         events = this.getEventObjectsByCourse(termId, course);
         _.dispatch('mergeEventSource', termId, events);
@@ -599,8 +599,8 @@ var self = module.exports = {
             this.alert().success('Choose a Section!')
         }.bind(this))
     },
-    removeFromSource: function(_, termId, courseNumber) {
-        _.dispatch('removeFromSource', termId, courseNumber);
+    removeFromSource: function(_, termId, courseNum, doNotRemove) {
+        _.dispatch('removeFromSource', termId, courseNum, doNotRemove);
     },
     removeEmptySection: function(_, termId, courseNumber) {
         _.dispatch('removeEmptySection', termId, courseNumber)
