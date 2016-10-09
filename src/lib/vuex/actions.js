@@ -610,47 +610,36 @@ var self = module.exports = {
             this.loading.go(100);
         }.bind(this))
     },
+    tConvertToEpoch: function(_, locts) {
+        var epochTimes = [];
+        for (var j = 0, length = locts.length; j < length; j++) {
+            if (!locts[j].t) continue;
+            for (var m = 0, days = locts[j].t.day, length1 = days.length; m < length1; m++) {
+                epochTimes.push({
+                    start: (new Date(_.state.dateMap[days[m]] + ' ' + locts[j].t.time.start).valueOf() / 1000),
+                    end: (new Date(_.state.dateMap[days[m]] + ' ' + locts[j].t.time.end).valueOf() / 1000)
+                })
+            }
+        }
+        return epochTimes;
+    },
     checkForConflict: function(_, course) {
         /*
-            TODO: This method needs a more efficient rewrite
-            Who the fuck write so many forLoops anyway?
-        */
-        /*
+            Instead of doing some ugly loops and intersects and shits, why don't we just compare the epoch time?
 
-        The original simplistic approach will check times on a different day, thus
-        to address classes with multiple time blocks, a new data structure and algorithm are needed.
+            It is an absolute unit of times (well, in a sense)
 
-        We will use an object with key corresponds to Day of the week, the value containing an array of time slots
-        e.g.
+            Therefore, it is *much* more efficient to compare epoch times.
 
-        var existingTimes = {
-            "Tuesday": [
-                "start": "18:00",
-                "end": "20:00"
-            ]
-        }
-
-        Then, we will check for intersecting days between existingTimes and the "new course",
-        put the conflicting days into a new array
-        e.g.
-
-        var intersectDays = [
-            'Tuesday'
-        ];
-
-        Then, we will compare the "new" course with the timeslots for conflict
-
+            Of course, the inefficiencies still lie with the for loop to check each loct at the end
         */
         var termId = this.termId;
         var events =  _.state.events[termId];
-        var intersectDays = [];
-        var existingDays = [];
-        var existingTimes = {};
+        var comingTime = [];
         var checker = {};
-        var comingTime = null;
-        var day = null;
         var conflict = false;
         if (typeof events === 'undefined') return false;
+
         for (var i = 0, length = events.length; i < length; i++) {
             // You can't take the same class twice in a quarter
             // At least you shouldn't
@@ -661,18 +650,18 @@ var self = module.exports = {
             if (events[i].allDay) continue;
 
             if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
-                day = events[i].section.loct[0].t.day[0];
-                existingDays.push(day);
+
+                if (typeof checker[events[i].course.c + ' Section'] !== 'undefined') continue;
+
+                checker[events[i].course.c + ' Section'] = this.tConvertToEpoch(events[i].section.loct);
+
             } else {
-                for (var j = 0, locts = events[i].course.loct, length1 = locts.length; j < length1; j++) {
-                    if (!locts[j].t) continue;
-                    for (var k = 0, days = locts[j].t.day, length2 = days.length; k < length2; k++) {
-                        day = days[k];
-                        existingDays.push(day);
-                    }
-                }
+
+                if (typeof checker[events[i].course.c] !== 'undefined') continue;
+
+                checker[events[i].course.c] = this.tConvertToEpoch(events[i].course.loct);
+
             }
-            day = null;
         }
 
         if (conflict !== false) return null;
@@ -682,76 +671,19 @@ var self = module.exports = {
             return false;
         }
 
-        existingDays = existingDays.filter(function(e, i, c) {
-            return c.indexOf(e) === i;
-        });
-
-        for (var i = 0, length = existingDays.length; i < length; i++) {
-            for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
-                if (!locts[j].t) continue;
-                if (locts[j].t.day.indexOf(existingDays[i]) !== -1) {
-                    intersectDays.push(locts[j].t.day);
-                }
-            }
-        }
-
-        intersectDays = [].concat.apply([], intersectDays).filter(function(e, i, c) {
-            return c.indexOf(e) === i;
-        });
-
-        if (intersectDays.length === 0) return false;
-
-        // O(n^2)
-        // sucks
-        /*
-
-                CONSIDER NESTED LOOP HARMFUL
-
-        */
-
-        for (var i = 0, length = intersectDays.length; i < length; i++) {
-            for (var j = 0, eLength = events.length; j < eLength; j++) {
-                if (events[j].allDay) continue;
-                if (typeof events[j].section !== 'undefined' && events[j].section !== null) {
-                    if (events[j].section.loct[0].t.day.indexOf(intersectDays[i]) !== -1) {
-                        if (typeof checker[events[j].course.c + ' Section'] === 'undefined') {
-                            checker[events[j].course.c + ' Section'] = {};
-                        }
-                        checker[events[j].course.c + ' Section'][intersectDays[i]] = events[j].section.loct[0].t.time;
-                    }
-                } else {
-                    for (var m = 0, locts = events[j].course.loct, length1 = locts.length; m < length1; m++) {
-                        if (!locts[m].t) continue;
-                        if (locts[m].t.day.indexOf(intersectDays[i]) !== -1) {
-                            if (typeof checker[events[j].course.c] === 'undefined') {
-                                checker[events[j].course.c] = {};
-                            }
-                            checker[events[j].course.c][intersectDays[i]] = locts[m].t.time;
-                        }
-                    }
-                }
-            }
-        }
-
         var oldStart, newStart, oldEnd, newEnd;
 
-        for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
-            if (!locts[j].t) continue;
-            comingTime = locts[j].t.time;
+        comingTime = this.tConvertToEpoch(course.loct);
 
+        for (var j = 0, length = comingTime.length; j < length; j++) {
+            newStart = comingTime[j].start;
+            newEnd = comingTime[j].end;
             for (var code in checker) {
-                // check each class in the conflicting
-                for (var day in checker[code]) {
-                    // check each day
-                    if (locts[j].t.day.indexOf(day) !== -1) {
-                        // only check the day if it is actually conflicting
-                        oldStart = checker[code][day].start.replace(':', '');
-                        oldEnd = checker[code][day].end.replace(':', '');
-                        newStart = comingTime.start.replace(':', '');
-                        newEnd = comingTime.end.replace(':', '');
-                        if (this.checkTimeConflict(oldStart, oldEnd, newStart, newEnd)) {
-                            return code;
-                        }
+                for (var k = 0, c = checker[code], length1 = c.length; k < length1; k++) {
+                    oldStart = c[k].start;
+                    oldEnd = c[k].end;
+                    if (this.checkTimeConflict(oldStart, oldEnd, newStart, newEnd)) {
+                        return code;
                     }
                 }
             }
