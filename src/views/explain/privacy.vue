@@ -29,7 +29,7 @@
                 <div class="clearfix">
                     <h3 class="muted">Ask Me Anything</h3>
                     <p>
-                        If you have furthur questions and/or concerns, please <a href="mailto:me@rachelchen.me">shoot me an email</a>.
+                        If you have furthur questions and/or concerns, please <a href="mailto:inbox@chens.email">shoot me an email</a>.
                     </p>
                 </div>
             </div>
