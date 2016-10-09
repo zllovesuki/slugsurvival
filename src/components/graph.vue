@@ -59,6 +59,7 @@ module.exports = {
                             }
                         }],
                         yAxes: [{
+                            type: 'logarithmic',
                             display: true,
                             scaleLabel: {
                                 display: true,
