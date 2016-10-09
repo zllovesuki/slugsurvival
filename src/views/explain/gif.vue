@@ -13,9 +13,6 @@
                 <div class="clearfix">
                     <h3>Check Openings in Real Time</h3>
                     <p>
-                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/choose-section.gif" alt="" />
-                    </p>
-                    <p>
                         <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/real-time.gif" alt="" />
                     </p>
                 </div>
