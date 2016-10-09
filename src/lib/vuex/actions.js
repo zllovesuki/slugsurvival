@@ -941,7 +941,7 @@ var self = module.exports = {
         _.dispatch('appendCourseInfo', termId, courseNum, courseInfo);
     },
     fetchGE: function(_) {
-        return fetch(config.dbURL + 'ge.json')
+        return fetch(config.dbURL + '/ge.json')
         .then(function(res) {
             return res.json();
         })

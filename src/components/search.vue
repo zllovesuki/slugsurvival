@@ -114,6 +114,7 @@ module.exports = {
             },
             extraModal: false,
             GEModal: false,
+            listOfGE: {},
             extra: {}
         }
     },
