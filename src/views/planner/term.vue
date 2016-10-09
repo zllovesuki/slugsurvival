@@ -23,9 +23,6 @@
             <div class="m0 p2">
                 <div class="clearfix">
                     <div class="right">
-                        <a class="btn h6 mxn1 {{ color }}">
-                            Color code:
-                        </a>
                         <a class="btn btn-outline white h6" style="background-color: #008000">
                             TBA
                         </a>
@@ -42,12 +39,12 @@
                 </div>
             </div>
         </div>
-        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-show="!lock">
+        <div class="overflow-hidden bg-white rounded mb2 clearfix">
             <div class="m0 p2">
                 <div class="clearfix">
                     <div class="right">
                         <a class="btn btn-outline green h6" @click="showShareMenu">
-                            click here to bring your planner anywhere
+                            click here to share the planner
                         </a>
                     </div>
                 </div>
