@@ -936,5 +936,11 @@ var self = module.exports = {
     populateLocalEntriesWithExtra: function(_, termId, courseNum, course, courseInfo) {
         _.dispatch('appendCourse', termId, courseNum, course);
         _.dispatch('appendCourseInfo', termId, courseNum, courseInfo);
+    },
+    fetchGE: function(_) {
+        return fetch(config.dbURL + 'ge.json')
+        .then(function(res) {
+            return res.json();
+        })
     }
 }

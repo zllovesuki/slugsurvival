@@ -13,6 +13,9 @@
                 </ul>
             </span>
             <span slot="footer">
+                <a class="btn h6 blue ml1" v-on:click.prevent.stop="showGE">
+                    GE
+                </a>
                 <a class="btn h6 green ml1" v-on:click.prevent.stop="extraModal = true" v-if="showExtra">
                     add my own schedule
                 </a>
@@ -68,7 +71,9 @@
                 How do I search by GE?
             </h4>
             <span slot="body">
-
+                <p>
+                    Let's give you a reminder of what GEs do we have...
+                </p>
             </span>
         </modal>
     </span>
@@ -108,6 +113,7 @@ module.exports = {
                 results: []
             },
             extraModal: false,
+            GEModal: false,
             extra: {}
         }
     },
@@ -156,6 +162,11 @@ module.exports = {
     methods: {
         cb: function(param) {
             this.callback(param)
+        },
+        showGE: function() {
+            return this.fetchGE().then(function(ge) {
+                console.log(ge)
+            })
         },
         resetExtra: function() {
             this.extra = {
