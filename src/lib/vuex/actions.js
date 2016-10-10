@@ -480,7 +480,7 @@ var self = module.exports = {
         }else{
             for (var j = 0, locts = course.loct, length = locts.length; j < length; j++) {
                 for (var i = 0, days = locts[j].t.day, length1 = days.length; i < length1; i++) {
-                    obj.title = [(typeof course.s === 'undefined' ? course.c : course.c + ' - ' + course.s), courseInfo.ty, course.n].join("\n");
+                    obj.title = [(typeof course.s === 'undefined' ? course.c : course.c + ' - ' + course.s), courseInfo.ty].join("\n");
                     obj.number = course.num;
                     obj.allDay = false;
                     obj.start = dateMap[days[i]] + ' ' + locts[j].t.time.start;
@@ -540,7 +540,7 @@ var self = module.exports = {
                     obj.title = [course.c, 'Section ' + sections[i].sec].join("\n")
                     if (secSeats && awaitSelection) {
                         seat = getSeatBySectionNum(secSeats, sections[i].num);
-                        obj.title = ['DIS - ' + sections[i].sec, seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
+                        obj.title = [sections[i].sec + ' - ' + seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
                     }
                     obj.number = course.num;
                     obj.sectionNum = sections[i].num;
@@ -897,15 +897,17 @@ var self = module.exports = {
         }else if (course.custom !== true){
             html += template('Course Number', course.num);
             html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
+            html += template('Course Name', course.n);
             html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App._showInstructorRMP(\'' + course.ins.f.replace(/'/g, '\\\'') + '\', \'' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
         }
+
+        html += '<hr />'
 
         if (course.loct.length === 1) {
             html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
             html += template('Meeting Day', !!!course.loct[0].t ? 'TBA' : course.loct[0].t.day.join(', '));
             html += template('Meeting Time', !!!course.loct[0].t ? 'TBA' : this.tConvert(course.loct[0].t.time.start) + '-' + this.tConvert(course.loct[0].t.time.end));
         }else{
-            html += '<hr />'
             var complex = '';
             for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
                 html += template('Location', !!!course.loct[j].loc ? 'TBA': course.loct[j].loc);

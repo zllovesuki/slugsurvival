@@ -14,7 +14,7 @@
                 </div>
             </div>
         </div>
-        <div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix h5" v-show="ready">
+        <div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix h6" v-show="ready">
             <div class="m0 p2">
                 <div id="calendar-{{ termId }}"></div>
             </div>
@@ -236,6 +236,7 @@ module.exports = {
                 maxTime: '23:00',
                 defaultDate: self.dateMap.Monday,
                 allDayText: 'TBD',
+                slotDuration: '01:00:00',
                 //allDaySlot: false,
                 weekends: false,
                 defaultView: 'agendaWeek',
@@ -250,9 +251,9 @@ module.exports = {
                     self.promptForAction(calEvent);
                 },
                 dayClick: function(date, jsEvent, view) {
-                    if (self.noAwaitSection(termId)) {
+                    /*if (self.noAwaitSection(termId)) {
                         return self.showChooseSectionModal();
-                    }
+                    }*/
                     self.jumpOutAwait();
                     self.refreshCalendar();
                 }
