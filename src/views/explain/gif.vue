@@ -5,23 +5,15 @@
                 <div class="clearfix">
                     <h3>Instantly Search For Classes</h3>
                     <p>
-                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/add-new.gif" alt="" />
+                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/add-3.gif" alt="" />
                     </p>
                 </div>
             </div>
             <div class="m0 p2 border-top">
                 <div class="clearfix">
-                    <h3>Check Openings in Real Time</h3>
+                    <h3>Select Section with Ease</h3>
                     <p>
-                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/real-time.gif" alt="" />
-                    </p>
-                </div>
-            </div>
-            <div class="m0 p2 border-top">
-                <div class="clearfix">
-                    <h3>... and RateMyProfessors</h3>
-                    <p>
-                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/rmp.gif" alt="" />
+                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/choose-section-3.gif" alt="" />
                     </p>
                 </div>
             </div>
@@ -29,7 +21,7 @@
                 <div class="clearfix">
                     <h3>You Have Other Obligations?</h3>
                     <p>
-                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/own.gif" alt="" />
+                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/own-2.gif" alt="" />
                     </p>
                 </div>
             </div>
@@ -37,7 +29,23 @@
                 <div class="clearfix">
                     <h3>Instantly Checks For Schedule Conflicts (!)</h3>
                     <p>
-                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/conflict.gif" alt="" />
+                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/conflict-2.gif" alt="" />
+                    </p>
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
+                    <h3>Check Openings in Real Time</h3>
+                    <p>
+                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/real-time-2.gif" alt="" />
+                    </p>
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
+                    <h3>... and RateMyProfessors</h3>
+                    <p>
+                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/rmp-2.gif" alt="" />
                     </p>
                 </div>
             </div>
