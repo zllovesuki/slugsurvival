@@ -51,6 +51,18 @@
             </div>
         </div>
         <search :show.sync="searchModal" :show-extra="true" :callback="promptAddClass" :selected-term-id="termId"></search>
+        <modal :show.sync="chooseSectionModal">
+            <h4 slot="header">
+                Choose a Section For...
+            </h4>
+            <span slot="body">
+                <ul class="list-reset">
+                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="closeChooseModalThenDisplaySections(calEvent)" v-for="calEvent in sectionList" track-by="number">
+                        {{ calEvent.course.c }}
+                    </li>
+                </ul>
+            </span>
+        </modal>
     </div>
 </template>
 
@@ -68,6 +80,8 @@ module.exports = {
         return {
             ready: false,
             searchModal: false,
+            chooseSectionModal: false,
+            sectionList: [],
             lock: false
         }
     },
@@ -130,7 +144,7 @@ module.exports = {
             }
 
             if (!this.noAwaitSection(termId)) {
-                if (calEvent.color === this.colorMap.grayOut) {
+                if (calEvent.color === this.colorMap.grayOut && calEvent.course.custom !== true) {
                     this.jumpOutAwait();
                     return this.displaySectionsOnCalendar(calEvent.number);
                 }
@@ -191,12 +205,27 @@ module.exports = {
             return alertHandle()
         },
         displaySectionsOnCalendar: function(courseNum) {
+            this.loading.go(30);
             var termId = this.termId;
             this.searchModal = false;
             this.removeFromSource(termId, courseNum);
 
             this.grayOutEvents(termId);
             this.pushAwaitSectionsToEventSource(termId, courseNum);
+        },
+        showChooseSectionModal: function() {
+            var termId = this.termId;
+            if (typeof this.eventSource[termId] === 'undefined') return;
+            var events = this.eventSource[termId].filter(function(el) {
+                return el.awaitSelection === false && el.sectionNum === null;
+            })
+            if (events.length === 0) return;
+            this.sectionList = events;
+            this.chooseSectionModal = true;
+        },
+        closeChooseModalThenDisplaySections: function(calEvent) {
+            this.chooseSectionModal = false;
+            this.promptForAction(calEvent);
         },
         initializeCalendar: function() {
             var self = this;
@@ -206,7 +235,7 @@ module.exports = {
                 minTime: '07:00',
                 maxTime: '23:00',
                 defaultDate: self.dateMap.Monday,
-                allDayText: 'TBA',
+                allDayText: 'TBD',
                 //allDaySlot: false,
                 weekends: false,
                 defaultView: 'agendaWeek',
@@ -221,6 +250,9 @@ module.exports = {
                     self.promptForAction(calEvent);
                 },
                 dayClick: function(date, jsEvent, view) {
+                    if (self.noAwaitSection(termId)) {
+                        return self.showChooseSectionModal();
+                    }
                     self.jumpOutAwait();
                     self.refreshCalendar();
                 }
@@ -353,6 +385,12 @@ module.exports = {
                 self.ready = true;
                 self.$nextTick(function() {
                     self.initializeCalendar();
+                    // We will now force the allDaySlot in the bottom of the page
+                    self.$nextTick(function() {
+                        $('.fc-day-grid').insertAfter($('.fc-time-grid'))
+                        $('.fc-divider').insertAfter($('.fc-time-grid'))
+                    })
+
                 })
             }).catch(function(e) {
                 self.ready = false;

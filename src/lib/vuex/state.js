@@ -26,7 +26,7 @@ module.exports = {
         course: '#334D5C',
         section: '#45B29D',
         grayOut: '#D3D3D3',
-        awaitSelection: '#3D9970'
+        awaitSelection: '#45B29D'
     },
 
     events: {

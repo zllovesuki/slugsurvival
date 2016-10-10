@@ -7,7 +7,7 @@ var self = module.exports = {
         return helper;
     },
     alert: function(_) {
-        return _.state.alert.delay(0);
+        return _.state.alert.delay(3000);
     },
     setTitle: function(_, title) {
         _.dispatch('setTitle', title)
@@ -451,7 +451,7 @@ var self = module.exports = {
 
         if (awaitSelection) {
 
-            obj.title = ['You Are Now Choosing Section', 'For ' + course.c].join("\n");
+            obj.title = ['Now You Are Choosing Section', 'For ' + course.c].join("\n");
             obj.number = course.num;
             obj.sectionNum = null;
             obj.color = colorMap.awaitSelection;
@@ -517,9 +517,9 @@ var self = module.exports = {
             if (!awaitSelection && sectionNumber !== null && sections[i].num != sectionNumber) continue;
             if (sectionNumber === null || (sections[i].loct.length === 1 && !!!sections[i].loct[0].t)) {
                 // TBA in the allDaySlot
-                obj.title = [course.c, 'Section', 'DIS - ' + sections[i].sec].join("\n");
+                obj.title = [course.c, 'Section ' + sections[i].sec].join("\n");
                 if (sectionNumber === null) {
-                    obj.title = ['Choose a Section', 'For ' + course.c].join("\n");
+                    obj.title = ['Please Choose a Section', 'For ' + course.c].join("\n");
                 }
                 obj.number = course.num;
                 obj.sectionNum = (sectionNumber === null ? null : sections[i].num);
@@ -580,7 +580,7 @@ var self = module.exports = {
         var events = [];
 
         if (customEvent === true) {
-            this.removeFromSource(termId, course.num, doNotRemove);
+            this.removeFromSource(termId, course.num, true);
 
             events = this.getEventObjectsByCourse(termId, course);
         }else{
@@ -605,7 +605,7 @@ var self = module.exports = {
         return Promise.resolve();
     },
     pushAwaitSectionsToEventSource: function(_, termId, courseNum) {
-        this.loading.go(30);
+        this.loading.go(50);
         var events = [];
         var secSeats = null;
 
@@ -614,13 +614,13 @@ var self = module.exports = {
             if (res.ok && res.results[0] && res.results[0].seats) {
                 secSeats = res.results[0].seats.sec;
             }
-            this.loading.go(50);
+            this.loading.go(70);
             events = this.getEventObjectsByCourse(termId, courseNum, null, true, secSeats);
             _.dispatch('mergeEventSource', termId, events, true);
 
             this.refreshCalendar();
             this.loading.go(100);
-            this.alert().success('Choosing section for ' + _.state.flatCourses[termId][courseNum].c)
+            this.alert().success('Now You Are Choosing Section For ' + _.state.flatCourses[termId][courseNum].c)
         }.bind(this))
     },
     removeFromSource: function(_, termId, courseNum, doNotRemove) {
