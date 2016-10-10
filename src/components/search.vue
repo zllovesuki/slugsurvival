@@ -139,6 +139,7 @@ module.exports = {
                 && this.extra.location.length > 0
                 && this.extra.time.start.length > 0
                 && this.extra.time.end.length > 0
+                && (this.extra.time.end.replace(':', '') > this.extra.time.start.replace(':', ''))
                 && !(
                     this.extra.repeat.M === false
                     && this.extra.repeat.Tu === false
