@@ -20,6 +20,15 @@ module.exports = {
 
     title: 'Index',
 
+    colorMap: {
+        TBA: '#E27A3F',
+        custom: '#DF5A49',
+        course: '#334D5C',
+        section: '#45B29D',
+        grayOut: '#D3D3D3',
+        awaitSelection: '#45B29D'
+    },
+
     events: {
 
     },
@@ -33,5 +42,5 @@ module.exports = {
     },
 
     loading: new Nanobar(),
-    alert: alertify.reset().closeLogOnClick(true).logPosition("bottom right")
+    alert: alertify.reset().closeLogOnClick(true).logPosition("bottom right").maxLogItems(1)
 }

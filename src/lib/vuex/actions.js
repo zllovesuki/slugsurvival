@@ -7,7 +7,7 @@ var self = module.exports = {
         return helper;
     },
     alert: function(_) {
-        return _.state.alert.delay(0);
+        return _.state.alert.delay(3000);
     },
     setTitle: function(_, title) {
         _.dispatch('setTitle', title)
@@ -430,11 +430,13 @@ var self = module.exports = {
             To be DRY, this function is unnecessarily huge
         */
         var dateMap = _.state.dateMap;
+        var colorMap = _.state.colorMap;
         var events = [];
         var obj = {};
         var courseNumber, course, courseInfo, sectionNumber, section, conflict;
 
-        awaitSelection = (typeof awaitSelection === 'undefined' ? false : true);
+
+        awaitSelection = (awaitSelection === true);
 
         // We are not sure that if input1 is a course object or course number
         if (typeof input1.num !== 'undefined') {
@@ -448,12 +450,11 @@ var self = module.exports = {
         }
 
         if (awaitSelection) {
-            var color = '#3D9970';
 
-            obj.title = 'Click Here To Choose a Section For ' + course.c + ' Later';
+            obj.title = ['Now You Are Choosing Section', 'For ' + course.c].join("\n");
             obj.number = course.num;
             obj.sectionNum = null;
-            obj.color = color;
+            obj.color = colorMap.awaitSelection;
             obj.course = course;
             obj.section = false;
             obj.conflict = false;
@@ -473,19 +474,20 @@ var self = module.exports = {
             obj.start = dateMap['Monday'];
             obj.end = dateMap['Saturday'];
             obj.course = course;
-            obj.color = 'green';
+            obj.color = colorMap.TBA;
             events.push(obj);
             obj = {};
         }else{
             for (var j = 0, locts = course.loct, length = locts.length; j < length; j++) {
                 for (var i = 0, days = locts[j].t.day, length1 = days.length; i < length1; i++) {
-                    obj.title = [(typeof course.s === 'undefined' ? course.c : course.c + ' - ' + course.s), courseInfo.ty, course.n].join("\n");
+                    obj.title = [(typeof course.s === 'undefined' ? course.c : course.c + ' - ' + course.s), courseInfo.ty].join("\n");
                     obj.number = course.num;
                     obj.allDay = false;
                     obj.start = dateMap[days[i]] + ' ' + locts[j].t.time.start;
                     obj.end = dateMap[days[i]] + ' ' + locts[j].t.time.end;
                     obj.course = course;
-                    if (course.custom) obj.color = '#7D1347';
+                    obj.color = colorMap.course;
+                    if (course.custom) obj.color = colorMap.custom;
                     events.push(obj);
                     obj = {};
                 }
@@ -515,10 +517,14 @@ var self = module.exports = {
             if (!awaitSelection && sectionNumber !== null && sections[i].num != sectionNumber) continue;
             if (sectionNumber === null || (sections[i].loct.length === 1 && !!!sections[i].loct[0].t)) {
                 // TBA in the allDaySlot
-                obj.title = [course.c, 'Section', 'DIS - ' + (sectionNumber === null ? '?' : sections[i].sec)].join("\n");
+                obj.title = [course.c, 'Section ' + sections[i].sec].join("\n");
+                if (sectionNumber === null) {
+                    obj.title = ['Please Choose a Section', 'For ' + course.c].join("\n");
+                }
                 obj.number = course.num;
                 obj.sectionNum = (sectionNumber === null ? null : sections[i].num);
-                obj.color = (sectionNumber === null ? 'black' : (awaitSelection ? color: 'green') );
+                obj.color = (awaitSelection ? colorMap.awaitSelection : (sectionNumber === null ? colorMap.awaitSelection : colorMap.TBA));
+                //obj.color = (sectionNumber !== null || awaitSelection !== true ? 'green' : color);
                 obj.course = course;
                 obj.section = sections[i];
                 obj.conflict = false;
@@ -534,11 +540,11 @@ var self = module.exports = {
                     obj.title = [course.c, 'Section ' + sections[i].sec].join("\n")
                     if (secSeats && awaitSelection) {
                         seat = getSeatBySectionNum(secSeats, sections[i].num);
-                        obj.title = ['DIS - ' + sections[i].sec, seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
+                        obj.title = [sections[i].sec + ' - ' + seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
                     }
                     obj.number = course.num;
                     obj.sectionNum = sections[i].num;
-                    obj.color =  (awaitSelection ? color: 'grey')
+                    obj.color = (awaitSelection ? colorMap.awaitSelection: colorMap.section)
                     obj.course = course;
                     obj.section = sections[i];
                     obj.conflict = conflict;
@@ -554,17 +560,35 @@ var self = module.exports = {
 
         return events;
     },
-    /*
-        pushToEventSource() and pushSectionToEventSource() are mutually exclusive
-        You can call either one (but not both)
-    */
-    pushToEventSource: function(_, course, doNotRemove) {
+    getCurrentAwaitSection: function(_, termId) {
+        if (typeof _.state.events[termId] === 'undefined') return false;
+        var events = _.state.events[termId];
+        var currentAwait = events.filter(function(el) {
+            return el.awaitSelection === true;
+        })
+        if (currentAwait.length === 0) return false;
+        return currentAwait[0];
+    },
+    grayOutEvents: function(_, termId) {
+        _.dispatch('grayOutEvents', termId);
+    },
+    restoreEventsColor: function(_, termId) {
+        _.dispatch('restoreEventsColor', termId);
+    },
+    pushToEventSource: function(_, course, customEvent) {
         var termId = this.termId;
         var events = [];
 
-        this.removeFromSource(termId, course.num, doNotRemove);
+        if (customEvent === true) {
+            this.removeFromSource(termId, course.num, true);
 
-        events = this.getEventObjectsByCourse(termId, course);
+            events = this.getEventObjectsByCourse(termId, course);
+        }else{
+            this.removeFromSource(termId, course.num);
+
+            events = this.getEventObjectsByCourse(termId, course, null, false, null);
+        }
+
         _.dispatch('mergeEventSource', termId, events);
 
         return Promise.resolve();
@@ -581,7 +605,7 @@ var self = module.exports = {
         return Promise.resolve();
     },
     pushAwaitSectionsToEventSource: function(_, termId, courseNum) {
-        this.loading.go(30);
+        this.loading.go(50);
         var events = [];
         var secSeats = null;
 
@@ -590,13 +614,13 @@ var self = module.exports = {
             if (res.ok && res.results[0] && res.results[0].seats) {
                 secSeats = res.results[0].seats.sec;
             }
-            this.loading.go(50);
+            this.loading.go(70);
             events = this.getEventObjectsByCourse(termId, courseNum, null, true, secSeats);
             _.dispatch('mergeEventSource', termId, events, true);
 
             this.refreshCalendar();
             this.loading.go(100);
-            this.alert().success('Choose a Section!')
+            this.alert().success('Now You Are Choosing Section For ' + _.state.flatCourses[termId][courseNum].c)
         }.bind(this))
     },
     removeFromSource: function(_, termId, courseNum, doNotRemove) {
@@ -690,6 +714,7 @@ var self = module.exports = {
             }
             if (events[i].allDay) continue;
             if (events[i].awaitSelection) continue;
+            if (events[i].sectionNum === null) continue;
 
             if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
 
@@ -872,15 +897,17 @@ var self = module.exports = {
         }else if (course.custom !== true){
             html += template('Course Number', course.num);
             html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
+            html += template('Course Name', course.n);
             html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App._showInstructorRMP(\'' + course.ins.f.replace(/'/g, '\\\'') + '\', \'' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
         }
+
+        html += '<hr />'
 
         if (course.loct.length === 1) {
             html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
             html += template('Meeting Day', !!!course.loct[0].t ? 'TBA' : course.loct[0].t.day.join(', '));
             html += template('Meeting Time', !!!course.loct[0].t ? 'TBA' : this.tConvert(course.loct[0].t.time.start) + '-' + this.tConvert(course.loct[0].t.time.end));
         }else{
-            html += '<hr />'
             var complex = '';
             for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
                 html += template('Location', !!!course.loct[j].loc ? 'TBA': course.loct[j].loc);

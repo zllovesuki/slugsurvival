@@ -14,7 +14,7 @@
                 </div>
             </div>
         </div>
-        <div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix h5" v-show="ready">
+        <div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix h6" v-show="ready">
             <div class="m0 p2">
                 <div id="calendar-{{ termId }}"></div>
             </div>
@@ -23,16 +23,16 @@
             <div class="m0 p2">
                 <div class="clearfix">
                     <div class="right">
-                        <a class="btn btn-outline white h6" style="background-color: #008000">
+                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.TBA }">
                             TBA
                         </a>
-                        <a class="btn btn-outline white h6" style="background-color: #6aa4c1">
+                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.course }">
                             Class
                         </a>
-                        <a class="btn btn-outline white h6" style="background-color: #9f9f9f">
+                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.section }">
                             Section
                         </a>
-                        <a class="btn btn-outline white h6" style="background-color: #7D1347">
+                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.custom }">
                             Other
                         </a>
                     </div>
@@ -51,6 +51,18 @@
             </div>
         </div>
         <search :show.sync="searchModal" :show-extra="true" :callback="promptAddClass" :selected-term-id="termId"></search>
+        <modal :show.sync="chooseSectionModal">
+            <h4 slot="header">
+                Choose a Section For...
+            </h4>
+            <span slot="body">
+                <ul class="list-reset">
+                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="closeChooseModalThenDisplaySections(calEvent)" v-for="calEvent in sectionList" track-by="number">
+                        {{ calEvent.course.c }}
+                    </li>
+                </ul>
+            </span>
+        </modal>
     </div>
 </template>
 
@@ -68,6 +80,8 @@ module.exports = {
         return {
             ready: false,
             searchModal: false,
+            chooseSectionModal: false,
+            sectionList: [],
             lock: false
         }
     },
@@ -75,7 +89,8 @@ module.exports = {
         showSearchModal: function() {
             var termId = this.route.params.termId;
             if (!this.noAwaitSection(termId)) {
-                return this.alert().error('Finish selecting section first!')
+                this.jumpOutAwait(termId);
+                this.refreshCalendar();
             }
             this.searchModal = true;
             setTimeout(function() {
@@ -97,6 +112,17 @@ module.exports = {
                 this.alert().success('Removed!');
             }.bind(this));
         },
+        jumpOutAwait: function() {
+            var termId = this.route.params.termId;
+            var currentAwait = this.getCurrentAwaitSection(termId);
+            if (currentAwait === false) return;
+            // Of course restore any missing color first
+            this.restoreEventsColor(termId);
+            // we first remove all awaitSelections of the old one
+            this.removeFromSource(termId, currentAwait.number);
+            // Then add back the "chooose later"
+            this.pushToEventSource(currentAwait.course);
+        },
         promptForAction: function(calEvent) {
             if (this.lock) return;
             var termId = this.route.params.termId;
@@ -106,6 +132,10 @@ module.exports = {
                 if (calEvent.conflict !== false) {
                     return this.alert().error('Conflict with ' + calEvent.conflict);
                 }
+
+                if (calEvent.sectionNum === null) return;
+
+                this.restoreEventsColor(termId);
                 this.pushSectionToEventSource(calEvent.number, calEvent.sectionNum);
 
                 this.refreshCalendar();
@@ -114,7 +144,11 @@ module.exports = {
             }
 
             if (!this.noAwaitSection(termId)) {
-                return this.alert().error('Choose a section first!')
+                if (calEvent.color === this.colorMap.grayOut && calEvent.course.custom !== true) {
+                    this.jumpOutAwait();
+                    return this.displaySectionsOnCalendar(calEvent.number);
+                }
+                return;// this.alert().error('Choose a section first!')
             }
 
             var isSection = typeof calEvent.section !== 'undefined';
@@ -140,7 +174,6 @@ module.exports = {
         },
         promptAddClass: function(course) {
             var termId = this.route.params.termId;
-            var courseHasSections = this.courseHasSections(termId, course.num);
             var code = this.checkForConflict(course);
             var alertHandle = function() {};
 
@@ -155,30 +188,44 @@ module.exports = {
             }else{
                 alertHandle = function() {
                     return this.alert()
-                    .okBtn(courseHasSections ? 'Choose Section' : 'Add Class')
+                    .okBtn('Add Class')
                     .cancelBtn("Go Back")
                     .confirm(html)
                     .then(function(resolved) {
                         resolved.event.preventDefault();
                         if (resolved.buttonClicked !== 'ok') return;
-                        if (courseHasSections) {
-                            this.displaySectionsOnCalendar(course.num);
-                        } else {
-                            this.pushToEventSource(course);
 
-                            this.refreshCalendar();
-                            this.alert().success(course.c + ' added to the planner!');
-                        }
+                        this.pushToEventSource(course);
+
+                        this.refreshCalendar();
+                        this.alert().success(course.c + ' added to the planner!');
                     }.bind(this));
                 }.bind(this)
             }
             return alertHandle()
         },
         displaySectionsOnCalendar: function(courseNum) {
+            this.loading.go(30);
             var termId = this.termId;
             this.searchModal = false;
             this.removeFromSource(termId, courseNum);
+
+            this.grayOutEvents(termId);
             this.pushAwaitSectionsToEventSource(termId, courseNum);
+        },
+        showChooseSectionModal: function() {
+            var termId = this.termId;
+            if (typeof this.eventSource[termId] === 'undefined') return;
+            var events = this.eventSource[termId].filter(function(el) {
+                return el.awaitSelection === false && el.sectionNum === null;
+            })
+            if (events.length === 0) return;
+            this.sectionList = events;
+            this.chooseSectionModal = true;
+        },
+        closeChooseModalThenDisplaySections: function(calEvent) {
+            this.chooseSectionModal = false;
+            this.promptForAction(calEvent);
         },
         initializeCalendar: function() {
             var self = this;
@@ -188,7 +235,8 @@ module.exports = {
                 minTime: '07:00',
                 maxTime: '23:00',
                 defaultDate: self.dateMap.Monday,
-                allDayText: 'TBA',
+                allDayText: 'TBD',
+                slotDuration: '01:00:00',
                 //allDaySlot: false,
                 weekends: false,
                 defaultView: 'agendaWeek',
@@ -201,6 +249,13 @@ module.exports = {
                 }],
                 eventClick: function(calEvent, jsEvent, view) {
                     self.promptForAction(calEvent);
+                },
+                dayClick: function(date, jsEvent, view) {
+                    /*if (self.noAwaitSection(termId)) {
+                        return self.showChooseSectionModal();
+                    }*/
+                    self.jumpOutAwait();
+                    self.refreshCalendar();
                 }
             })
         },
@@ -331,6 +386,12 @@ module.exports = {
                 self.ready = true;
                 self.$nextTick(function() {
                     self.initializeCalendar();
+                    // We will now force the allDaySlot in the bottom of the page
+                    self.$nextTick(function() {
+                        $('.fc-day-grid').insertAfter($('.fc-time-grid'))
+                        $('.fc-divider').insertAfter($('.fc-time-grid'))
+                    })
+
                 })
             }).catch(function(e) {
                 self.ready = false;

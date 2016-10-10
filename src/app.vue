@@ -14,8 +14,17 @@
             </div>
         </section>
         <div class="container mb2 clearfix">
-            <div class="sm-flex center nowrap mb2 h5">
-                <div class="flex-auto muted" @click="egg">version {{ version }}</div>
+            <div class="sm-flex center mb2 h6">
+                <div class="flex-auto muted">
+                    <div class="clearfix">
+                        <a class="h6 bold btn {{ color }}" v-link="{ name: 'index' }">Main Page</a>
+                        <a class="h6 bold btn {{ color }}" v-link="{ name: 'explain' }">What is SlugSurvival?</a>
+                        <a class="h6 bold btn {{ color }}" v-link="{ name: 'explainPrivacy' }">Privacy Policy</a>
+                    </div>
+                    <div class="clearfix" @click="egg">
+                        version {{ version }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -67,11 +76,6 @@ body {
 
 body.modal-open {
     overflow: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
 }
 
 ::selection {
