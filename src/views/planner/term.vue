@@ -7,7 +7,7 @@
             <div class="m0 p2" v-show="ready">
                 <div class="clearfix">
                     <div class="right">
-                        <a class="btn btn-outline h6 m0 {{ color }}" v-on:click.prevent.stop="showSearchModal">
+                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal">
                             search anything
                         </a>
                     </div>
@@ -43,7 +43,7 @@
             <div class="m0 p2">
                 <div class="clearfix">
                     <div class="right">
-                        <a class="btn btn-outline green h6" @click="showShareMenu">
+                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.share }" @click="showShareMenu">
                             click here to share the planner
                         </a>
                     </div>
@@ -336,17 +336,17 @@ module.exports = {
 
             var html = '<p>Share...</p>';
             html += '<span class="block mt2">';
-            html += '<a class="btn btn-outline {{ color }} h6" onclick="window._vueContext.saveCalendarAsImage()">';
+            html += '<a class="btn btn-outline h6 white" style="background-color: ' + this.colorMap.regular + '" onclick="window._vueContext.saveCalendarAsImage()">';
             html += 'save as image';
             html += '</a></span>';
 
             html += '<span class="block mt2">';
-            html += '<a class="btn btn-outline {{ color }} h6" onclick="window._vueContext.saveCalendarAsICS()">';
+            html += '<a class="btn btn-outline h6 white" style="background-color: ' + this.colorMap.regular + '" onclick="window._vueContext.saveCalendarAsICS()">';
             html += 'save as calendar';
             html += '</a></span>';
 
             html += '<span class="block mt2">';
-            html += '<a class="btn btn-outline {{ color }} h6" onclick="window._vueContext.bookmark()">';
+            html += '<a class="btn btn-outline h6 white" style="background-color: ' + this.colorMap.regular + '" onclick="window._vueContext.bookmark()">';
             html += 'get a bookmark link';
             html += '</a></span>';
 

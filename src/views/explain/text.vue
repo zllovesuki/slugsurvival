@@ -8,6 +8,27 @@
             </div>
             <div class="m0 p2 border-top">
                 <div class="clearfix">
+                    <h3 class="muted">Disclaimer</h3>
+                    <ol>
+                        <li>
+                            SlugSurvival is not affiliated with UCSC or any of its family of sites.
+                        </li>
+                        <li>
+                            Selecting courses <b><u>nor</u></b> signing up for notifications on SlugSurvial <b><u>will</u></b> automatically enroll you into the courses in the AIS (my.ucsc.edu).
+                        </li>
+                    </ol>
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
+                    <h3 class="muted">TL; DR. Can I just watch a video?</h3>
+                    <p>
+                        <a class="h6 ml2 mt1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" v-link="{ name: 'explainGif' }">Sure, Click Here For a Short Introduction</a>
+                    </p>
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
                     <h3 class="muted">Short Answer</h3>
                     <p>
                         It's an awesome tool to help you to plan courses.
@@ -40,14 +61,6 @@
                             <b>Students can choose to be notified (via SMS and/or Email) on course openings changes.</b>
                         </li>
                     </ol>
-                </div>
-            </div>
-            <div class="m0 p2 border-top">
-                <div class="clearfix">
-                    <h3 class="muted">TL; DR. Can I just watch a video?</h3>
-                    <p>
-                        <a class="h6 ml2 mt1 bold btn btn-outline green" v-link="{ name: 'explainGif' }">Sure</a>
-                    </p>
                 </div>
             </div>
         </div>

@@ -62,7 +62,7 @@
 					<span class="block mb1 muted">
                         SlugSurvival allows you to add your own schedule to the planner, so you can plan your courses around other obligations.
                     </span>
-					<button type="submit" class="btn btn-outline {{ color }}" :disabled="!extraValid">Add</button>
+					<button type="submit" class="btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :disabled="!extraValid">Add</button>
 				</form>
             </span>
         </modal>

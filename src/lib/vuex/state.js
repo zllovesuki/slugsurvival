@@ -21,6 +21,12 @@ module.exports = {
     title: 'Index',
 
     colorMap: {
+        // Buttons
+        regular: '#509ACC',
+        searchAnything: '#F27B50',
+        share: '#EFC94C',
+        alert: '#E05649',
+        // Calendar
         TBA: '#E27A3F',
         custom: '#DF5A49',
         course: '#334D5C',

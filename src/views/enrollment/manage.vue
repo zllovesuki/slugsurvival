@@ -22,7 +22,7 @@
                                 <input type="text" class="col-12 field inline-block" v-model="sub.code" placeholder="passcode">
                             </label>
                             <label for="submit" class="mt2 block">
-                                <button type="submit" class="btn btn-primary inline-block" :disabled="sub.inFlight">Check</button>
+                                <button type="submit" class="btn btn-outline inline-block white" v-bind:style="{ backgroundColor: colorMap.regular }" :disabled="sub.inFlight">Check</button>
                             </label>
         				</form>
                     </span>
@@ -31,7 +31,7 @@
             <div class="m0 p1 border-top" v-show="sub.verified">
                 <div class="m0 p2">
                     <div class="clearfix">
-                        <a class="muted h6 bold btn btn-outline black" @click="showSearchModal">search anything</a>
+                        <a class="h6 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal">search anything</a>
                     </div>
                 </div>
                 <div class="clearfix">
@@ -60,8 +60,8 @@
                 </div>
                 <div class="m0 p2">
     				<div class="clearfix">
-                        <button type="button" class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}" :disabled="sub.inFlight" @click="update">Update Subscription</button>
-                        <button type="button" class="muted h6 ml1 mb1 bold btn btn-outline red" :disabled="sub.inFlight" @click="unSub">Unsubscribe Me</button>
+                        <button type="button" class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :disabled="sub.inFlight" @click="update">Update Subscription</button>
+                        <button type="button" class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.alert }" :disabled="sub.inFlight" @click="unSub">Unsubscribe Me</button>
     				</div>
                 </div>
 			</div>

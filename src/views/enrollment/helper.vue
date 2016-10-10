@@ -13,7 +13,7 @@
 			</div>
 			<div class="m0 p2 border-top">
 				<div class="clearfix">
-					<a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}" v-link="{ name: 'termsList' }">Take me to the Interactive Planner</a>
+					<a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" v-link="{ name: 'termsList' }">Take me to the Interactive Planner</a>
 				</div>
 			</div>
 		</div>
@@ -28,8 +28,8 @@
                     </span>
 				</div>
                 <div class="clearfix">
-					<span class="ml1 btn black h6 muted not-clickable">
-                        <a class="h6 bold btn btn-outline red" v-link="{ name: 'enrollManage' }" target="_blank">But I Signed Up Already</a>
+					<span class="ml1 btn black h6 not-clickable">
+                        <a class="h6 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.alert }" v-link="{ name: 'enrollManage' }" target="_blank">But I Signed Up Already</a>
                     </span>
 				</div>
 			</div>
@@ -39,9 +39,9 @@
                 </div>
                 <div class="m0 p2">
                     <div class="clearfix">
-                        <a class="muted h6 ml1 mb1 bold btn btn-outline black" @click="showSearchModal">search anything</a>
+                        <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal">search anything</a>
                         &nbsp; or,
-                        <a class="muted h6 ml1 mb1 bold btn btn-outline black" @click="importPlanner">Import from Local Planner</a>
+                        <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="importPlanner">Import from Local Planner</a>
                     </div>
                 </div>
                 <div class="clearfix">
@@ -70,9 +70,9 @@
                 </div>
                 <div class="m0 p2">
     				<div class="clearfix">
-    					<a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}" @click="showSub">Via SMS</a>
-                        <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}" @click="showSub">Via Email</a>
-                        <a class="muted h6 ml1 mb1 bold btn btn-outline {{ color }}" @click="comingSoon">Via Push Notifications</a>
+    					<a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="showSub">Via SMS</a>
+                        <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="showSub">Via Email</a>
+                        <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="comingSoon">Via Push Notifications</a>
     				</div>
                 </div>
 			</div>

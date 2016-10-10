@@ -17,7 +17,7 @@
 				</div>
                 <div class="m0 p1">
     				<div class="clearfix">
-    				    <a class="muted h6 ml1 mb1 bold btn btn-outline black" @click="showSearchModal">search anything</a>
+    				    <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal">search anything</a>
     				</div>
                 </div>
 			</div>
