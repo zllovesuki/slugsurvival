@@ -42,6 +42,10 @@ module.exports = {
         maxWidth: {
             type: String,
             default: '24em'
+        },
+        doNotModifyClass: {
+            type: Boolean,
+            default: false
         }
     },
     methods: {
@@ -51,6 +55,7 @@ module.exports = {
     },
     watch: {
         'show': function(val, oldVal) {
+            if (this.doNotModifyClass) return;
             if (val === true) {
                 document.body.className = 'modal-open';
             } else {

@@ -13,15 +13,15 @@
                 </ul>
             </span>
             <span slot="footer">
-                <a class="btn h6 blue ml1" v-on:click.prevent.stop="showGE" v-if="false === true">
+                <a class="btn h6 blue" v-on:click.prevent.stop="showGE">
                     GE
                 </a>
-                <a class="btn h6 green ml1" v-on:click.prevent.stop="extraModal = true" v-if="showExtra">
+                <a class="btn h6 green" v-on:click.prevent.stop="extraModal = true" v-if="showExtra">
                     add my own schedule
                 </a>
             </span>
         </modal>
-        <modal :show.sync="extraModal">
+        <modal :show.sync="extraModal" :do-not-modify-class="true">
             <h4 slot="header">
                 Add Your Own Schedule
             </h4>
@@ -66,14 +66,28 @@
 				</form>
             </span>
         </modal>
-        <modal :show.sync="GEModal">
+        <modal :show.sync="GEModal" :do-not-modify-class="true">
             <h4 slot="header">
                 How do I search by GE?
             </h4>
             <span slot="body">
                 <p>
+                    Just add a plus sign(+) followed by the code, like this:
+                </p>
+                <p>
+                    <input type="text" class="field block col-12" disabled value="+CC">
+                </p>
+                <p>
+                    <input type="text" class="field block col-12" disabled value="CLTE +C2">
+                </p>
+                <p>
                     Let's give you a reminder of what GEs do we have...
                 </p>
+                <ul class="list-reset">
+                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="" v-for="(code, desc) in listOfGE">
+                        {{ code }} - {{ desc }}
+                    </li>
+                </ul>
             </span>
         </modal>
     </span>
@@ -138,26 +152,50 @@ module.exports = {
         'search.string': function(val, oldVal) {
             if (val.length < 1) return;
             var self = this;
-            var options = {
-                fields: {
-                    c: {
-                        boost: 5
-                    },
-                    n: {
-                        boost: 3
-                    },
-                    f: {
-                        boost: 2
-                    },
-                    la: {
-                        boost: 2
+            var geCode = '';
+            var courseInfo = this.courseInfo[this.selectedTermId];
+            var list = [];
+            if (val.indexOf('+') !== -1) {
+                geCode = val.substring(val.indexOf('+') + 1).substring(0, 4).trim().toUpperCase();
+                val = val.substring(0, val.indexOf('+')).trim();;
+                list = Object.keys(courseInfo).filter(function(key) {
+                    return courseInfo[key].ge.indexOf(geCode) !== -1;
+                })
+                list = list.map(function(code) {
+                    return parseInt(code);
+                })
+            }
+            if (val.length === 0 && list.length > 0) {
+                this.search.results = list.map(function(courseNum) {
+                    return self.flatCourses[self.selectedTermId][courseNum];
+                })
+            }else{
+                var options = {
+                    fields: {
+                        c: {
+                            boost: 5
+                        },
+                        n: {
+                            boost: 3
+                        },
+                        f: {
+                            boost: 2
+                        },
+                        la: {
+                            boost: 2
+                        }
                     }
+                };
+                val = val.split(/(\d+)/).filter(Boolean).map(function(el) { return el.trim(); }).join(" ");
+                this.search.results = this.indexSearch[this.selectedTermId].search(val, options).map(function(result) {
+                    return self.flatCourses[self.selectedTermId][result.ref]
+                })
+                if (list.length > 0) {
+                    this.search.results = this.search.results.filter(function(course) {
+                        return list.indexOf(course.num) !== -1;
+                    })
                 }
-            };
-            val = val.split(/(\d+)/).filter(Boolean).map(function(el) { return el.trim(); }).join(" ");
-            this.search.results = this.indexSearch[this.selectedTermId].search(val, options).map(function(result) {
-                return self.flatCourses[self.selectedTermId][result.ref]
-            });
+            }
         }
     },
     methods: {
@@ -165,8 +203,10 @@ module.exports = {
             this.callback(param)
         },
         showGE: function() {
+            var self = this;
             return this.fetchGE().then(function(ge) {
-                console.log(ge)
+                self.listOfGE = ge;
+                self.GEModal = true;
             })
         },
         resetExtra: function() {
