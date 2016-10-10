@@ -52,7 +52,7 @@ module.exports = {
     watch: {
         'show': function(val, oldVal) {
             if (val === true) {
-                document.body.className += 'modal-open';
+                document.body.className = 'modal-open';
             } else {
                 document.body.className = '';
             }
