@@ -79,11 +79,10 @@ var self = module.exports = {
         termId = termId || this.termId;
         alert = (typeof alert === 'undefined' ? true : alert);
         return storage.getItem(termId).then(function(array) {
-            if (array !== null) {
-                var events = this.parseFromCompact(termId, array);
-                _.dispatch('restoreEventSourceSnapshot', termId, events);
-                if (alert) this.alert().okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
-            }
+            if (array === null) return;
+            var events = this.parseFromCompact(termId, array);
+            _.dispatch('restoreEventSourceSnapshot', termId, events);
+            if (alert) this.alert().okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
         }.bind(this))
     },
     loadTermsAndRMPFromLocal: function(_) {
@@ -186,16 +185,15 @@ var self = module.exports = {
         if (rmp !== null) _.dispatch('saveInstructorNameToTidMapping', rmp, skipSaving);
     },
     fetchTermsListAndRMP: function(_) {
-        if (_.state.flatTermsList.length === 0) {
-            return this.loadTermsAndRMPFromLocal()
-            .catch(function(invalid) {
-                if (invalid.yes) {
-                    return this.loadTermsAndRMPFromOnline(invalid)
-                }
-            }.bind(this))
-        } else {
-            return Promise.resolve()
+        if (_.state.flatTermsList.length !== 0) {
+            return Promise.resolve();
         }
+        return this.loadTermsAndRMPFromLocal()
+        .catch(function(invalid) {
+            if (invalid.yes) {
+                return this.loadTermsAndRMPFromOnline(invalid)
+            }
+        }.bind(this))
     },
     loadCourseDataFromLocal: function(_, termId) {
         var online;
@@ -317,16 +315,15 @@ var self = module.exports = {
     fetchTermCourses: function(_, termId) {
         termId =  termId || this.termId;
         _.dispatch('setTermName', _.state.termsList[termId])
-        if (typeof _.state.flatCourses[termId] === 'undefined') {
-            return this.loadCourseDataFromLocal(termId)
-            .catch(function(invalid) {
-                if (invalid.yes) {
-                    return this.loadCourseDataFromOnline(invalid, termId)
-                }
-            }.bind(this))
-        } else {
-            return Promise.resolve()
+        if (typeof _.state.flatCourses[termId] !== 'undefined') {
+            return Promise.resolve();
         }
+        return this.loadCourseDataFromLocal(termId)
+        .catch(function(invalid) {
+            if (invalid.yes) {
+                return this.loadCourseDataFromOnline(invalid, termId)
+            }
+        }.bind(this))
     },
     fetchThreeStatsByFirstLastName: function(_, firstName, lastName) {
         var tid = _.state.instructorNameToTidMapping[firstName + lastName];
@@ -714,9 +711,9 @@ var self = module.exports = {
                 conflict = course.c;
                 break;
             }
-            if (events[i].allDay) continue;
-            if (events[i].awaitSelection) continue;
-            if (events[i].sectionNum === null) continue;
+            if (events[i].allDay
+                || events[i].awaitSelection
+                || events[i].sectionNum === null) continue;
 
             if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
 
@@ -821,12 +818,11 @@ var self = module.exports = {
 
             for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
                 helper.addCal(cal, termDates, course, courseInfo.ty, locts[j]);
-                if (split[1]) {
-                    for (var k = 0, sec = courseInfo.sec, length2 = sec.length; k < length2; k++) {
-                        if (sec[k].num != split[1]) continue;
-                        for (var m = 0, secLocts = sec[k].loct, length3 = secLocts.length; m < length3; m++) {
-                            helper.addCal(cal, termDates, course, 'Section', secLocts[m]);
-                        }
+                if (!split[1]) continue;
+                for (var k = 0, sec = courseInfo.sec, length2 = sec.length; k < length2; k++) {
+                    if (sec[k].num != split[1]) continue;
+                    for (var m = 0, secLocts = sec[k].loct, length3 = secLocts.length; m < length3; m++) {
+                        helper.addCal(cal, termDates, course, 'Section', secLocts[m]);
                     }
                 }
             }
