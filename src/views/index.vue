@@ -4,7 +4,7 @@
             <div class="overflow-hidden bg-white rounded mb2">
                 <div class="m0 p1">
                     <div class="clearfix">
-                        <span class="btn black h4">Classes: </span>
+                        <span class="btn black h4">Class Related: </span>
                     </div>
                     <div class="clearfix">
                         <span class="ml1 btn black h5 muted not-clickable">Here are the tools to save you from my.ucsc.edu</span>
@@ -16,38 +16,6 @@
                         <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}"  v-link="{ name: 'enrollHelper' }">Notify Me When My Classes Are Open</a>
                         <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}"  v-link="{ name: 'analyticsHelper' }">Enrollment Analytics</a>
                         <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" @click="comingSoon">Major/Minor Requirements</a>
-                    </div>
-                </div>
-            </div>
-            <div class="overflow-hidden bg-white rounded mb2">
-                <div class="m0 p1">
-                    <div class="clearfix">
-                        <span class="btn black h4">Transportation: </span>
-                    </div>
-                    <div class="clearfix">
-                        <span class="ml1 btn black h5 muted not-clickable">It shouldn't be hard to get around in Santa Cruz.</span>
-                    </div>
-                </div>
-                <div class="m0 p2 border-top">
-                    <div class="clearfix">
-                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" href="http://slugroute.com" target="_blank">Campus Bus Tracker</a>
-                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" href="https://www.scmtd.com/en/routes/system-map" target="_blank">City Bus Schedule</a>
-                    </div>
-                </div>
-            </div>
-            <div class="overflow-hidden bg-white rounded mb2">
-                <div class="m0 p1">
-                    <div class="clearfix">
-                        <span class="btn black h4">Links: </span>
-                    </div>
-                    <div class="clearfix">
-                        <span class="ml1 btn black h5 muted not-clickable">Of course I have to talk about other things.</span>
-                    </div>
-                </div>
-                <div class="m0 p2 border-top">
-                    <div class="clearfix">
-                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" v-link="{ name: 'explain' }">What is SlugSurvival?</a>
-                        <a class="h6 ml2 mb1 bold btn btn-outline {{ color }}" v-link="{ name: 'explainPrivacy' }">Privacy Policy</a>
                     </div>
                 </div>
             </div>
