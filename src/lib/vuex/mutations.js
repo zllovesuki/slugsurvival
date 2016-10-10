@@ -104,6 +104,22 @@ module.exports = {
     emptyEventSource: function(state, termId) {
         delete state.events[termId];
     },
+    grayOutEvents: function(state, termId) {
+        if (typeof state.events[termId] === 'undefined') return;
+        state.events[termId].map(function(el) {
+            //if (typeof el.oldColor !== 'undefined') return;
+            el.oldColor = el.color;
+            el.color = state.colorMap.grayOut;
+        })
+    },
+    restoreEventsColor: function(state, termId) {
+        if (typeof state.events[termId] === 'undefined') return;
+        state.events[termId].map(function(el) {
+            //if (typeof el.oldColor === 'undefined') return;
+            el.color = el.oldColor;
+            delete el.oldColor;
+        })
+    },
     removeFromSource: function(state, termId, courseNumber, doNotRemove) {
         if (typeof state.events[termId] === 'undefined') return;
         state.events[termId] = state.events[termId].filter(function(event) {

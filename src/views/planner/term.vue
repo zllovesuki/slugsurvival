@@ -23,16 +23,16 @@
             <div class="m0 p2">
                 <div class="clearfix">
                     <div class="right">
-                        <a class="btn btn-outline white h6" style="background-color: #008000">
+                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.TBA }">
                             TBA
                         </a>
-                        <a class="btn btn-outline white h6" style="background-color: #6aa4c1">
+                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.course }">
                             Class
                         </a>
-                        <a class="btn btn-outline white h6" style="background-color: #9f9f9f">
+                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.section }">
                             Section
                         </a>
-                        <a class="btn btn-outline white h6" style="background-color: #7D1347">
+                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.custom }">
                             Other
                         </a>
                     </div>
@@ -75,7 +75,8 @@ module.exports = {
         showSearchModal: function() {
             var termId = this.route.params.termId;
             if (!this.noAwaitSection(termId)) {
-                return this.alert().error('Finish selecting section first!')
+                this.jumpOutAwait(termId);
+                this.refreshCalendar();
             }
             this.searchModal = true;
             setTimeout(function() {
@@ -97,6 +98,17 @@ module.exports = {
                 this.alert().success('Removed!');
             }.bind(this));
         },
+        jumpOutAwait: function() {
+            var termId = this.route.params.termId;
+            var currentAwait = this.getCurrentAwaitSection(termId);
+            if (currentAwait === false) return;
+            // Of course restore any missing color first
+            this.restoreEventsColor(termId);
+            // we first remove all awaitSelections of the old one
+            this.removeFromSource(termId, currentAwait.number);
+            // Then add back the "chooose later"
+            this.pushToEventSource(currentAwait.course);
+        },
         promptForAction: function(calEvent) {
             if (this.lock) return;
             var termId = this.route.params.termId;
@@ -106,6 +118,10 @@ module.exports = {
                 if (calEvent.conflict !== false) {
                     return this.alert().error('Conflict with ' + calEvent.conflict);
                 }
+
+                if (calEvent.sectionNum === null) return;
+
+                this.restoreEventsColor(termId);
                 this.pushSectionToEventSource(calEvent.number, calEvent.sectionNum);
 
                 this.refreshCalendar();
@@ -114,7 +130,11 @@ module.exports = {
             }
 
             if (!this.noAwaitSection(termId)) {
-                return this.alert().error('Choose a section first!')
+                if (calEvent.color === this.colorMap.grayOut) {
+                    this.jumpOutAwait();
+                    return this.displaySectionsOnCalendar(calEvent.number);
+                }
+                return;// this.alert().error('Choose a section first!')
             }
 
             var isSection = typeof calEvent.section !== 'undefined';
@@ -140,7 +160,6 @@ module.exports = {
         },
         promptAddClass: function(course) {
             var termId = this.route.params.termId;
-            var courseHasSections = this.courseHasSections(termId, course.num);
             var code = this.checkForConflict(course);
             var alertHandle = function() {};
 
@@ -155,20 +174,17 @@ module.exports = {
             }else{
                 alertHandle = function() {
                     return this.alert()
-                    .okBtn(courseHasSections ? 'Choose Section' : 'Add Class')
+                    .okBtn('Add Class')
                     .cancelBtn("Go Back")
                     .confirm(html)
                     .then(function(resolved) {
                         resolved.event.preventDefault();
                         if (resolved.buttonClicked !== 'ok') return;
-                        if (courseHasSections) {
-                            this.displaySectionsOnCalendar(course.num);
-                        } else {
-                            this.pushToEventSource(course);
 
-                            this.refreshCalendar();
-                            this.alert().success(course.c + ' added to the planner!');
-                        }
+                        this.pushToEventSource(course);
+
+                        this.refreshCalendar();
+                        this.alert().success(course.c + ' added to the planner!');
                     }.bind(this));
                 }.bind(this)
             }
@@ -178,6 +194,8 @@ module.exports = {
             var termId = this.termId;
             this.searchModal = false;
             this.removeFromSource(termId, courseNum);
+
+            this.grayOutEvents(termId);
             this.pushAwaitSectionsToEventSource(termId, courseNum);
         },
         initializeCalendar: function() {
@@ -201,6 +219,10 @@ module.exports = {
                 }],
                 eventClick: function(calEvent, jsEvent, view) {
                     self.promptForAction(calEvent);
+                },
+                dayClick: function(date, jsEvent, view) {
+                    self.jumpOutAwait();
+                    self.refreshCalendar();
                 }
             })
         },

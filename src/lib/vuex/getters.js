@@ -35,6 +35,9 @@ module.exports = {
     eventSource: function(state) {
         return state.events
     },
+    colorMap: function(state) {
+        return state.colorMap
+    },
     dateMap: function(state) {
         return state.dateMap
     }

@@ -430,11 +430,13 @@ var self = module.exports = {
             To be DRY, this function is unnecessarily huge
         */
         var dateMap = _.state.dateMap;
+        var colorMap = _.state.colorMap;
         var events = [];
         var obj = {};
         var courseNumber, course, courseInfo, sectionNumber, section, conflict;
 
-        awaitSelection = (typeof awaitSelection === 'undefined' ? false : true);
+
+        awaitSelection = (awaitSelection === true);
 
         // We are not sure that if input1 is a course object or course number
         if (typeof input1.num !== 'undefined') {
@@ -448,12 +450,11 @@ var self = module.exports = {
         }
 
         if (awaitSelection) {
-            var color = '#3D9970';
 
-            obj.title = 'Click Here To Choose a Section For ' + course.c + ' Later';
+            obj.title = ['You Are Now Choosing Section', 'For ' + course.c].join("\n");
             obj.number = course.num;
             obj.sectionNum = null;
-            obj.color = color;
+            obj.color = colorMap.awaitSelection;
             obj.course = course;
             obj.section = false;
             obj.conflict = false;
@@ -473,7 +474,7 @@ var self = module.exports = {
             obj.start = dateMap['Monday'];
             obj.end = dateMap['Saturday'];
             obj.course = course;
-            obj.color = 'green';
+            obj.color = colorMap.TBA;
             events.push(obj);
             obj = {};
         }else{
@@ -485,7 +486,8 @@ var self = module.exports = {
                     obj.start = dateMap[days[i]] + ' ' + locts[j].t.time.start;
                     obj.end = dateMap[days[i]] + ' ' + locts[j].t.time.end;
                     obj.course = course;
-                    if (course.custom) obj.color = '#7D1347';
+                    obj.color = colorMap.course;
+                    if (course.custom) obj.color = colorMap.custom;
                     events.push(obj);
                     obj = {};
                 }
@@ -515,10 +517,14 @@ var self = module.exports = {
             if (!awaitSelection && sectionNumber !== null && sections[i].num != sectionNumber) continue;
             if (sectionNumber === null || (sections[i].loct.length === 1 && !!!sections[i].loct[0].t)) {
                 // TBA in the allDaySlot
-                obj.title = [course.c, 'Section', 'DIS - ' + (sectionNumber === null ? '?' : sections[i].sec)].join("\n");
+                obj.title = [course.c, 'Section', 'DIS - ' + sections[i].sec].join("\n");
+                if (sectionNumber === null) {
+                    obj.title = ['Choose a Section', 'For ' + course.c].join("\n");
+                }
                 obj.number = course.num;
                 obj.sectionNum = (sectionNumber === null ? null : sections[i].num);
-                obj.color = (sectionNumber === null ? 'black' : (awaitSelection ? color: 'green') );
+                obj.color = (awaitSelection ? colorMap.awaitSelection : (sectionNumber === null ? colorMap.awaitSelection : colorMap.TBA));
+                //obj.color = (sectionNumber !== null || awaitSelection !== true ? 'green' : color);
                 obj.course = course;
                 obj.section = sections[i];
                 obj.conflict = false;
@@ -538,7 +544,7 @@ var self = module.exports = {
                     }
                     obj.number = course.num;
                     obj.sectionNum = sections[i].num;
-                    obj.color =  (awaitSelection ? color: 'grey')
+                    obj.color = (awaitSelection ? colorMap.awaitSelection: colorMap.section)
                     obj.course = course;
                     obj.section = sections[i];
                     obj.conflict = conflict;
@@ -554,17 +560,35 @@ var self = module.exports = {
 
         return events;
     },
-    /*
-        pushToEventSource() and pushSectionToEventSource() are mutually exclusive
-        You can call either one (but not both)
-    */
-    pushToEventSource: function(_, course, doNotRemove) {
+    getCurrentAwaitSection: function(_, termId) {
+        if (typeof _.state.events[termId] === 'undefined') return false;
+        var events = _.state.events[termId];
+        var currentAwait = events.filter(function(el) {
+            return el.awaitSelection === true;
+        })
+        if (currentAwait.length === 0) return false;
+        return currentAwait[0];
+    },
+    grayOutEvents: function(_, termId) {
+        _.dispatch('grayOutEvents', termId);
+    },
+    restoreEventsColor: function(_, termId) {
+        _.dispatch('restoreEventsColor', termId);
+    },
+    pushToEventSource: function(_, course, customEvent) {
         var termId = this.termId;
         var events = [];
 
-        this.removeFromSource(termId, course.num, doNotRemove);
+        if (customEvent === true) {
+            this.removeFromSource(termId, course.num, doNotRemove);
 
-        events = this.getEventObjectsByCourse(termId, course);
+            events = this.getEventObjectsByCourse(termId, course);
+        }else{
+            this.removeFromSource(termId, course.num);
+
+            events = this.getEventObjectsByCourse(termId, course, null, false, null);
+        }
+
         _.dispatch('mergeEventSource', termId, events);
 
         return Promise.resolve();
@@ -596,7 +620,7 @@ var self = module.exports = {
 
             this.refreshCalendar();
             this.loading.go(100);
-            this.alert().success('Choose a Section!')
+            this.alert().success('Choosing section for ' + _.state.flatCourses[termId][courseNum].c)
         }.bind(this))
     },
     removeFromSource: function(_, termId, courseNum, doNotRemove) {
@@ -690,6 +714,7 @@ var self = module.exports = {
             }
             if (events[i].allDay) continue;
             if (events[i].awaitSelection) continue;
+            if (events[i].sectionNum === null) continue;
 
             if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
 
