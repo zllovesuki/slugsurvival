@@ -71,19 +71,19 @@
                 How do I search by GE?
             </h4>
             <span slot="body">
-                <p>
-                    Just add a plus sign(+) followed by the code, like this:
-                </p>
-                <p>
-                    <input type="text" class="field block col-12" disabled value="+CC">
-                </p>
-                <p>
-                    <input type="text" class="field block col-12" disabled value="CLTE +C2">
-                </p>
-                <p>
-                    Let's give you a reminder of what GEs do we have...
-                </p>
                 <ul class="list-reset">
+                    <p>
+                        Just add a plus sign(+) followed by the code, like this:
+                    </p>
+                    <p>
+                        <input type="text" class="field block col-10" disabled value="+CC">
+                    </p>
+                    <p>
+                        <input type="text" class="field block col-10" disabled value="CLTE +C2">
+                    </p>
+                    <p>
+                        Let's give you a reminder of what GEs do we have...
+                    </p>
                     <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="" v-for="(code, desc) in listOfGE">
                         {{ code }} - {{ desc }}
                     </li>
