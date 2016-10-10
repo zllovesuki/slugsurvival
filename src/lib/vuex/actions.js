@@ -361,6 +361,8 @@ var self = module.exports = {
                 */
                 courseNum = this.findNextCourseNum(termId, 100000);
                 course = JSON.parse(split[1]);
+                // Remember to override the course number in the course subject
+                course.num = courseNum;
                 courseInfo = this.generateCourseInfoObjectFromExtra(termId, courseNum, {});
                 this.populateLocalEntriesWithExtra(termId, courseNum, course, courseInfo);
             }
