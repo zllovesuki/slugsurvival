@@ -8,7 +8,7 @@ This is a project aims to help new and continuing students with their Slug Life.
 
 THIS IS STILL A VERY NEW PROJECT. Bugs are expected.
 
-### Improved course selections/planning (better than my.ucsc.edu)
+### Improved course selections/planning (faster and more responsive)
 
 (Data source: pisa.ucsc.edu, fetched by [UCSC Courses Fetch](https://github.com/zllovesuki/ucsc))
 
@@ -23,7 +23,7 @@ THIS IS STILL A VERY NEW PROJECT. Bugs are expected.
 
 1. You no longer have to plow through countless pages of UCSC websites to find your requirements. All courses pre-req and major/minor-req will be visualized in a graph
 
-### Class opening tracker (coming soon)
+### Class opening tracker (in construction)
 
 1. Subscribe to class entrollment opening status in (near) real-time. Inspired by our fellow slug [Brad Bernard's project: SlugWatch](https://slugwatch.com)
 
