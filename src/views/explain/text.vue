@@ -40,10 +40,10 @@
                     <h3 class="muted">Long Answer</h3>
                     <ol>
                         <li>
-                            SlugSurvival aims to solve the annoying part of the school's AIS (Academic Information System)
+                            SlugSurvival aims to simplifies the process of checking courses on the school's AIS (Academic Information System)
                         </li>
                         <li>
-                            Students can find their classes on SlugSurvival instantly instead of waiting for 4-10 seconds for the AIS to load
+                            Students can find their classes on SlugSurvival instantly instead of waiting for a few seconds
                         </li>
                         <li>
                             Students can check the enrollment status in real time without having to wait for more than 1 second.

@@ -7,7 +7,7 @@
                         <span class="btn black h4">Class Related: </span>
                     </div>
                     <div class="clearfix">
-                        <span class="ml1 btn black h5 muted not-clickable">Here are the tools to save you from the dreadful my.ucsc.edu.</span>
+                        <span class="ml1 btn black h5 muted not-clickable">Here are the tools to help you get through registration faster.</span>
                     </div>
                 </div>
                 <div class="m0 p2 border-top">
