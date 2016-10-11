@@ -13,10 +13,10 @@
                 </ul>
             </span>
             <span slot="footer">
-                <a class="btn h6 blue" v-on:click.prevent.stop="showGE">
+                <a class="btn h6 white" v-bind:style="{ backgroundColor: colorMap.course }" v-on:click.prevent.stop="showGE">
                     GE
                 </a>
-                <a class="btn h6 green" v-on:click.prevent.stop="extraModal = true" v-if="showExtra">
+                <a class="btn h6 ml1 white" v-bind:style="{ backgroundColor: colorMap.regular }" v-on:click.prevent.stop="extraModal = true" v-if="showExtra">
                     add my own schedule
                 </a>
             </span>
