@@ -167,7 +167,10 @@ module.exports = {
     },
     watch: {
         'search.string': function(val, oldVal) {
-            if (val.length < 1) return;
+            if (val.length < 1) {
+                this.search.results = [];
+                return;
+            };
             this.searchCourses();
         }
     },
