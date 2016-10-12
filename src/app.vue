@@ -4,7 +4,7 @@
             <div class="clearfix mt3">
                 <div class="mb2 sm-flex center nowrap">
                     <div class="flex-auto block">
-                        <p class="inline h2 not-clickable">SlugSurvival | <small class="muted" >{{ title }}</small></p>
+                        <router-link style="text-decoration: none;" class="inline h2 clickable black" :to="{ name: 'mainPage' }">SlugSurvival | <small class="muted" >{{ title }}</small></router-link>
                     </div>
                 </div>
 
