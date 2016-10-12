@@ -15,7 +15,9 @@
             </span>
         </div>
         <div class="mt2 mb1">
-            <router-view></router-view>
+            <transition name="fade" mode="out-in">
+                <router-view></router-view>
+            </transition>
         </div>
     </div>
 </template>

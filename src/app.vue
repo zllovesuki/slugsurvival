@@ -9,7 +9,9 @@
                 </div>
 
                 <div class="p0 col col-12">
-                    <router-view></router-view>
+                    <transition name="fade" mode="out-in">
+                        <router-view></router-view>
+                    </transition>
                 </div>
             </div>
         </section>
@@ -142,14 +144,11 @@ svg {
     height: 1em
 }
 
-.fade-transition {
-    transition: all .5s ease;
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .5s
 }
-
-.fade-enter,
-.fade-leave {
-    opacity: 0;
-    transform: translate3d(10px, 0, 0);
+.fade-enter, .fade-leave-active {
+  opacity: 0
 }
 
 .x-scrollable {
