@@ -1,33 +1,35 @@
 <template>
     <span>
-        <div class="modal-mask" @click="close" v-show="show">
-            <div class="modal-wrapper">
-                <div class="modal-container" v-bind:style="{ maxWidth: maxWidth }" @click.stop>
+        <transition name="fade" mode="out-in">
+            <div class="modal-mask" @click="close" v-show="show">
+                <div class="modal-wrapper">
+                    <div class="modal-container" v-bind:style="{ maxWidth: maxWidth }" @click.stop>
 
-                    <div class="modal-header">
-                        <slot name="header">
-                            default header
-                        </slot>
-                    </div>
+                        <div class="modal-header">
+                            <slot name="header">
+                                default header
+                            </slot>
+                        </div>
 
-                    <div class="modal-body">
-                        <slot name="body">
-                            default body
-                        </slot>
-                    </div>
+                        <div class="modal-body">
+                            <slot name="body">
+                                default body
+                            </slot>
+                        </div>
 
-                    <div class="modal-footer white">
-                        <slot name="footer">
+                        <div class="modal-footer white">
+                            <slot name="footer">
 
-                        </slot>
-                        .
-                        <a class="btn h6 right black" @click="close">
-                            X
-                        </a>
+                            </slot>
+                            .
+                            <a class="btn h6 right black" @click="close">
+                                X
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </transition>
     </span>
 </template>
 
