@@ -145,7 +145,7 @@ svg {
 }
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .3s
+  transition: opacity .25s
 }
 .fade-enter, .fade-leave-active {
   opacity: 0
