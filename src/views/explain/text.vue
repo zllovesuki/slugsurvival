@@ -23,7 +23,7 @@
                 <div class="clearfix">
                     <h3 class="muted">TL; DR. Can I just watch a video?</h3>
                     <p>
-                        <a class="h6 ml2 mt1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" v-link="{ name: 'explainGif' }">Sure, Click Here For a Short Introduction</a>
+                        <router-link class="h6 ml2 mt1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'explainGif' }">Sure, Click Here For a Short Introduction</router-link>
                     </p>
                 </div>
             </div>
@@ -68,16 +68,14 @@
 </template>
 <script>
 
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
-
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
+    computed: {
+        colorMap: function() {
+            return this.$store.getters.colorMap;
+        }
     },
-    ready: function() {
-        this.setTitle('Explain');
+    mounted: function() {
+        this.$store.dispatch('setTitle', 'Explain')
     }
 }
 </script>

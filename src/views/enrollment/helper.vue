@@ -13,7 +13,7 @@
 			</div>
 			<div class="m0 p2 border-top">
 				<div class="clearfix">
-					<a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" v-link="{ name: 'termsList' }">Take me to the Interactive Planner</a>
+					<router-link class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'termsList' }">Take me to the Interactive Planner</router-link>
 				</div>
 			</div>
 		</div>
@@ -29,7 +29,7 @@
 				</div>
                 <div class="clearfix">
 					<span class="ml1 btn black h6 not-clickable">
-                        <a class="h6 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.alert }" v-link="{ name: 'enrollManage' }" target="_blank">But I Signed Up Already</a>
+                        <router-link class="h6 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'enrollManage' }" target="_blank">But I Signed Up Already</router-link>
                     </span>
 				</div>
 			</div>
@@ -49,7 +49,7 @@
 				</div>
 				<div class="clearfix">
 					<table class="h6 col col-12">
-						<template v-for="course in courses" track-by="num">
+						<template v-for="course in courses" track-by="course.num">
 							<tr>
 								<td class="col col-6">
 									<span class="btn clickable left" @click="showCourse(monitoredTerm, course)">{{ course.c }} - {{ course.s }}</span>
@@ -72,28 +72,28 @@
     				<div class="clearfix">
     					<a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="showSub">Via SMS</a>
                         <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="showSub">Via Email</a>
-                        <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="comingSoon">Via Push Notifications</a>
+                        <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="$store.dispatch('comingSoon')">Via Push Notifications</a>
     				</div>
                 </div>
 			</div>
 		</div>
-        <search :show.sync="searchModal" :callback="addToNotifyList" :selected-term-id="monitoredTerm"></search>
-        <modal :show.sync="sub.modal">
+        <search :show="searchModal" v-on:close="searchModal = false" :callback="addToNotifyList" :selected-term-id="monitoredTerm"></search>
+        <modal :show="sub.modal" v-on:close="sub.modal = false">
 			<h4 slot="header">Subscribe to Changes</h4>
 			<span slot="body">
 				<form v-on:submit.prevent class="h5">
                     <label for="recipient" class="mt2 block">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.recipient" placeholder="15554443333/hello@me.com">
-                        <button type="submit" class="col-3 btn btn-outline ml1 mb2 inline-block {{ color }}" :disabled="sub.verified || !sub.recipient.length > 0 || sub.sent || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
+                        <button type="submit" v-bind:class="'col-3 btn btn-outline ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.recipient.length > 0 || sub.sent || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
                     </label>
                     <label for="code" class="mt2 block" v-if="sub.sent">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.code" placeholder="passcode received">
-                        <button type="submit" class="col-3 btn btn-outline ml1 mb2 inline-block {{ color }}" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
+                        <button type="submit" v-bind:class="'col-3 btn btn-outline ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
                     </label>
                     <hr />
 					<span class="block mb1">
                         We take privacy seriously.
-                        <a class="h6 bold {{ color }}" v-link="{ name: 'explainPrivacy' }" target="_blank"> Learn More</a>
+                        <router-link v-bind:class="'h6 bold ' + color" :to="{ name: 'explainPrivacy' }" target="_blank"> Learn More</router-link>
                     </span>
 				</form>
 			</span>
@@ -102,15 +102,10 @@
 </template>
 
 <script>
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
+var helper = require('../../lib/vuex/helper')
 var config = require('../../../config')
 
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     data: function() {
         return {
             ready: false,
@@ -130,6 +125,29 @@ module.exports = {
                 shouldResend: false,
                 timer: null
             }
+        }
+    },
+    computed: {
+        alert: function() {
+            return this.$store.getters.alert;
+        },
+        termId: function() {
+            return this.$store.getters.termId;
+        },
+        colorMap: function() {
+            return this.$store.getters.colorMap;
+        },
+        loading: function() {
+            return this.$store.getters.loading;
+        },
+        color: function() {
+            return this.$store.getters.color;
+        },
+        flatCourses: function() {
+            return this.$store.getters.flatCourses;
+        },
+        termName: function() {
+            return this.$store.getters.termName;
         }
     },
     methods: {
@@ -162,7 +180,7 @@ module.exports = {
                 self.loading.go(100);
                 self.sub.sendInflight = false;
                 if (!res.ok) {
-                    return self.alert().error(res.message);
+                    return self.alert.error(res.message);
                 }
                 self.sub.sent = true;
                 self.sub.timer = setInterval(function() {
@@ -181,7 +199,7 @@ module.exports = {
                 console.log(e);
                 self.loading.go(100);
                 self.sub.sendInflight = false;
-                self.alert().error('An error has occurred.')
+                self.alert.error('An error has occurred.')
             })
         },
         verifyCode: function() {
@@ -213,7 +231,11 @@ module.exports = {
                     self.loading.go(100);
                     return self.alert().error(res.message);
                 }
-                self.updateWatch(self.sub.recipient, self.sub.code, self.courses)
+                return self.$store.dispatch('updateWatch', {
+                    recipient: self.sub.recipient,
+                    code: self.sub.code,
+                    courses: self.courses
+                })
                 .then(function() {
                     clearInterval(self.sub.timer);
                     self.sub.verified = true;
@@ -223,15 +245,15 @@ module.exports = {
                     self.sub.counter = 300;
                     self.sub.modal = false;
                     self.loading.go(100);
-                    self.route.router.go({ name: 'enrollManage'})
-                    self.alert().success('Subscribed to changes!');
+                    self.alert.success('Subscribed to changes!');
+                    self.$router.push({ name: 'enrollManage'})
                 })
             })
             .catch(function(e) {
                 console.log(e);
                 self.loading.go(100);
                 self.sub.verifyInflight = false;
-                self.alert().error('An error has occurred.')
+                self.alert.error('An error has occurred.')
             })
         },
         showSearchModal: function() {
@@ -241,25 +263,32 @@ module.exports = {
             }, 75);
         },
         showCourse: function(termId, course) {
-            var html = this.getCourseDom(termId, course);
-            return this.alert()
-            .okBtn('Remove Class')
-            .cancelBtn("Go Back")
-            .confirm(html)
-            .then(function(resolved) {
-                resolved.event.preventDefault();
-                if (resolved.buttonClicked !== 'ok') return;
-                return this.alert()
-                .okBtn("Yes")
-                .cancelBtn("No")
-                .confirm('Remove ' + course.c + ' from the list?')
+            var self = this;
+            return self.$store.dispatch('getCourseDom', {
+                termId: termId,
+                courseObj: course,
+                isSection: false
+            })
+            .then(function(html) {
+                return self.alert
+                .okBtn('Remove Class')
+                .cancelBtn("Go Back")
+                .confirm(html)
                 .then(function(resolved) {
                     resolved.event.preventDefault();
                     if (resolved.buttonClicked !== 'ok') return;
-                    this.removeFromList(course);
-                    this.alert().success('Removed!');
-                }.bind(this));
-            }.bind(this));
+                    return self.alert
+                    .okBtn("Yes")
+                    .cancelBtn("No")
+                    .confirm('Remove ' + course.c + ' from the list?')
+                    .then(function(resolved) {
+                        resolved.event.preventDefault();
+                        if (resolved.buttonClicked !== 'ok') return;
+                        self.removeFromList(course);
+                        self.alert.success('Removed!');
+                    });
+                });
+            })
         },
         removeFromList: function(course) {
             this.courses = this.courses.filter(function(el) {
@@ -267,50 +296,60 @@ module.exports = {
             })
         },
         importPlanner: function() {
+            var self = this;
             // In case the user is accessing via a bookmark link
-            this.emptyEventSource(this.monitoredTerm);
-            // Force to load from local
-            return this.loadAutosave(this.monitoredTerm + '', false)
+            return this.$store.dispatch('emptyEventSource', this.monitoredTerm)
             .then(function() {
-                var events = this.eventSource[this.monitoredTerm];
-                if (!events) return;
-                this.courses = [];
-                var compact = this.helper().compact(events);
-                var split = [], course, courseInfo;
+                // Force to load from local
+                return self.$store.dispatch('loadAutosave', {
+                    termId: self.monitoredTerm + '',
+                    alert: false
+                })
+                .then(function() {
+                    var events = self.$store.getters.eventSource[self.monitoredTerm];
+                    if (!events) return;
+                    self.courses = [];
+                    var compact = helper.compact(events);
+                    var split = [], course, courseInfo;
 
-                for (var i = 0, length = compact.length; i < length; i++) {
-                    split = compact[i].split('-');
-                    if (split[0] / 100000 >= 1) continue;
-                    course = this.flatCourses[this.monitoredTerm][split[0]];
-                    this.courses.push(course)
-                }
-            }.bind(this))
+                    for (var i = 0, length = compact.length; i < length; i++) {
+                        split = compact[i].split('-');
+                        if (split[0] / 100000 >= 1) continue;
+                        course = self.flatCourses[self.monitoredTerm][split[0]];
+                        self.courses.push(course)
+                    }
+                })
+            })
         },
         addToNotifyList: function(course) {
-            var html = this.getCourseDom(this.monitoredTerm, course);
-            return this.alert()
-            .okBtn('Notify')
-            .cancelBtn("Go Back")
-            .confirm(html)
-            .then(function(resolved) {
-                resolved.event.preventDefault();
-                if (resolved.buttonClicked !== 'ok') return;
-                this.alert().success(course.c + ' added to the list!');
-                this.courses.push(course);
-            }.bind(this));
+            var self = this;
+            return self.$store.dispatch('getCourseDom', {
+                termId: self.monitoredTerm,
+                courseObj: course,
+                isSection: false
+            })
+            .then(function(html) {
+                return self.alert
+                .okBtn('Notify')
+                .cancelBtn("Go Back")
+                .confirm(html)
+                .then(function(resolved) {
+                    resolved.event.preventDefault();
+                    if (resolved.buttonClicked !== 'ok') return;
+                    self.success(course.c + ' added to the list!');
+                    self.courses.push(course);
+                });
+            })
         }
     },
-    created: function() {
-
-    },
-    ready: function() {
+    mounted: function() {
         var self = this;
         this.loading.go(30);
-        this.setTitle('Tracker');
+        this.$store.dispatch('setTitle', 'Tracker');
 
-        this.fetchTermCourses(this.monitoredTerm)
+        self.$store.dispatch('fetchTermCourses', this.monitoredTerm)
         .then(function() {
-            self.loading.go(100);
+            self.$store.getters.loading.go(100);
             self.ready = true;
         })
     }

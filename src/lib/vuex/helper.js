@@ -1,5 +1,190 @@
 var self = module.exports = {
 
+    generateCourseObjectFromExtra: function(courseNum, extra){
+        var course = {
+            c: extra.title,
+            n: extra.description,
+            num: courseNum,
+            loct: [],
+            custom: true
+        };
+        var locObj = {
+            loc: '',
+            t: {
+                day: [],
+                time: {
+                    start: '',
+                    end: ''
+                }
+            }
+        };
+        locObj.loc = extra.location;
+        locObj.t.time.start = extra.time.start;
+        locObj.t.time.end = extra.time.end;
+        if (extra.repeat.M) locObj.t.day.push('Monday');
+        if (extra.repeat.Tu) locObj.t.day.push('Tuesday');
+        if (extra.repeat.W) locObj.t.day.push('Wednesday');
+        if (extra.repeat.Th) locObj.t.day.push('Thursday');
+        if (extra.repeat.F) locObj.t.day.push('Friday');
+        course.loct.push(locObj);
+        return course;
+    },
+    generateCourseInfoObjectFromExtra: function(courseNum, extra){
+        var courseInfo = {
+            ty: 'Other',
+            cr: '0',
+            ge: [],
+            desc: '',
+            re: null,
+            com: [],
+            sec: []
+        };
+        return courseInfo;
+    },
+
+    tConvert: function(time) {
+        // Check correct time format and split into components
+        time = time.toString().match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
+
+        if (time.length > 1) { // If time format correct
+            time = time.slice(1); // Remove full string match value
+            time[5] = +time[0] < 12 ? 'AM' : 'PM'; // Set AM/PM
+            time[0] = +time[0] % 12 || 12; // Adjust hours
+        }
+        return time.join(''); // return adjusted time or original string
+    }, // http://stackoverflow.com/questions/13898423/javascript-convert-24-hour-time-of-day-string-to-12-hour-time-with-am-pm-and-no
+
+    tConvertToEpoch: function(dateMap, locts) {
+        var epochTimes = [];
+        for (var j = 0, length = locts.length; j < length; j++) {
+            if (!locts[j].t) continue;
+            for (var m = 0, days = locts[j].t.day, length1 = days.length; m < length1; m++) {
+                epochTimes.push({
+                    start: (new Date(dateMap[days[m]] + ' ' + locts[j].t.time.start).valueOf() / 1000),
+                    end: (new Date(dateMap[days[m]] + ' ' + locts[j].t.time.end).valueOf() / 1000)
+                })
+            }
+        }
+        return epochTimes;
+    },
+
+    checkForConflict: function(dateMap, events, course) {
+        /*
+            Instead of doing some ugly loops and intersects and shits, why don't we just compare the epoch time?
+
+            It is an absolute unit of times (well, in a sense)
+
+            Therefore, it is *much* more efficient to compare epoch times.
+
+            Of course, the inefficiencies still lie with the for loop to check each loct at the end
+        */
+        var comingTime = [];
+        var checker = {};
+        var conflict = false;
+        if (typeof events === 'undefined') return false;
+
+        for (var i = 0, length = events.length; i < length; i++) {
+            // You can't take the same class twice in a quarter
+            // At least you shouldn't
+            if (events[i].course.c === course.c) {
+                conflict = course.c;
+                break;
+            }
+            if (events[i].allDay
+                || events[i].awaitSelection
+                || events[i].sectionNum === null) continue;
+
+            if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
+
+                if (typeof checker[events[i].course.c + ' Section'] !== 'undefined') continue;
+
+                checker[events[i].course.c + ' Section'] = self.tConvertToEpoch(dateMap, events[i].section.loct);
+
+            } else {
+
+                if (typeof checker[events[i].course.c] !== 'undefined') continue;
+
+                checker[events[i].course.c] = self.tConvertToEpoch(dateMap, events[i].course.loct);
+
+            }
+        }
+
+        if (conflict !== false) return null;
+
+        if (course.loct.length === 1 && !!!course.loct[0].t) {
+            // TBA
+            return false;
+        }
+
+        var oldStart, newStart, oldEnd, newEnd;
+
+        comingTime = self.tConvertToEpoch(dateMap, course.loct);
+
+        for (var j = 0, length = comingTime.length; j < length; j++) {
+            newStart = comingTime[j].start;
+            newEnd = comingTime[j].end;
+            for (var code in checker) {
+                for (var k = 0, c = checker[code], length1 = c.length; k < length1; k++) {
+                    oldStart = c[k].start;
+                    oldEnd = c[k].end;
+                    if (self.checkTimeConflict(oldStart, oldEnd, newStart, newEnd)) {
+                        return code;
+                    }
+                }
+            }
+        }
+
+        return conflict;
+    },
+
+    checkTimeConflict: function(oldStart, oldEnd, newStart, newEnd) {
+        if ((newStart > oldStart) && (newEnd > oldEnd) && (oldEnd > newStart)) {
+            //console.log('new course is eating from behind')
+            return true;
+        }
+
+        if ((oldEnd > newEnd) && (oldStart > newStart) && (newEnd > oldStart)) {
+            //console.log('new course is eating from ahead');
+            return true;
+        }
+
+        if ((newEnd == oldStart) || (newStart == oldEnd)) {
+            //console.log('piggy back');
+            return true;
+        }
+
+        if ((newEnd == oldEnd) || (newStart == oldStart)) {
+            //console.log('overlap');
+            return true;
+        }
+
+        if ((oldEnd > newEnd) && (newStart > oldStart)) {
+            //console.log('new course is inside');
+            return true;
+        }
+
+        if ((oldEnd < newEnd) && (newStart < oldStart)) {
+            //console.log('new course is outside');
+            return true;
+        }
+        return false;
+    },
+
+    findNextCourseNum: function(courses, currentNum) {
+        if (typeof courses[currentNum] === 'undefined') {
+            return currentNum;
+        }
+        return self.findNextCourseNum(courses, currentNum + 1);
+    },
+
+    iOS: function() {
+        var userAgent = window.navigator.userAgent;
+        if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i)) {
+            return true;
+        }
+        return false;
+    }, // http://stackoverflow.com/questions/3007480/determine-if-user-navigated-from-mobile-safari
+
     intersect: function(a, b) {
         var t;
         if (b.length > a.length) t = b, b = a, a = t; // indexOf to loop over shorter
@@ -31,17 +216,17 @@ var self = module.exports = {
         tracker.coursesWithSections = [];
         tracker.coursesWithSections = self.intersect(Object.keys(tracker.eventsWithSections), Object.keys(tracker.coursesWithoutSections));
 
-        tracker.coursesWithSections.forEach(function(courseNumber) {
-            array.push(courseNumber + '-' + tracker.eventsWithSections[courseNumber])
+        tracker.coursesWithSections.forEach(function(courseNum) {
+            array.push(courseNum + '-' + tracker.eventsWithSections[courseNum])
         });
 
-        for (var courseNumber in tracker.coursesWithoutSections) {
-            if (tracker.coursesWithSections.indexOf(courseNumber) === -1) {
-                if (courseNumber / 100000 >= 1) {
+        for (var courseNum in tracker.coursesWithoutSections) {
+            if (tracker.coursesWithSections.indexOf(courseNum) === -1) {
+                if (courseNum / 100000 >= 1) {
                     // we got a traitor!
-                    array.push(courseNumber + '-' + JSON.stringify(extra[courseNumber]));
+                    array.push(courseNum + '-' + JSON.stringify(extra[courseNum]));
                 }else{
-                    array.push(courseNumber);
+                    array.push(courseNum);
                 }
             }
         }

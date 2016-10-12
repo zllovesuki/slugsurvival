@@ -70,16 +70,9 @@
 </template>
 <script>
 
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
-
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
-    ready: function() {
-        this.setTitle('Explain');
+    mounted: function() {
+        this.$store.dispatch('setTitle', 'gif')
     }
 }
 </script>

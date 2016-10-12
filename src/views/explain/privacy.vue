@@ -37,17 +37,9 @@
     </div>
 </template>
 <script>
-
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
-
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
-    ready: function() {
-        this.setTitle('Privacy');
+    mounted: function() {
+        this.$store.dispatch('setTitle', 'Privacy');
     }
 }
 </script>

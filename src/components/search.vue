@@ -1,12 +1,12 @@
 <template>
     <span>
-        <modal :show.sync="show">
+        <modal :show="show" v-on:close="closeSearchModal">
             <h4 slot="header">
-                <input type="text" class="field block col-12 mb1 search-box" v-model="search.string" debounce="250" placeholder="ECON 197, Design, Mendes, etc...">
+                <input type="text" class="field block col-12 mb1 search-box" v-model="search.string" placeholder="ECON 197, Design, Mendes, etc...">
             </h4>
             <span slot="body">
                 <ul class="list-reset">
-                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="cb(result)" v-for="result in search.results" track-by="num">
+                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="cb(result)" v-for="result in search.results" track-by="result.num">
                         {{ result.c }} - {{ result.s }}  - {{ result.n }}
                     </li>
                     <li v-show="search.string.length > 0 && search.results.length === 0">No results.</li>
@@ -21,7 +21,7 @@
                 </a>
             </span>
         </modal>
-        <modal :show.sync="extraModal" :do-not-modify-class="true">
+        <modal :show="extraModal" :do-not-modify-class="true" v-on:close="extraModal = false">
             <h4 slot="header">
                 Add Your Own Schedule
             </h4>
@@ -66,7 +66,7 @@
 				</form>
             </span>
         </modal>
-        <modal :show.sync="GEModal" :do-not-modify-class="true">
+        <modal :show="GEModal" :do-not-modify-class="true" v-on:close="GEModal = false">
             <h4 slot="header">
                 How do I search by GE?
             </h4>
@@ -94,19 +94,14 @@
 </template>
 
 <script>
-var getters = require('../lib/vuex/getters.js')
-var actions = require('../lib/vuex/actions.js')
+var debounce = require('lodash.debounce')
+var helper = require('../lib/vuex/helper')
 
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     props: {
         show: {
             type: Boolean,
-            required: true,
-            twoWay: true
+            required: true
         },
         showExtra: {
             type: Boolean,
@@ -147,11 +142,38 @@ module.exports = {
                     && this.extra.repeat.Th === false
                     && this.extra.repeat.F === false
                 );
+        },
+        alert: function() {
+            return this.$store.getters.alert;
+        },
+        colorMap: function() {
+            return this.$store.getters.colorMap;
+        },
+        dateMap: function() {
+            return this.$store.getters.dateMap;
+        },
+        courseInfo: function() {
+            return this.$store.getters.courseInfo
+        },
+        flatCourses: function() {
+            return this.$store.getters.flatCourses
+        },
+        indexSearch: function() {
+            return this.$store.getters.indexSearch
+        },
+        termId: function() {
+            return this.$store.getters.termId
         }
     },
     watch: {
         'search.string': function(val, oldVal) {
             if (val.length < 1) return;
+            this.searchCourses();
+        }
+    },
+    methods: {
+        searchCourses: debounce(function() {
+            var val = this.search.string;
             var self = this;
             var geCode = '';
             var courseInfo = this.courseInfo[this.selectedTermId];
@@ -197,15 +219,17 @@ module.exports = {
                     })
                 }
             }
-        }
-    },
-    methods: {
+        }, 250),
+        closeSearchModal: function() {
+            this.$emit('close')
+        },
         cb: function(param) {
             this.callback(param)
         },
         showGE: function() {
             var self = this;
-            return this.fetchGE().then(function(ge) {
+            return this.$store.dispatch('fetchGE')
+            .then(function(ge) {
                 self.listOfGE = ge;
                 self.GEModal = true;
             })
@@ -229,20 +253,33 @@ module.exports = {
             };
         },
         parseAndAddExtra: function() {
+            var self = this;
             var termId = this.termId;
-            var courseNum = this.findNextCourseNum(termId, 100000);
-            var course = this.generateCourseObjectFromExtra(termId, courseNum, this.extra);
-            var code = this.checkForConflict(course);
+            var courseNum = helper.findNextCourseNum(this.$store.getters.flatCourses[termId], 100000)
+            var course = helper.generateCourseObjectFromExtra(courseNum, this.extra);
+            var code = helper.checkForConflict(this.dateMap, this.$store.getters.eventSource[termId], course);
             if (code !== false) {
-                return this.alert().error('Conflict with ' + code)
+                return this.alert.error('Conflict with ' + code)
             }
-            var courseInfo = this.generateCourseInfoObjectFromExtra(termId, courseNum, this.extra);
-            this.populateLocalEntriesWithExtra(termId, courseNum, course, courseInfo);
-            this.pushToEventSource(course, true);
-            this.refreshCalendar();
-            this.extraModal = false;
-            this.resetExtra();
-            this.alert().success('Schedule added to the planner!');
+            var courseInfo = helper.generateCourseInfoObjectFromExtra(courseNum, this.extra);
+            return this.$store.dispatch('populateLocalEntriesWithExtra', {
+                termId: termId,
+                courseNum: courseNum,
+                courseObj: course,
+                courseInfo: courseInfo
+            }).then(function() {
+                return self.$store.dispatch('pushToEventSource', {
+                    termId: termId,
+                    courseObj: course,
+                    custom: true
+                })
+            }).then(function() {
+                return self.$store.dispatch('refreshCalendar')
+            }).then(function() {
+                self.extraModal = false;
+                self.resetExtra();
+                self.alert.success('Schedule added to the planner!');
+            })
         },
         formatTime: function(string) {
             string = string.replace(/\s/g, '');

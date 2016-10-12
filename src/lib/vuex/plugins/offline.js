@@ -4,13 +4,14 @@ module.exports = function(storage) {
     return function(store) {
         store.subscribe(function(mutation, state) {
 
-            var termId = mutation.payload[0];
+            var termId;
+            if (mutation.payload && mutation.payload.termId) termId = mutation.payload.termId;
 
             switch (mutation.type) {
                 case 'saveTermCourses':
 
-                var coursesData = mutation.payload[1];
-                var skipSaving = mutation.payload[2] || false;
+                var coursesData = mutation.payload.coursesData;
+                var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
@@ -29,8 +30,8 @@ module.exports = function(storage) {
 
                 case 'saveCourseInfo':
 
-                var courseInfo = mutation.payload[1];
-                var skipSaving = mutation.payload[2] || false;
+                var courseInfo = mutation.payload.courseInfo;
+                var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
@@ -49,8 +50,8 @@ module.exports = function(storage) {
 
                 case 'saveInstructorNameToTidMapping':
 
-                var rmp = mutation.payload[0];
-                var skipSaving = mutation.payload[1] || false;
+                var rmp = mutation.payload.rmp;
+                var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
@@ -69,8 +70,8 @@ module.exports = function(storage) {
 
                 case 'saveTermsList':
 
-                var termsList = mutation.payload[0];
-                var skipSaving = mutation.payload[1] || false;
+                var termsList = mutation.payload.termsList;
+                var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
@@ -89,9 +90,9 @@ module.exports = function(storage) {
 
                 case 'buildIndexedSearch':
 
-                var index = mutation.payload[1];
-                var workaround = mutation.payload[2];
-                var skipSaving = mutation.payload[3];
+                var index = mutation.payload.index;
+                var workaround = mutation.payload.workaround;
+                var skipSaving = mutation.payload.skipSaving;
 
                 if (skipSaving) return;
 

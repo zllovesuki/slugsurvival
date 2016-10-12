@@ -8,18 +8,19 @@ module.exports = {
     setTermName: function(state, name) {
         state.termName = name;
     },
-    saveTermsList: function(state, terms, skipSaving) {
+    saveTermsList: function(state, payload) {
+        var terms = payload.termsList, skipSaving = payload.skipSaving
         state.flatTermsList = terms;
         terms.forEach(function(term) {
             state.termsList[term.code] = term.name;
             state.termDates[term.code] = term.date;
         })
     },
-    saveTermCourses: function(state, termId, courses, skipSaving) {
+    saveTermCourses: function(state, payload) {
+        var obj, termId = payload.termId, courses = payload.coursesData, skipSaving = payload.skipSaving;
         if (typeof state.flatCourses[termId] === 'undefined') {
             state.flatCourses[termId] = {};
         }
-        var obj;
         Object.keys(courses).forEach(function(subject) {
             courses[subject].forEach(function(course) {
                 if (!skipSaving) {
@@ -32,11 +33,12 @@ module.exports = {
             })
         })
     },
-    appendCourse: function(state, termId, courseNum, course) {
+    appendCourse: function(state, payload) {
+        var termId = payload.termId, courseNum = payload.courseNum, course = payload.courseObj;
         state.flatCourses[termId][courseNum] = course;
     },
-    saveInstructorNameToTidMapping: function(state, mapping, skipSaving) {
-        state.instructorNameToTidMapping = mapping;
+    saveInstructorNameToTidMapping: function(state, payload) {
+        state.instructorNameToTidMapping = payload.rmp;
     },
     saveInstructorStats: function(state, stats) {
         if (Object.keys(state.instructorStats).length > 5) {
@@ -44,19 +46,23 @@ module.exports = {
         }
         state.instructorStats[stats.tid] = stats;
     },
-    saveCourseInfo: function(state, termId, courses, skipSaving) {
+    saveCourseInfo: function(state, payload) {
+        var termId = payload.termId, courses = payload.courseInfo;
         state.courseInfo[termId] = courses;
     },
-    appendCourseInfo: function(state, termId, courseNum, courseInfo) {
+    appendCourseInfo: function(state, payload) {
+        var termId = payload.termId, courseNum = payload.courseNum, courseInfo = payload.courseInfo;
         state.courseInfo[termId][courseNum] = courseInfo;
     },
-    saveHistoricData: function(state, spring, summer, fall, winter) {
-        state.historicData.spring = spring;
-        state.historicData.summer = summer;
-        state.historicData.fall = fall;
-        state.historicData.winter = winter;
+    saveHistoricData: function(state, payload) {
+        state.historicData.spring = payload.spring;
+        state.historicData.summer = payload.summer;
+        state.historicData.fall = payload.fall;
+        state.historicData.winter = payload.winter;
     },
-    buildIndexedSearch: function(state, termId, json, workaround, skipSaving) {
+    buildIndexedSearch: function(state, payload) {
+        // termId, json, workaround, skipSaving
+        var termId = payload.termId, json = payload.index, workaround = payload.workaround, skipSaving = payload.skipSaving;
         workaround = workaround || false;
         if (workaround) {
             console.log('building index on the fly')
@@ -78,8 +84,8 @@ module.exports = {
                 this.setRef('b');
                 this.saveDocument(false);
             });
-            for (var courseNumber in state.flatCourses[termId]) {
-                obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNumber]));
+            for (var courseNum in state.flatCourses[termId]) {
+                obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNum]));
                 obj.b = obj.num;
                 obj.c = obj.c.split(/(\d+)/).filter(Boolean).map(function(el) { return el.trim(); }).join(" ");
                 obj.n = obj.n.split(/(?=[A-Z])/).map(function(el) { return el.trim(); }).join(" ")
@@ -94,11 +100,13 @@ module.exports = {
         if (typeof state.events[termId] === 'undefined') state.events[termId] = [];
         state.events[termId].push(obj);
     },*/
-    mergeEventSource: function(state, termId, events, skipSaving) {
+    mergeEventSource: function(state, payload) {
+        var termId = payload.termId, events = payload.events, skipSaving = payload.skipSaving;
         if (typeof state.events[termId] === 'undefined') state.events[termId] = [];
         state.events[termId] = state.events[termId].concat(events);
     },
-    restoreEventSourceSnapshot: function(state, termId, events) {
+    restoreEventSourceSnapshot: function(state, payload) {
+        var termId = payload.termId, events = payload.events;
         state.events[termId] = events;
     },
     emptyEventSource: function(state, termId) {
@@ -120,28 +128,17 @@ module.exports = {
             delete el.oldColor;
         })
     },
-    removeFromSource: function(state, termId, courseNumber, doNotRemove) {
+    removeFromSource: function(state, payload) {
+        var termId = payload.termId, courseNum = payload.courseNum, skipSaving = payload.skipSaving;
         if (typeof state.events[termId] === 'undefined') return;
         state.events[termId] = state.events[termId].filter(function(event) {
-            return event.number != courseNumber;
+            return event.number != courseNum;
         })
-        if (courseNumber / 100000 >= 1 && doNotRemove !== true) {
+        if (courseNum / 100000 >= 1 && skipSaving !== true) {
             // remove the traitor!
-            delete state.flatCourses[termId][courseNumber];
-            delete state.courseInfo[termId][courseNumber];
+            delete state.flatCourses[termId][courseNum];
+            delete state.courseInfo[termId][courseNum];
         }
-        if (state.events[termId].length === 0) {
-            delete state.events[termId];
-        }
-    },
-    removeEmptySection: function(state, termId, courseNumber) {
-        if (typeof state.events[termId] === 'undefined') return;
-        state.events[termId] = state.events[termId].filter(function(event) {
-            if (event.number !== courseNumber)
-                return true;
-            if (event.number == courseNumber && typeof(event.sectionNum) !== 'undefined')
-                return false;
-        })
         if (state.events[termId].length === 0) {
             delete state.events[termId];
         }

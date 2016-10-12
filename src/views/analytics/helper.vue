@@ -22,20 +22,14 @@
                 </div>
 			</div>
 		</div>
-        <search :show.sync="searchModal" :callback="openAnalytics" :selected-term-id="monitoredTerm"></search>
+        <search :show="searchModal" v-on:closeModal="searchModal = false" :callback="openAnalytics" :selected-term-id="monitoredTerm"></search>
     </div>
 </template>
 
 <script>
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
 var config = require('../../../config')
 
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     data: function() {
         return {
             ready: false,
@@ -52,20 +46,25 @@ module.exports = {
         },
         openAnalytics: function(course) {
             this.searchModal = false;
-            this.route.router.go({ name: 'analyticsCourse', params: { termId: this.monitoredTerm, courseNum: course.num }})
+            this.$router.push({ name: 'analyticsCourse', params: { termId: this.monitoredTerm, courseNum: course.num }})
         }
     },
-    created: function() {
-
+    computed: {
+        colorMap: function() {
+            return this.$store.getters.colorMap;
+        },
+        termName: function() {
+            return this.$store.getters.termName;
+        }
     },
-    ready: function() {
+    mounted: function() {
         var self = this;
-        this.loading.go(30);
-        this.setTitle('Analytics');
+        this.$store.getters.loading.go(30);
+        this.$store.dispatch('setTitle', 'Analytics');
 
-        this.fetchTermCourses(this.monitoredTerm)
+        self.$store.dispatch('fetchTermCourses', this.monitoredTerm)
         .then(function() {
-            self.loading.go(100);
+            self.$store.getters.loading.go(100);
             self.ready = true;
         })
     }

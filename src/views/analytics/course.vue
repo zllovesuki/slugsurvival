@@ -14,9 +14,9 @@
             </div>
             <div class="m0 p2" v-if="ready">
                 <div class="clearfix">
-                    <template v-for="section in sectionsData">
-                        <canvas v-bind:id="sectionsCanvasId[$index]"></canvas>
-                        <graph :canvas-id="sectionsCanvasId[$index]" :graph-data="section" :graph-title="'Section ' + section[0].num"></graph>
+                    <template v-for="(section, index) in sectionsData">
+                        <canvas v-bind:id="sectionsCanvasId[index]"></canvas>
+                        <graph :canvas-id="sectionsCanvasId[index]" :graph-data="section" :graph-title="'Section ' + section[0].num"></graph>
                     </template>
                 </div>
             </div>
@@ -24,23 +24,24 @@
     </div>
 </template>
 <script>
-
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
 var config = require('../../../config')
 
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     data: function() {
         return {
             ready: false,
-            canvasId: this.makeid(),
+            canvasId: null,
             sectionsData: [],
             sectionsCanvasId: [],
             graphData: []
+        }
+    },
+    computed: {
+        alert: function() {
+            return this.$store.getters.alert;
+        },
+        route: function() {
+            return this.$store.getters.route;
         }
     },
     methods: {
@@ -54,18 +55,19 @@ module.exports = {
             return text;
         } // http://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
     },
-    ready: function() {
+    mounted: function() {
         var self = this;
-        this.setTitle('Analytics');
+        this.canvasId = this.makeid();
+        this.$store.dispatch('setTitle', 'Analytics');
         $script.ready('Chart.js', function() {
-            fetch(config.trackingURL + '/fetch/' + self.route.params.termId + '/' + self.route.params.courseNum).then(function(res) {
+            fetch(config.trackingURL + '/fetch/' + self.$store.getters.route.params.termId + '/' + self.$store.getters.route.params.courseNum).then(function(res) {
                 return res.json();
             }).then(function(res) {
                 if (!res.ok) {
-                    return self.alert().error('An error has occurred');
+                    return self.alert.error('An error has occurred');
                 }
                 if (res.results && res.results.length === 0) {
-                    return self.alert().error('No data found.');
+                    return self.alert.error('No data found.');
                 }
                 self.graphData = res.results;
                 var numOfSections = (res.results[0] ? (res.results[0].seats.sec ? res.results[0].seats.sec.length : 0) : 0);

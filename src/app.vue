@@ -4,12 +4,14 @@
             <div class="clearfix mt3">
                 <div class="mb2 sm-flex center nowrap">
                     <div class="flex-auto block">
-                        <p class="inline h2 clickable" v-link="{ name: 'index' }">SlugSurvival | <small class="muted" >{{ title }}</small></p>
+                        <router-link style="text-decoration: none;" class="inline h2 clickable black" :to="{ name: 'mainPage' }">SlugSurvival | <small class="muted" >{{ title }}</small></router-link>
                     </div>
                 </div>
 
                 <div class="p0 col col-12">
-                    <router-view transition="fade"></router-view>
+                    <transition name="fade" mode="out-in">
+                        <router-view></router-view>
+                    </transition>
                 </div>
             </div>
         </section>
@@ -17,9 +19,9 @@
             <div class="sm-flex center mb2 h6">
                 <div class="flex-auto muted">
                     <div class="clearfix">
-                        <a class="h6 bold btn {{ color }}" v-link="{ name: 'index' }">Main Page</a>
-                        <a class="h6 bold btn {{ color }}" v-link="{ name: 'explain' }">What is SlugSurvival?</a>
-                        <a class="h6 bold btn {{ color }}" v-link="{ name: 'explainPrivacy' }">Privacy Policy</a>
+                        <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'mainPage' }">Main Page</router-link>
+                        <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'explainText' }">What is SlugSurvival?</router-link>
+                        <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'explainPrivacy' }">Privacy Policy</router-link>
                     </div>
                     <div class="clearfix" @click="egg">
                         version {{ version }}
@@ -31,27 +33,29 @@
 </template>
 
 <script>
-var _st = require('./lib/vuex/store.js')
-var getters = require('./lib/vuex/getters.js')
-var actions = require('./lib/vuex/actions.js')
-
 module.exports = {
-    store: _st,
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     data: function() {
         return {
             version: require('../package.json').version
         }
     },
-    methods: {
-        egg: function() {
-            this.alert().okBtn('WTF').alert('<img src="https://img.s3.fmt01.sdapi.net/16360519.gif" alt="" />');
+    computed: {
+        color: function() {
+            return this.$store.getters.color;
+        },
+        title: function() {
+            return this.$store.getters.title;
+        },
+        colorMap: function() {
+            return this.$store.getters.colorMap;
         }
     },
-    ready: function() {
+    methods: {
+        egg: function() {
+            this.$store.getters.alert.okBtn('WTF').alert('<img src="https://img.s3.fmt01.sdapi.net/16360519.gif" alt="" />')
+        }
+    },
+    mounted: function() {
         // global context
         window.App = this;
     }
@@ -140,14 +144,11 @@ svg {
     height: 1em
 }
 
-.fade-transition {
-    transition: all .5s ease;
+.fade-enter-active, .fade-leave-active {
+  transition: opacity .3s
 }
-
-.fade-enter,
-.fade-leave {
-    opacity: 0;
-    transform: translate3d(10px, 0, 0);
+.fade-enter, .fade-leave-active {
+  opacity: 0
 }
 
 .x-scrollable {

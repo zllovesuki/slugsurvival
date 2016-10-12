@@ -39,7 +39,7 @@
 				</div>
 				<div class="clearfix">
                     <table class="h6 col col-12">
-						<template v-for="course in courses" track-by="num">
+						<template v-for="course in courses" track-by="course.num">
 							<tr>
 								<td class="col col-6">
 									<span class="btn clickable left" @click="showCourse(monitoredTerm, course)">{{ course.c }} - {{ course.s }}</span>
@@ -66,20 +66,14 @@
                 </div>
 			</div>
 		</div>
-        <search :show.sync="searchModal" :callback="addToNotifyList" :selected-term-id="monitoredTerm"></search>
+        <search :show="searchModal" v-on:closeModal="searchModal = false" :callback="addToNotifyList" :selected-term-id="monitoredTerm"></search>
     </div>
 </template>
 
 <script>
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
 var config = require('../../../config')
 
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     data: function() {
         return {
             ready: false,
@@ -94,6 +88,29 @@ module.exports = {
             }
         }
     },
+    computed: {
+        alert: function() {
+            return this.$store.getters.alert;
+        },
+        termId: function() {
+            return this.$store.getters.termId;
+        },
+        colorMap: function() {
+            return this.$store.getters.colorMap;
+        },
+        loading: function() {
+            return this.$store.getters.loading;
+        },
+        color: function() {
+            return this.$store.getters.color;
+        },
+        flatCourses: function() {
+            return this.$store.getters.flatCourses;
+        },
+        termName: function() {
+            return this.$store.getters.termName;
+        }
+    },
     methods: {
         showSearchModal: function() {
             this.searchModal = true;
@@ -102,27 +119,38 @@ module.exports = {
             }, 75);
         },
         addToNotifyList: function(course) {
-            var html = this.getCourseDom(this.monitoredTerm, course);
-            return this.alert()
-            .okBtn('Notify')
-            .cancelBtn("Go Back")
-            .confirm(html)
-            .then(function(resolved) {
-                resolved.event.preventDefault();
-                if (resolved.buttonClicked !== 'ok') return;
-                this.alert().success(course.c + ' added to the list!');
-                this.courses.push(course);
-            }.bind(this));
+            var self = this;
+            return self.$store.dispatch('getCourseDom', {
+                termId: self.monitoredTerm,
+                courseObj: course,
+                isSection: false
+            })
+            .then(function(html) {
+                return self.alert
+                .okBtn('Notify')
+                .cancelBtn("Go Back")
+                .confirm(html)
+                .then(function(resolved) {
+                    resolved.event.preventDefault();
+                    if (resolved.buttonClicked !== 'ok') return;
+                    self.success(course.c + ' added to the list!');
+                    self.courses.push(course);
+                });
+            })
         },
         update: function() {
             var self = this;
             self.loading.go(30);
             self.sub.inFlight = true;
-            return self.updateWatch(self.sub.recipient, self.sub.code, self.courses)
+            return self.$store.dispatch('updateWatch', {
+                recipient: self.sub.recipient,
+                code: self.sub.code,
+                courses: self.courses
+            })
             .then(function() {
                 self.loading.go(100);
                 self.sub.inFlight = false;
-                self.alert().success('Subscription list updated.');
+                self.alert.success('Subscription list updated.');
             })
         },
         unSub: function() {
@@ -149,18 +177,18 @@ module.exports = {
             .then(function(res) {
                 self.loading.go(100);
                 if (!res.ok) {
-                    return self.alert().error(res.message);
+                    return self.alert.error(res.message);
                 }
                 self.loading.go(100);
                 self.sub.inFlight = false;
-                self.route.router.go({ name: 'enrollHelper'})
-                self.alert().success('Unsubscribed. You will no longer receive notifications.');
+                self.alert.success('Unsubscribed. You will no longer receive notifications.');
+                self.$router.push({ name: 'enrollHelper'})
             })
             .catch(function(e) {
                 console.log(e);
                 self.loading.go(100);
                 self.sub.inFlight = false;
-                self.alert().error('An error has occurred.')
+                self.alert.error('An error has occurred.')
             })
         },
         checkSub: function() {
@@ -190,7 +218,7 @@ module.exports = {
                 if (!res.ok) {
                     self.loading.go(100);
                     self.sub.inFlight = false;
-                    return self.alert().error(res.message);
+                    return self.alert.error(res.message);
                 }
                 self.loading.go(100);
                 self.sub.verified = true;
@@ -203,29 +231,36 @@ module.exports = {
                 console.log(e);
                 self.loading.go(100);
                 self.sub.inFlight = false;
-                self.alert().error('An error has occurred.')
+                self.alert.error('An error has occurred.')
             })
         },
         showCourse: function(termId, course) {
-            var html = this.getCourseDom(termId, course);
-            return this.alert()
-            .okBtn('Remove Class')
-            .cancelBtn("Go Back")
-            .confirm(html)
-            .then(function(resolved) {
-                resolved.event.preventDefault();
-                if (resolved.buttonClicked !== 'ok') return;
-                return this.alert()
-                .okBtn("Yes")
-                .cancelBtn("No")
-                .confirm('Remove ' + course.c + ' from the list?')
+            var self = this;
+            return self.$store.dispatch('getCourseDom', {
+                termId: termId,
+                courseObj: course,
+                isSection: false
+            })
+            .then(function(html) {
+                return self.alert
+                .okBtn('Remove Class')
+                .cancelBtn("Go Back")
+                .confirm(html)
                 .then(function(resolved) {
                     resolved.event.preventDefault();
                     if (resolved.buttonClicked !== 'ok') return;
-                    this.removeFromList(course);
-                    this.alert().success('Removed!');
-                }.bind(this));
-            }.bind(this));
+                    return self.alert
+                    .okBtn("Yes")
+                    .cancelBtn("No")
+                    .confirm('Remove ' + course.c + ' from the list?')
+                    .then(function(resolved) {
+                        resolved.event.preventDefault();
+                        if (resolved.buttonClicked !== 'ok') return;
+                        self.removeFromList(course);
+                        self.alert.success('Removed!');
+                    });
+                });
+            })
         },
         removeFromList: function(course) {
             this.courses = this.courses.filter(function(el) {
@@ -233,12 +268,12 @@ module.exports = {
             })
         }
     },
-    ready: function() {
+    mounted: function() {
         var self = this;
         this.loading.go(30);
-        this.setTitle('Manage');
+        this.$store.dispatch('setTitle', 'Manage');
 
-        this.fetchTermCourses(this.monitoredTerm)
+        self.$store.dispatch('fetchTermCourses', this.monitoredTerm)
         .then(function() {
             self.loading.go(100);
             self.ready = true;
