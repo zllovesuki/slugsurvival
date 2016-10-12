@@ -39,7 +39,7 @@
 <script>
 module.exports = {
     mounted: function() {
-        this.setTitle('Privacy');
+        this.$store.dispatch('setTitle', 'Privacy');
     }
 }
 </script>

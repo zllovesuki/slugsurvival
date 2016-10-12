@@ -4,12 +4,12 @@
             <div class="clearfix mt3">
                 <div class="mb2 sm-flex center nowrap">
                     <div class="flex-auto block">
-                        <router-link :to="{ name: 'index' }" class="inline h2 clickable" tag="p">SlugSurvival | <small class="muted" >{{ title }}</small></router-link>
+                        <p class="inline h2 not-clickable" >SlugSurvival | <small class="muted" >{{ title }}</small></p>
                     </div>
                 </div>
 
                 <div class="p0 col col-12">
-                    <router-view transition="fade"></router-view>
+                    <router-view></router-view>
                 </div>
             </div>
         </section>
@@ -17,8 +17,8 @@
             <div class="sm-flex center mb2 h6">
                 <div class="flex-auto muted">
                     <div class="clearfix">
-                        <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'index' }">Main Page</router-link>
-                        <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'explain' }">What is SlugSurvival?</router-link>
+                        <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'mainPage' }">Main Page</router-link>
+                        <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'explainText' }">What is SlugSurvival?</router-link>
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'explainPrivacy' }">Privacy Policy</router-link>
                     </div>
                     <div class="clearfix" @click="egg">

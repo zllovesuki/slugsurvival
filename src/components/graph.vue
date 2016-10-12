@@ -1,3 +1,6 @@
+<template>
+</template>
+
 <script>
 var config = require('../../config')
 

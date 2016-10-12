@@ -7,7 +7,7 @@ var self = module.exports = {
         _.commit('setTitle', title)
     },
     comingSoon: function(_) {
-        _.state.alert.okBtn('OK').alert('Coming soon')
+        _.getters.alert.okBtn('OK').alert('Coming soon')
     },
     ensureDataLoaded: function(_) {
         return _.dispatch('fetchTermsListAndRMP');
@@ -67,9 +67,9 @@ var self = module.exports = {
             });
         })
     },
-    loadAutosave: function(_, termId, alert) {
-        termId = termId || _.getters.termId;
-        alert = (typeof alert === 'undefined' ? true : alert);
+    loadAutosave: function(_, payload) {
+        termId = payload.termId;
+        alert = (typeof payload.alert === 'undefined' ? true : false);
         return storage.getItem(termId).then(function(array) {
             if (array === null) return;
             return _.dispatch('parseFromCompact', {
@@ -80,7 +80,7 @@ var self = module.exports = {
                     termId: termId,
                     events: events
                 });
-                if (alert) _.state.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
+                if (alert) _.getters.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
             })
         }.bind(this))
     },
@@ -730,7 +730,7 @@ var self = module.exports = {
 
                 _.dispatch('refreshCalendar');
                 _.getters.loading.go(100);
-                _.state.alert.success('Now You Are Choosing Section For ' + _.state.flatCourses[termId][courseNum].c)
+                _.getters.alert.success('Now You Are Choosing Section For ' + _.state.flatCourses[termId][courseNum].c)
             })
         }.bind(this))
     },
@@ -759,7 +759,7 @@ var self = module.exports = {
                 html += template('Easy', rmp.stats.stats.easy.toFixed(1))
                 html += template('Overall', rmp.stats.stats.overall.toFixed(1))
                 html += template('Based on', rmp.stats.scores.count + ' ratings')
-                _.state.alert
+                _.getters.alert
                 .okBtn('See it for yourself')
                 .cancelBtn('Go Back')
                 .confirm(html)
@@ -769,14 +769,14 @@ var self = module.exports = {
                     window.open('http://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + rmp.tid);
                 })
             }else{
-                _.state.alert
+                _.getters.alert
                 .okBtn('Go Back')
                 .alert(['<p>', 'Sorry, we don\'t have', firstName + '\'s', 'ratings!', '</p>'].join(' '))
             }
         }.bind(this))
         .catch(function(e) {
             console.log(e);
-            _.state.alert.error('Cannot fetch RMP stats!')
+            _.getters.alert.error('Cannot fetch RMP stats!')
         }.bind(this))
         .finally(function() {
             _.getters.loading.go(100);
@@ -854,14 +854,14 @@ var self = module.exports = {
                 html += template('Waitlist Cap.', seat.waitCap);
                 html += '<p><span class="muted h6">Last Changed: ' + new Date(latest.date * 1000).toLocaleString() + '</span></p>';
 
-                _.state.alert
+                _.getters.alert
                 .okBtn('Cool')
                 .alert(html)
                 .then(function(resolved) {
                     resolved.event.preventDefault();
                 })
             }else{
-                _.state.alert.error('Cannot fetch real time data!')
+                _.getters.alert.error('Cannot fetch real time data!')
             }
             _.getters.loading.go(100);
         }.bind(this))
@@ -915,8 +915,8 @@ var self = module.exports = {
 
         return html;
     },
-    updateWatch: function(_, recipient, code, courses) {
-        var self = this;
+    updateWatch: function(_, payload) {
+        var self = this, recipient = payload.recipient, code = payload.code, courses = payload.courses;
         return fetch(config.notifyURL + '/watch/update', {
             method: 'POST',
             headers: {
@@ -939,12 +939,12 @@ var self = module.exports = {
         })
         .then(function(res) {
             if (!res.ok) {
-                return _.state.alert.error(res.message);
+                return _.getters.alert.error(res.message);
             }
         })
         .catch(function(e) {
             console.log(e);
-            _.state.alert.error('An error has occurred.')
+            _.getters.alert.error('An error has occurred.')
         })
     },
     populateLocalEntriesWithExtra: function(_, payload) {

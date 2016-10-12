@@ -15,7 +15,7 @@ var router = new VueRouter({
     routes: [
         {
             path: '/',
-            name: 'index',
+            name: 'mainPage',
             component: require('./views/index.vue')
         },
         {
@@ -24,12 +24,12 @@ var router = new VueRouter({
             component: require('./views/analytics/index.vue'),
             children: [
                 {
-                    path: '/',
+                    path: '',
                     name: 'analyticsHelper',
                     component: require('./views/analytics/helper.vue')
                 },
                 {
-                    path: '/analytics/:termId/:courseNum',
+                    path: ':termId/:courseNum',
                     name: 'analyticsCourse',
                     component: require('./views/analytics/course.vue')
                 }
@@ -41,17 +41,17 @@ var router = new VueRouter({
             component: require('./views/explain/index.vue'),
             children: [
                 {
-                    path: '/',
+                    path: '',
                     name: 'explainText',
                     component: require('./views/explain/text.vue')
                 },
                 {
-                    path: '/explain/gif',
+                    path: 'gif',
                     name: 'explainGif',
                     component: require('./views/explain/gif.vue')
                 },
                 {
-                    path: '/explain/privacy',
+                    path: 'privacy',
                     name: 'explainPrivacy',
                     component: require('./views/explain/privacy.vue')
                 }
@@ -71,12 +71,12 @@ var router = new VueRouter({
             component: require('./views/planner/index.vue'),
             children: [
                 {
-                    path: '/',
+                    path: '',
                     name: 'termsList',
                     component: require('./views/planner/termsList.vue')
                 },
                 {
-                    path: '/planner/:termId',
+                    path: ':termId',
                     name: 'term',
                     component: require('./views/planner/term.vue')
                 }
@@ -88,12 +88,12 @@ var router = new VueRouter({
             component: require('./views/enrollment/index.vue'),
             children: [
                 {
-                    path: '/',
+                    path: '',
                     name: 'enrollHelper',
                     component: require('./views/enrollment/helper.vue')
                 },
                 {
-                    path: '/enrollment/manage',
+                    path: 'manage',
                     name: 'enrollManage',
                     component: require('./views/enrollment/manage.vue')
                 }

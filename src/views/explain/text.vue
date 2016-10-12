@@ -68,16 +68,14 @@
 </template>
 <script>
 
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
-
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
+    computed: {
+        colorMap: function() {
+            return this.$store.getters.colorMap;
+        }
     },
     mounted: function() {
-        this.setTitle('Explain');
+        this.$store.dispatch('setTitle', 'Explain')
     }
 }
 </script>

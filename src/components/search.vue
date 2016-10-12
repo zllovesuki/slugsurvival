@@ -221,7 +221,7 @@ module.exports = {
             }
         }, 250),
         closeSearchModal: function() {
-            this.$emit('closeModal')
+            this.$emit('close')
         },
         cb: function(param) {
             this.callback(param)

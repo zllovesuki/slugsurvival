@@ -50,7 +50,7 @@
                 </div>
             </div>
         </div>
-        <search :show="searchModal" v-on:closeModal="searchModal = false":show-extra="true" :callback="promptAddClass" :selected-term-id="termId"></search>
+        <search :show="searchModal" v-on:close="searchModal = false" :show-extra="true" :callback="promptAddClass" :selected-term-id="termId"></search>
     </div>
 </template>
 
@@ -410,9 +410,11 @@ module.exports = {
                 return self.$store.dispatch('decodeHash')
                 .then(function() {
                     // no valid was decoded
-                    return self.$store.dispatch('loadAutosave')
+                    return self.$store.dispatch('loadAutosave', {
+                        termId: self.termId
+                    })
                 })
-                .catch(function() {
+                .catch(function(e) {
                     // hash was used instead of local copy
                     self.lock = true;
                 })

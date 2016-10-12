@@ -69,9 +69,10 @@
     </div>
 </template>
 <script>
+
 module.exports = {
     mounted: function() {
-        this.setTitle('Explain');
+        this.$store.dispatch('setTitle', 'gif')
     }
 }
 </script>
