@@ -26,7 +26,7 @@
     "browserify": "^13.1.0",
     "elasticlunr": "^0.9.5",
     "localforage": "^1.4.3",
-    "lodash": "^4.16.4",
+    "lodash.debounce": "^4.0.8",
     "nanobar": "^0.4.2",
     "stringify": "^5.1.0",
     "uglifyjs": "^2.4.10",

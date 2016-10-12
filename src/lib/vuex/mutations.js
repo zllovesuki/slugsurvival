@@ -46,7 +46,7 @@ module.exports = {
         state.instructorStats[stats.tid] = stats;
     },
     saveCourseInfo: function(state, payload) {
-        var termId = payload.termId, courses = payload.coursesData;
+        var termId = payload.termId, courses = payload.courseInfo;
         state.courseInfo[termId] = courses;
     },
     appendCourseInfo: function(state, termId, courseNum, courseInfo) {

@@ -50,23 +50,12 @@
                 </div>
             </div>
         </div>
-        <search :show.sync="searchModal" :show-extra="true" :callback="promptAddClass" :selected-term-id="termId"></search>
-        <modal :show.sync="chooseSectionModal">
-            <h4 slot="header">
-                Choose a Section For...
-            </h4>
-            <span slot="body">
-                <ul class="list-reset">
-                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="closeChooseModalThenDisplaySections(calEvent)" v-for="calEvent in sectionList" track-by="number">
-                        {{ calEvent.course.c }}
-                    </li>
-                </ul>
-            </span>
-        </modal>
+        <search :show="searchModal" v-on:closeModal="searchModal = false":show-extra="true" :callback="promptAddClass" :selected-term-id="termId"></search>
     </div>
 </template>
 
 <script>
+var helper = require('../../lib/vuex/helper')
 module.exports = {
     data: function() {
         return {
@@ -93,15 +82,19 @@ module.exports = {
     },
     methods: {
         showSearchModal: function() {
+            var self = this;
             var termId = this.termId;
-            if (!this.noAwaitSection(termId)) {
-                this.jumpOutAwait(termId);
-                this.$store.dispatch('refreshCalendar')
-            }
-            this.searchModal = true;
-            setTimeout(function() {
-                document.getElementsByClassName('search-box')[0].focus();
-            }, 75);
+            return this.$store.dispatch('noAwaitSection', termId)
+            .then(function(noAwaitSection) {
+                if (!noAwaitSection) {
+                    self.jumpOutAwait(termId);
+                    self.$store.dispatch('refreshCalendar')
+                }
+                self.searchModal = true;
+                setTimeout(function() {
+                    document.getElementsByClassName('search-box')[0].focus();
+                }, 75);
+            })
         },
         promptToRemove: function(calEvent) {
             var termId = this.termId;
@@ -139,6 +132,7 @@ module.exports = {
                 .then(function() {
                     // Then add back the "chooose later"
                     return self.$store.dispatch('pushToEventSource', {
+                        termId: termId,
                         courseObj: currentAwait.course
                     })
                 })
@@ -194,36 +188,44 @@ module.exports = {
             }.bind(this));
         },
         promptAddClass: function(course) {
+            var self = this;
             var termId = this.termId;
-            var code = this.checkForConflict(course);
+            var code = helper.checkForConflict(this.dateMap, this.$store.getters.eventSource[termId], course);
             var alertHandle = function() {};
 
-            var html = this.getCourseDom(termId, course);
+            return this.$store.dispatch('getCourseDom', {
+                termId: termId,
+                courseObj: course,
+                isSection: false
+            }).then(function(html) {
+                if (code !== false || code === null) {
+                    alertHandle = function() {
+                        return self.alert
+                        .okBtn(code === null ? 'Taking the same class twice?' : 'Conflict with ' + code)
+                        .alert(html)
+                    }.bind(this)
+                }else{
+                    alertHandle = function() {
+                        return self.alert
+                        .okBtn('Add Class')
+                        .cancelBtn("Go Back")
+                        .confirm(html)
+                        .then(function(resolved) {
+                            resolved.event.preventDefault();
+                            if (resolved.buttonClicked !== 'ok') return;
 
-            if (code !== false || code === null) {
-                alertHandle = function() {
-                    return this.alert
-                    .okBtn(code === null ? 'Taking the same class twice?' : 'Conflict with ' + code)
-                    .alert(html)
-                }.bind(this)
-            }else{
-                alertHandle = function() {
-                    return this.alert
-                    .okBtn('Add Class')
-                    .cancelBtn("Go Back")
-                    .confirm(html)
-                    .then(function(resolved) {
-                        resolved.event.preventDefault();
-                        if (resolved.buttonClicked !== 'ok') return;
-
-                        this.pushToEventSource(course);
-
-                        this.$store.dispatch('refreshCalendar')
-                        this.alert.success(course.c + ' added to the planner!');
-                    }.bind(this));
-                }.bind(this)
-            }
-            return alertHandle()
+                            return self.$store.dispatch('pushToEventSource', {
+                                termId: termId,
+                                courseObj: course
+                            }).then(function() {
+                                self.alert.success(course.c + ' added to the planner!');
+                                self.$store.dispatch('refreshCalendar')
+                            })
+                        }.bind(this));
+                    }.bind(this)
+                }
+                return alertHandle()
+            })
         },
         displaySectionsOnCalendar: function(courseNum) {
             this.$store.getters.loading.go(30);
@@ -236,20 +238,6 @@ module.exports = {
 
             this.grayOutEvents(termId);
             this.pushAwaitSectionsToEventSource(termId, courseNum);
-        },
-        showChooseSectionModal: function() {
-            var termId = this.termId;
-            if (typeof this.eventSource[termId] === 'undefined') return;
-            var events = this.eventSource[termId].filter(function(el) {
-                return el.awaitSelection === false && el.sectionNum === null;
-            })
-            if (events.length === 0) return;
-            this.sectionList = events;
-            this.chooseSectionModal = true;
-        },
-        closeChooseModalThenDisplaySections: function(calEvent) {
-            this.chooseSectionModal = false;
-            this.promptForAction(calEvent);
         },
         initializeCalendar: function() {
             var self = this;
@@ -275,9 +263,6 @@ module.exports = {
                     self.promptForAction(calEvent);
                 },
                 dayClick: function(date, jsEvent, view) {
-                    /*if (self.noAwaitSection(termId)) {
-                        return self.showChooseSectionModal();
-                    }*/
                     self.jumpOutAwait();
                     self.$store.dispatch('refreshCalendar')
                 }

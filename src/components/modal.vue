@@ -36,8 +36,7 @@ module.exports = {
     props: {
         show: {
             type: Boolean,
-            required: true,
-            twoWay: true
+            required: true
         },
         maxWidth: {
             type: String,
@@ -50,7 +49,7 @@ module.exports = {
     },
     methods: {
         close: function() {
-            this.show = false;
+            this.$emit('close')
         }
     },
     watch: {

@@ -354,12 +354,12 @@ var self = module.exports = {
             }
         }.bind(this))
     },
-    fetchThreeStatsByFirstLastName: function(_, firstName, lastName) {
-        var tid = _.state.instructorNameToTidMapping[firstName + lastName];
+    fetchThreeStatsByFirstLastName: function(_, payload) {
+        var tid = _.state.instructorNameToTidMapping[payload.firstName + payload.lastName];
         if (typeof tid === 'undefined') {
             return Promise.resolve(null);
         }
-        return this.fetchThreeStatsByTid(tid);
+        return _.dispatch('fetchThreeStatsByTid', tid);
     },
     dispatchReplaceHash: function(_) {
         var termId = this.termId;
@@ -367,8 +367,8 @@ var self = module.exports = {
     },
     parseFromCompact: function(_, payload) {
         var events = [];
-        var index, split = [], courseNum, course, courseInfo, termId = payload.termId, array = payload.array;
-        array.forEach(function(obj) {
+        var index, split = [], courseNum, course, termId = payload.termId, array = payload.array;
+        Promise.map(array, function(obj) {
             obj = obj + '';
             index = obj.indexOf('-');
             if (index === -1) {
@@ -378,27 +378,55 @@ var self = module.exports = {
                 split[0] = obj.substring(0, index);
                 split[1] = obj.substring(index + 1);
             }
-            if (split[0] / 100000 >= 1) {
-                /*
-                we found a traitor!
+            var p = function() {
+                if (split[0] / 100000 >= 1) {
+                    /*
+                    we found a traitor!
 
-                be careful here, we don't want to override any localized course num,
-                so we are going to reassign course number for the customize events
-                */
-                courseNum = helper.findNextCourseNum(_.state.flatCourses[termId], 100000);
-                course = JSON.parse(split[1]);
-                // Remember to override the course number in the course subject
-                course.num = courseNum;
-                courseInfo = this.generateCourseInfoObjectFromExtra(termId, courseNum, {});
-                this.populateLocalEntriesWithExtra(termId, courseNum, course, courseInfo);
+                    be careful here, we don't want to override any localized course num,
+                    so we are going to reassign course number for the customize events
+                    */
+                    courseNum = helper.findNextCourseNum(_.state.flatCourses[termId], 100000);
+                    course = JSON.parse(split[1]);
+                    // Remember to override the course number in the course subject
+                    course.num = courseNum;
+                    return _.dispatch('generateCourseInfoObjectFromExtra', {
+                        termId: termId,
+                        courseNum: courseNum,
+                        extra: {}
+                    }).then(function(courseInfo) {
+                        return _.dispatch('populateLocalEntriesWithExtra', {
+                            termId: termId,
+                            courseNum: courseNum,
+                            courseObj: course,
+                            courseInfo: courseInfo
+                        })
+                    })
+                }else{
+                    return Promise.resolve();
+                }
             }
-            if (typeof split[1] !== 'undefined' && split[0] / 100000 < 1) {
-                if (split[1] == 'null') split[1] = null;
-                events = events.concat(this.getEventObjectsByCourse(termId, split[0], split[1]))
-            }else{
-                events = events.concat(this.getEventObjectsByCourse(termId, split[0]));
-            }
-        }.bind(this));
+
+            return p().then(function() {
+                if (typeof split[1] !== 'undefined' && split[0] / 100000 < 1) {
+                    if (split[1] == 'null') split[1] = null;
+                    return _.dispatch('getEventObjectsByCourse', {
+                        termId: termId,
+                        courseNum: split[0],
+                        sectionNum: split[1]
+                    }).then(function(eventObj) {
+                        events = events.concat(eventObj);
+                    })
+                }else{
+                    return _.dispatch('getEventObjectsByCourse', {
+                        termId: termId,
+                        courseNum: split[0]
+                    }).then(function(eventObj) {
+                        events = events.concat(eventObj);
+                    })
+                }
+            })
+        })
 
         return events;
     },
@@ -445,9 +473,6 @@ var self = module.exports = {
             return Promise.resolve();
         }
     },
-    courseHasSections: function(_, termId, courseNumber) {
-        return _.state.courseInfo[termId][courseNumber].sec.length > 0;
-    },
     refreshCalendar: function(_) {
         $('#calendar-' + _.getters.termId).fullCalendar('refetchEvents');
         $('.alertify').remove();
@@ -459,7 +484,7 @@ var self = module.exports = {
     emptyEventSource: function(_, termId) {
         _.commit('emptyEventSource', termId);
     },
-    getEventObjectsByCourse: function(_, termId, input1, input2, awaitSelection, secSeats) {
+    getEventObjectsByCourse: function(_, payload) {
         /*
             To be DRY, this function is unnecessarily huge
         */
@@ -468,18 +493,20 @@ var self = module.exports = {
         var events = [];
         var obj = {};
         var courseNumber, course, courseInfo, sectionNumber, section, conflict;
+        var termId = payload.termId, secSeats = (typeof payload.secSeats === 'undefined' ? null : payload.secSeats);
 
-
-        awaitSelection = (awaitSelection === true);
+        awaitSelection = (payload.awaitSelection === true);
 
         // We are not sure that if input1 is a course object or course number
-        if (typeof input1.num !== 'undefined') {
-            courseNumber = input1.num;
-            course = input1;
-            courseInfo = _.state.courseInfo[termId][courseNumber];
-        }else{
-            courseNumber = input1;
+        if (typeof payload.courseNum !== 'undefined') {
+            courseNumber = payload.courseNum;
             course = _.state.flatCourses[termId][courseNumber];
+            courseInfo = _.state.courseInfo[termId][courseNumber];
+        }
+
+        if (typeof payload.courseObj !== 'undefined') {
+            course = payload.courseObj;
+            courseNumber = course.num;
             courseInfo = _.state.courseInfo[termId][courseNumber];
         }
 
@@ -528,10 +555,9 @@ var self = module.exports = {
             }
         }
 
-        // We are going to process section as well if provided
-        if (typeof input2 !== 'undefined' && input2 !== null) {
-            sectionNumber = input2;
-        }else if (input2 === null && awaitSelection !== true) {
+        if (typeof payload.sectionNum !== 'undefined' && payload.sectionNum !== null) {
+            sectionNumber = payload.sectionNum;
+        }else if (payload.sectionNum === null && awaitSelection !== true) {
             sectionNumber = null;
         }else{
             section = false;
@@ -570,7 +596,7 @@ var self = module.exports = {
                 if (sectionNumber === null); break;
             } else {
                 for (var j = 0, days = sections[i].loct[0].t.day, length2 = days.length; j < length2; j++) {
-                    conflict = this.checkForConflict(sections[i]);
+                    conflict = helper.checkForConflict(dateMap, _.state.events[termId], sections[i]);
                     obj.title = [course.c, 'Section ' + sections[i].sec].join("\n")
                     if (secSeats && awaitSelection) {
                         seat = getSeatBySectionNum(secSeats, sections[i].num);
@@ -610,34 +636,49 @@ var self = module.exports = {
         _.commit('restoreEventsColor', termId);
     },
     pushToEventSource: function(_, payload) {
-        var termId = this.termId, course = payload.courseObj, customEvent = payload.custom;
-        var events = [];
+        var termId = payload.termId, course = payload.courseObj, customEvent = payload.custom;
 
-        if (customEvent === true) {
-            _.dispatch('removeFromSource', {
-                termId: termId,
-                courseNum: course.num,
-                skipSaving: true
-            });
+        var p = function() {
+            if (customEvent === true) {
+                _.dispatch('removeFromSource', {
+                    termId: termId,
+                    courseNum: course.num,
+                    skipSaving: true
+                });
 
-            events = this.getEventObjectsByCourse(termId, course);
-        }else{
-            _.dispatch('removeFromSource', {
+                return _.dispatch('getEventObjectsByCourse', {
+                    termId: termId,
+                    courseObj: course,
+                    awaitSelection: false,
+                    secSeats: null
+                })
+            }else{
+                _.dispatch('removeFromSource', {
+                    termId: termId,
+                    courseNum: course.num,
+                    skipSaving: false
+                });
+
+                return _.dispatch('getEventObjectsByCourse', {
+                    termId: termId,
+                    courseObj: course,
+                    sectionNum: null,
+                    awaitSelection: false,
+                    secSeats: null
+                })
+            }
+        }
+
+        return p().then(function(events) {
+            _.commit('mergeEventSource', {
                 termId: termId,
-                courseNum: course.num,
+                events: events,
                 skipSaving: false
             });
 
-            events = this.getEventObjectsByCourse(termId, course, null, false, null);
-        }
+            return Promise.resolve();
+        })
 
-        _.commit('mergeEventSource', {
-            termId: termId,
-            events: events,
-            skipSaving: false
-        });
-
-        return Promise.resolve();
     },
     pushSectionToEventSource: function(_, courseNum, sectionNum) {
         var termId = this.termId;
@@ -649,36 +690,52 @@ var self = module.exports = {
             skipSaving: false
         });
 
-        events = this.getEventObjectsByCourse(termId, courseNum, sectionNum);
-        _.commit('mergeEventSource', {
+        return _.dispatch('getEventObjectsByCourse', {
             termId: termId,
-            events: events,
-            skipSaving: false
-        });
+            courseNum: courseNum,
+            sectionNum: sectionNum,
+            awaitSelection: false,
+            secSeats: null
+        }).then(function(events) {
+            _.commit('mergeEventSource', {
+                termId: termId,
+                events: events,
+                skipSaving: false
+            });
 
-        return Promise.resolve();
+            return Promise.resolve();
+        })
     },
     pushAwaitSectionsToEventSource: function(_, termId, courseNum) {
-        this.loading.go(50);
-        var events = [];
+        _.getters.loading.go(50);
         var secSeats = null;
 
-        this.fetchRealTimeEnrollment(termId, courseNum)
+        return _.dispatch('fetchRealTimeEnrollment', {
+            termCode: termId,
+            courseNum: courseNum
+        })
         .then(function(res) {
             if (res.ok && res.results[0] && res.results[0].seats) {
                 secSeats = res.results[0].seats.sec;
             }
-            this.loading.go(70);
-            events = this.getEventObjectsByCourse(termId, courseNum, null, true, secSeats);
-            _.commit('mergeEventSource', {
+            _.getters.loading.go(70);
+            return _.dispatch('getEventObjectsByCourse', {
                 termId: termId,
-                events: events,
-                skipSaving: true
-            });
+                courseNum: courseNum,
+                sectionNum: null,
+                awaitSelection: true,
+                secSeats: secSeats
+            }).then(function(events) {
+                _.commit('mergeEventSource', {
+                    termId: termId,
+                    events: events,
+                    skipSaving: true
+                });
 
-            this.refreshCalendar();
-            this.loading.go(100);
-            _.state.alert.success('Now You Are Choosing Section For ' + _.state.flatCourses[termId][courseNum].c)
+                _.dispatch('refreshCalendar');
+                _.getters.loading.go(100);
+                _.state.alert.success('Now You Are Choosing Section For ' + _.state.flatCourses[termId][courseNum].c)
+            })
         }.bind(this))
     },
     removeFromSource: function(_, payload) {
@@ -687,15 +744,20 @@ var self = module.exports = {
     removeEmptySection: function(_, termId, courseNumber) {
         _.commit('removeEmptySection', termId, courseNumber)
     },
-    _showInstructorRMP: function(_, firstName, lastName) {
-        this.loading.go(30);
+    _showInstructorRMP: function(_, string) {
+        _.getters.loading.go(30);
+        var split = string.split('+');
+        var firstName = split[0], lastName = split[1]
         var html = '';
         var template = function(key, value) {
             return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
         }
-        this.fetchThreeStatsByFirstLastName(firstName, lastName)
+        _.dispatch('fetchThreeStatsByFirstLastName', {
+            firstName: firstName,
+            lastName: lastName
+        })
         .then(function(rmp) {
-            this.loading.go(70);
+            _.getters.loading.go(70);
             if (rmp !== null) {
                 var obj = rmp.stats.stats.quality;
                 var max = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
@@ -724,21 +786,8 @@ var self = module.exports = {
             _.state.alert.error('Cannot fetch RMP stats!')
         }.bind(this))
         .finally(function() {
-            this.loading.go(100);
+            _.getters.loading.go(100);
         }.bind(this))
-    },
-    tConvertToEpoch: function(_, locts) {
-        var epochTimes = [];
-        for (var j = 0, length = locts.length; j < length; j++) {
-            if (!locts[j].t) continue;
-            for (var m = 0, days = locts[j].t.day, length1 = days.length; m < length1; m++) {
-                epochTimes.push({
-                    start: (new Date(_.state.dateMap[days[m]] + ' ' + locts[j].t.time.start).valueOf() / 1000),
-                    end: (new Date(_.state.dateMap[days[m]] + ' ' + locts[j].t.time.end).valueOf() / 1000)
-                })
-            }
-        }
-        return epochTimes;
     },
     noAwaitSection: function(_, termId) {
         if (typeof _.state.events[termId] === 'undefined') return true;
@@ -746,119 +795,6 @@ var self = module.exports = {
             return el.awaitSelection === true;
         }).length === 0;
     },
-    checkForConflict: function(_, course) {
-        /*
-            Instead of doing some ugly loops and intersects and shits, why don't we just compare the epoch time?
-
-            It is an absolute unit of times (well, in a sense)
-
-            Therefore, it is *much* more efficient to compare epoch times.
-
-            Of course, the inefficiencies still lie with the for loop to check each loct at the end
-        */
-        var termId = this.termId;
-        var events =  _.state.events[termId];
-        var comingTime = [];
-        var checker = {};
-        var conflict = false;
-        if (typeof events === 'undefined') return false;
-
-        for (var i = 0, length = events.length; i < length; i++) {
-            // You can't take the same class twice in a quarter
-            // At least you shouldn't
-            if (events[i].course.c === course.c) {
-                conflict = course.c;
-                break;
-            }
-            if (events[i].allDay
-                || events[i].awaitSelection
-                || events[i].sectionNum === null) continue;
-
-            if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
-
-                if (typeof checker[events[i].course.c + ' Section'] !== 'undefined') continue;
-
-                checker[events[i].course.c + ' Section'] = this.tConvertToEpoch(events[i].section.loct);
-
-            } else {
-
-                if (typeof checker[events[i].course.c] !== 'undefined') continue;
-
-                checker[events[i].course.c] = this.tConvertToEpoch(events[i].course.loct);
-
-            }
-        }
-
-        if (conflict !== false) return null;
-
-        if (course.loct.length === 1 && !!!course.loct[0].t) {
-            // TBA
-            return false;
-        }
-
-        var oldStart, newStart, oldEnd, newEnd;
-
-        comingTime = this.tConvertToEpoch(course.loct);
-
-        for (var j = 0, length = comingTime.length; j < length; j++) {
-            newStart = comingTime[j].start;
-            newEnd = comingTime[j].end;
-            for (var code in checker) {
-                for (var k = 0, c = checker[code], length1 = c.length; k < length1; k++) {
-                    oldStart = c[k].start;
-                    oldEnd = c[k].end;
-                    if (this.checkTimeConflict(oldStart, oldEnd, newStart, newEnd)) {
-                        return code;
-                    }
-                }
-            }
-        }
-
-        return conflict;
-    },
-    checkTimeConflict: function(_, oldStart, oldEnd, newStart, newEnd) {
-        if ((newStart > oldStart) && (newEnd > oldEnd) && (oldEnd > newStart)) {
-            //console.log('new course is eating from behind')
-            return true;
-        }
-
-        if ((oldEnd > newEnd) && (oldStart > newStart) && (newEnd > oldStart)) {
-            //console.log('new course is eating from ahead');
-            return true;
-        }
-
-        if ((newEnd == oldStart) || (newStart == oldEnd)) {
-            //console.log('piggy back');
-            return true;
-        }
-
-        if ((newEnd == oldEnd) || (newStart == oldStart)) {
-            //console.log('overlap');
-            return true;
-        }
-
-        if ((oldEnd > newEnd) && (newStart > oldStart)) {
-            //console.log('new course is inside');
-            return true;
-        }
-
-        if ((oldEnd < newEnd) && (newStart < oldStart)) {
-            //console.log('new course is outside');
-            return true;
-        }
-        return false;
-    },
-    tConvert: function(_, time) {
-        // Check correct time format and split into components
-        time = time.toString().match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
-
-        if (time.length > 1) { // If time format correct
-            time = time.slice(1); // Remove full string match value
-            time[5] = +time[0] < 12 ? 'AM' : 'PM'; // Set AM/PM
-            time[0] = +time[0] % 12 || 12; // Adjust hours
-        }
-        return time.join(''); // return adjusted time or original string
-    }, // http://stackoverflow.com/questions/13898423/javascript-convert-24-hour-time-of-day-string-to-12-hour-time-with-am-pm-and-no
     exportICS: function(_) {
         var termId = _.state.termId;
         var termDates = _.state.termDates[termId];
@@ -889,8 +825,8 @@ var self = module.exports = {
 
         cal.download('Schedule for ' + _.state.termName);
     },
-    fetchRealTimeEnrollment: function(_, termCode, courseNum) {
-        return fetch(config.trackingURL + '/fetch/' + termCode + '/' + courseNum)
+    fetchRealTimeEnrollment: function(_, payload) {
+        return fetch(config.trackingURL + '/fetch/' + payload.termCode + '/' + payload.courseNum)
         .then(function(res) {
             return res.json();
         })
@@ -898,15 +834,20 @@ var self = module.exports = {
             return {ok: false}
         })
     },
-    _showRealTimeEnrollment: function(_, termCode, courseNum) {
-        this.loading.go(30);
+    _showRealTimeEnrollment: function(_, string) {
+        _.getters.loading.go(30);
+        var split = string.split('+');
+        var termCode = split[0], courseNum = split[1];
         var html = '';
         var template = function(key, value) {
             return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
         }
-        this.fetchRealTimeEnrollment(termCode, courseNum)
+        return _.dispatch('fetchRealTimeEnrollment', {
+            termCode: termCode,
+            courseNum: courseNum
+        })
         .then(function(res) {
-            this.loading.go(70);
+            _.getters.loading.go(70);
             if (res.ok && res.results[0] && res.results[0].seats) {
                 var latest = res.results[0];
                 var seat = latest.seats;
@@ -929,14 +870,15 @@ var self = module.exports = {
             }else{
                 _.state.alert.error('Cannot fetch real time data!')
             }
-            this.loading.go(100);
+            _.getters.loading.go(100);
         }.bind(this))
     },
-    getCourseDom: function(_, termId, course, isSection) {
+    getCourseDom: function(_, payload) {
         // TODO: Reduce special cases
+        var termId = payload.termId, course = payload.courseObj, isSection = payload.isSection;
         isSection = isSection || false;
         if (!isSection) {
-            var courseHasSections = this.courseHasSections(termId, course.num);
+            var courseHasSections = _.getters.courseInfo[termId][course.num].sec.length > 0;
         }
         var html = '';
         var template = function(key, value) {
@@ -955,7 +897,7 @@ var self = module.exports = {
             html += template('Course Number', course.num);
             html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
             html += template('Course Name', course.n);
-            html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App._showInstructorRMP(\'' + course.ins.f.replace(/'/g, '\\\'') + '\', \'' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
+            html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + course.ins.f.replace(/'/g, '\\\'') + '+' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
         }
 
         html += '<hr />'
@@ -963,19 +905,19 @@ var self = module.exports = {
         if (course.loct.length === 1) {
             html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
             html += template('Meeting Day', !!!course.loct[0].t ? 'TBA' : course.loct[0].t.day.join(', '));
-            html += template('Meeting Time', !!!course.loct[0].t ? 'TBA' : this.tConvert(course.loct[0].t.time.start) + '-' + this.tConvert(course.loct[0].t.time.end));
+            html += template('Meeting Time', !!!course.loct[0].t ? 'TBA' : helper.tConvert(course.loct[0].t.time.start) + '-' + helper.tConvert(course.loct[0].t.time.end));
         }else{
             var complex = '';
             for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
                 html += template('Location', !!!course.loct[j].loc ? 'TBA': course.loct[j].loc);
                 html += template('Meeting Day', !!!course.loct[j].t ? 'TBA' : course.loct[j].t.day.join(', '));
-                html += template('Meeting Time', !!!course.loct[j].t ? 'TBA' : this.tConvert(course.loct[j].t.time.start) + '-' + this.tConvert(course.loct[j].t.time.end));
+                html += template('Meeting Time', !!!course.loct[j].t ? 'TBA' : helper.tConvert(course.loct[j].t.time.start) + '-' + helper.tConvert(course.loct[j].t.time.end));
                 html += '<hr />'
             }
         }
 
         if (!isSection && course.custom !== true) {
-            html += template('Is It Open', '<span class="muted clickable rainbow" onclick="window.App._showRealTimeEnrollment(\'' + termId + '\', \'' + course.num + '\')">Check Real Time</span>');
+            html += template('Is It Open', '<span class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showRealTimeEnrollment\', \'' + termId + '+' + course.num + '\')">Check Real Time</span>');
         }
 
         return html;

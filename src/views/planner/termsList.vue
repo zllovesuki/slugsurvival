@@ -83,7 +83,7 @@
 </template>
 
 <script>
-var lodash = require('lodash');
+var debounce = require('lodash.debounce')
 var storage = require('../../lib/vuex/plugins/storage')
 
 module.exports = {
@@ -115,7 +115,7 @@ module.exports = {
                 return rv;
             }, {});
         },
-        findHistorical: lodash.debounce(function() {
+        findHistorical: debounce(function() {
             var self = this;
             var results = [];
             // TODO: let's not brute force it
