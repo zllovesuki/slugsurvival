@@ -142,12 +142,11 @@ module.exports = {
             })
         },
         promptForAction: function(calEvent) {
-            if (this.lock) return;
             var self = this;
             var termId = this.termId;
             var awaitSelection = calEvent.awaitSelection;
 
-            if (awaitSelection === true) {
+            if (awaitSelection === true && this.lock !== true) {
                 if (calEvent.conflict !== false) {
                     return this.alert.error('Conflict with ' + calEvent.conflict);
                 }
@@ -180,7 +179,7 @@ module.exports = {
                     return;// this.alert.error('Choose a section first!')
                 }else{
                     var isSection = typeof calEvent.section !== 'undefined';
-                    if (isSection && calEvent.sectionNum === null) {
+                    if (isSection && calEvent.sectionNum === null && self.lock !== true) {
                         // Choose later
                         return self.displaySectionsOnCalendar(calEvent.number);
                     }
@@ -191,19 +190,23 @@ module.exports = {
                         isSection: isSection
                     })
                     .then(function(html) {
-                        return self.alert
-                        .okBtn(isSection ? 'Change Section' : 'Remove')
-                        .cancelBtn("Go Back")
-                        .confirm(html)
-                        .then(function(resolved) {
-                            resolved.event.preventDefault();
-                            if (resolved.buttonClicked !== 'ok') return;
-                            if (isSection) {
-                                self.displaySectionsOnCalendar(calEvent.number);
-                            }else{
-                                self.promptToRemove(calEvent);
-                            }
-                        });
+                        if (self.lock === true) {
+                            return self.alert.okBtn('OK').alert(html);
+                        }else{
+                            return self.alert
+                            .okBtn(isSection ? 'Change Section' : 'Remove')
+                            .cancelBtn("Go Back")
+                            .confirm(html)
+                            .then(function(resolved) {
+                                resolved.event.preventDefault();
+                                if (resolved.buttonClicked !== 'ok') return;
+                                if (isSection) {
+                                    self.displaySectionsOnCalendar(calEvent.number);
+                                }else{
+                                    self.promptToRemove(calEvent);
+                                }
+                            });
+                        }
                     })
                 }
             })
