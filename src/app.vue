@@ -4,7 +4,7 @@
             <div class="clearfix mt3">
                 <div class="mb2 sm-flex center nowrap">
                     <div class="flex-auto block">
-                        <p class="inline h2 not-clickable" >SlugSurvival | <small class="muted" >{{ title }}</small></p>
+                        <p class="inline h2 not-clickable">SlugSurvival | <small class="muted" >{{ title }}</small></p>
                     </div>
                 </div>
 
@@ -145,7 +145,7 @@ svg {
 }
 
 .fade-enter-active, .fade-leave-active {
-  transition: opacity .5s
+  transition: opacity .3s
 }
 .fade-enter, .fade-leave-active {
   opacity: 0
