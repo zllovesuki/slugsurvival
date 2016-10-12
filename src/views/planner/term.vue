@@ -89,33 +89,38 @@ module.exports = {
             var termId = this.termId;
             return this.$store.dispatch('noAwaitSection', termId)
             .then(function(noAwaitSection) {
-                if (!noAwaitSection) {
-                    self.jumpOutAwait(termId);
-                    self.$store.dispatch('refreshCalendar')
+                var p = function() {
+                    if (noAwaitSection) return Promise.resolve();
+                    return self.jumpOutAwait(termId).then(function() {
+                        return self.$store.dispatch('refreshCalendar')
+                    })
                 }
-                self.searchModal = true;
-                setTimeout(function() {
-                    document.getElementsByClassName('search-box')[0].focus();
-                }, 75);
+                return p().then(function() {
+                    self.searchModal = true;
+                    setTimeout(function() {
+                        document.getElementsByClassName('search-box')[0].focus();
+                    }, 75);
+                })
             })
         },
         promptToRemove: function(calEvent) {
+            var self = this;
             var termId = this.termId;
-            this.alert
+            return this.alert
             .okBtn("Yes")
             .cancelBtn("No")
             .confirm('Remove ' + calEvent.course.c + ' from calendar?')
             .then(function(resolved) {
                 resolved.event.preventDefault();
                 if (resolved.buttonClicked !== 'ok') return;
-                this.$store.dispatch('removeFromSource', {
+                return self.$store.dispatch('removeFromSource', {
                     termId: termId,
                     courseNum: calEvent.number
+                }).then(function() {
+                    self.$store.dispatch('refreshCalendar')
+                    self.alert.success('Removed!');
                 })
-
-                this.$store.dispatch('refreshCalendar')
-                this.alert.success('Removed!');
-            }.bind(this));
+            });
         },
         jumpOutAwait: function() {
             var self = this;
@@ -124,7 +129,7 @@ module.exports = {
             .then(function(currentAwait) {
                 if (currentAwait === false) return;
                 // Of course restore any missing color first
-                self.$store.dispatch('restoreEventsColor', termId)
+                return self.$store.dispatch('restoreEventsColor', termId)
                 .then(function() {
                     // we first remove all awaitSelections of the old one
                     return self.$store.dispatch('removeFromSource', {
@@ -171,7 +176,7 @@ module.exports = {
             .then(function(noAwaitSection) {
                 if (!noAwaitSection) {
                     if (calEvent.color === self.colorMap.grayOut && calEvent.course.custom !== true) {
-                        self.jumpOutAwait()
+                        return self.jumpOutAwait()
                         .then(function() {
                             return self.displaySectionsOnCalendar(calEvent.number);
                         });
@@ -227,7 +232,7 @@ module.exports = {
                         return self.alert
                         .okBtn(code === null ? 'Taking the same class twice?' : 'Conflict with ' + code)
                         .alert(html)
-                    }.bind(this)
+                    }
                 }else{
                     alertHandle = function() {
                         return self.alert
@@ -242,11 +247,11 @@ module.exports = {
                                 termId: termId,
                                 courseObj: course
                             }).then(function() {
-                                self.alert.success(course.c + ' added to the planner!');
                                 self.$store.dispatch('refreshCalendar')
+                                self.alert.success(course.c + ' added to the planner!');
                             })
-                        }.bind(this));
-                    }.bind(this)
+                        });
+                    }
                 }
                 return alertHandle()
             })
@@ -292,8 +297,9 @@ module.exports = {
                     self.promptForAction(calEvent);
                 },
                 dayClick: function(date, jsEvent, view) {
-                    self.jumpOutAwait();
-                    self.$store.dispatch('refreshCalendar')
+                    return self.jumpOutAwait().then(function() {
+                        return self.$store.dispatch('refreshCalendar')
+                    })
                 }
             })
         },
