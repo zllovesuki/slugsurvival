@@ -68,7 +68,7 @@ var self = module.exports = {
         })
     },
     loadAutosave: function(_, termId, alert) {
-        termId = termId || this.termId;
+        termId = termId || _.getters.termId;
         alert = (typeof alert === 'undefined' ? true : alert);
         return storage.getItem(termId).then(function(array) {
             if (array === null) return;
@@ -362,13 +362,13 @@ var self = module.exports = {
         return _.dispatch('fetchThreeStatsByTid', tid);
     },
     dispatchReplaceHash: function(_) {
-        var termId = this.termId;
+        var termId = _.getters.termId;
         _.commit('replaceHash', termId);
     },
     parseFromCompact: function(_, payload) {
         var events = [];
-        var index, split = [], courseNum, course, termId = payload.termId, array = payload.array;
-        Promise.map(array, function(obj) {
+        var index, split = [], courseNum, course, courseInfo, termId = payload.termId, array = payload.array;
+        return Promise.mapSeries(array, function(obj) {
             obj = obj + '';
             index = obj.indexOf('-');
             if (index === -1) {
@@ -390,17 +390,12 @@ var self = module.exports = {
                     course = JSON.parse(split[1]);
                     // Remember to override the course number in the course subject
                     course.num = courseNum;
-                    return _.dispatch('generateCourseInfoObjectFromExtra', {
+                    courseInfo = helper.generateCourseInfoObjectFromExtra(courseNum, {});
+                    return _.dispatch('populateLocalEntriesWithExtra', {
                         termId: termId,
                         courseNum: courseNum,
-                        extra: {}
-                    }).then(function(courseInfo) {
-                        return _.dispatch('populateLocalEntriesWithExtra', {
-                            termId: termId,
-                            courseNum: courseNum,
-                            courseObj: course,
-                            courseInfo: courseInfo
-                        })
+                        courseObj: course,
+                        courseInfo: courseInfo
                     })
                 }else{
                     return Promise.resolve();
@@ -427,8 +422,9 @@ var self = module.exports = {
                 }
             })
         })
-
-        return events;
+        .then(function() {
+            return events;
+        })
     },
     decodeHash: function(_) {
         var termId = this.termId;
@@ -449,6 +445,7 @@ var self = module.exports = {
                     termId: termId,
                     array: array
                 }).then(function(events) {
+                    console.log(events);
                     _.commit('restoreEventSourceSnapshot', {
                         termId: termId,
                         events: events
@@ -492,22 +489,22 @@ var self = module.exports = {
         var colorMap = _.state.colorMap;
         var events = [];
         var obj = {};
-        var courseNumber, course, courseInfo, sectionNumber, section, conflict;
+        var courseNum, course, courseInfo, sectionNumber, section, conflict;
         var termId = payload.termId, secSeats = (typeof payload.secSeats === 'undefined' ? null : payload.secSeats);
 
         awaitSelection = (payload.awaitSelection === true);
 
         // We are not sure that if input1 is a course object or course number
         if (typeof payload.courseNum !== 'undefined') {
-            courseNumber = payload.courseNum;
-            course = _.state.flatCourses[termId][courseNumber];
-            courseInfo = _.state.courseInfo[termId][courseNumber];
+            courseNum = payload.courseNum;
+            course = _.state.flatCourses[termId][courseNum];
+            courseInfo = _.state.courseInfo[termId][courseNum];
         }
 
         if (typeof payload.courseObj !== 'undefined') {
             course = payload.courseObj;
-            courseNumber = course.num;
-            courseInfo = _.state.courseInfo[termId][courseNumber];
+            courseNum = course.num;
+            courseInfo = _.state.courseInfo[termId][courseNum];
         }
 
         if (awaitSelection) {
@@ -680,13 +677,13 @@ var self = module.exports = {
         })
 
     },
-    pushSectionToEventSource: function(_, courseNum, sectionNum) {
-        var termId = this.termId;
+    pushSectionToEventSource: function(_, payload) {
+        var termId = payload.termId, courseNum = payload.courseNum, sectionNum = payload.sectionNum;
         var events = [];
 
         _.dispatch('removeFromSource', {
             termId: termId,
-            courseNum: course.num,
+            courseNum: courseNum,
             skipSaving: false
         });
 
@@ -706,9 +703,9 @@ var self = module.exports = {
             return Promise.resolve();
         })
     },
-    pushAwaitSectionsToEventSource: function(_, termId, courseNum) {
+    pushAwaitSectionsToEventSource: function(_, payload) {
         _.getters.loading.go(50);
-        var secSeats = null;
+        var secSeats = null, termId = payload.termId, courseNum = payload.courseNum;
 
         return _.dispatch('fetchRealTimeEnrollment', {
             termCode: termId,
@@ -740,9 +737,6 @@ var self = module.exports = {
     },
     removeFromSource: function(_, payload) {
         _.commit('removeFromSource', payload);
-    },
-    removeEmptySection: function(_, termId, courseNumber) {
-        _.commit('removeEmptySection', termId, courseNumber)
     },
     _showInstructorRMP: function(_, string) {
         _.getters.loading.go(30);
@@ -954,50 +948,9 @@ var self = module.exports = {
             _.state.alert.error('An error has occurred.')
         })
     },
-    generateCourseObjectFromExtra: function(_, termId, courseNum, extra){
-        var course = {
-            c: extra.title,
-            n: extra.description,
-            num: courseNum,
-            loct: [],
-            custom: true
-        };
-        var locObj = {
-            loc: '',
-            t: {
-                day: [],
-                time: {
-                    start: '',
-                    end: ''
-                }
-            }
-        };
-        locObj.loc = extra.location;
-        locObj.t.time.start = extra.time.start;
-        locObj.t.time.end = extra.time.end;
-        if (extra.repeat.M) locObj.t.day.push('Monday');
-        if (extra.repeat.Tu) locObj.t.day.push('Tuesday');
-        if (extra.repeat.W) locObj.t.day.push('Wednesday');
-        if (extra.repeat.Th) locObj.t.day.push('Thursday');
-        if (extra.repeat.F) locObj.t.day.push('Friday');
-        course.loct.push(locObj);
-        return course;
-    },
-    generateCourseInfoObjectFromExtra: function(_, termId, courseNum, extra){
-        var courseInfo = {
-            ty: 'Other',
-            cr: '0',
-            ge: [],
-            desc: '',
-            re: null,
-            com: [],
-            sec: []
-        };
-        return courseInfo;
-    },
-    populateLocalEntriesWithExtra: function(_, termId, courseNum, course, courseInfo) {
-        _.commit('appendCourse', termId, courseNum, course);
-        _.commit('appendCourseInfo', termId, courseNum, courseInfo);
+    populateLocalEntriesWithExtra: function(_, payload) {
+        _.commit('appendCourse', payload);
+        _.commit('appendCourseInfo', payload);
     },
     fetchGE: function(_) {
         return fetch(config.dbURL + '/ge.json')

@@ -250,20 +250,33 @@ module.exports = {
             };
         },
         parseAndAddExtra: function() {
+            var self = this;
             var termId = this.termId;
             var courseNum = helper.findNextCourseNum(this.$store.getters.flatCourses[termId], 100000)
-            var course = this.generateCourseObjectFromExtra(termId, courseNum, this.extra);
+            var course = helper.generateCourseObjectFromExtra(courseNum, this.extra);
             var code = this.checkForConflict(dateMap, this.$store.getters.eventSource[termId], course);
             if (code !== false) {
                 return this.alert().error('Conflict with ' + code)
             }
-            var courseInfo = this.generateCourseInfoObjectFromExtra(termId, courseNum, this.extra);
-            this.populateLocalEntriesWithExtra(termId, courseNum, course, courseInfo);
-            this.pushToEventSource(course, true);
-            this.refreshCalendar();
-            this.extraModal = false;
-            this.resetExtra();
-            this.alert().success('Schedule added to the planner!');
+            var courseInfo = helper.generateCourseInfoObjectFromExtra(courseNum, this.extra);
+            return this.$store.dispatch('populateLocalEntriesWithExtra', {
+                termId: termId,
+                courseNum: courseNum,
+                courseObj: course,
+                courseInfo: courseInfo
+            }).then(function() {
+                return self.$store.dispatch('pushToEventSource', {
+                    termId: termId,
+                    courseObj: course,
+                    custom: true
+                })
+            }).then(function() {
+                return self.$store.dispatch('refreshCalendar')
+            }).then(function() {
+                self.extraModal = false;
+                self.resetExtra();
+                self.alert.success('Schedule added to the planner!');
+            })
         },
         formatTime: function(string) {
             string = string.replace(/\s/g, '');

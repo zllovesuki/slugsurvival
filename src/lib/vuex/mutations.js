@@ -33,7 +33,8 @@ module.exports = {
             })
         })
     },
-    appendCourse: function(state, termId, courseNum, course) {
+    appendCourse: function(state, payload) {
+        var termId = payload.termId, courseNum = payload.courseNum, course = payload.courseObj;
         state.flatCourses[termId][courseNum] = course;
     },
     saveInstructorNameToTidMapping: function(state, payload) {
@@ -49,7 +50,8 @@ module.exports = {
         var termId = payload.termId, courses = payload.courseInfo;
         state.courseInfo[termId] = courses;
     },
-    appendCourseInfo: function(state, termId, courseNum, courseInfo) {
+    appendCourseInfo: function(state, payload) {
+        var termId = payload.termId, courseNum = payload.courseNum, courseInfo = payload.courseInfo;
         state.courseInfo[termId][courseNum] = courseInfo;
     },
     saveHistoricData: function(state, payload) {
@@ -82,8 +84,8 @@ module.exports = {
                 this.setRef('b');
                 this.saveDocument(false);
             });
-            for (var courseNumber in state.flatCourses[termId]) {
-                obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNumber]));
+            for (var courseNum in state.flatCourses[termId]) {
+                obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNum]));
                 obj.b = obj.num;
                 obj.c = obj.c.split(/(\d+)/).filter(Boolean).map(function(el) { return el.trim(); }).join(" ");
                 obj.n = obj.n.split(/(?=[A-Z])/).map(function(el) { return el.trim(); }).join(" ")
@@ -127,28 +129,16 @@ module.exports = {
         })
     },
     removeFromSource: function(state, payload) {
-        var termId = payload.termId, courseNumber = payload.courseNum, skipSaving = payload.skipSaving;
+        var termId = payload.termId, courseNum = payload.courseNum, skipSaving = payload.skipSaving;
         if (typeof state.events[termId] === 'undefined') return;
         state.events[termId] = state.events[termId].filter(function(event) {
-            return event.number != courseNumber;
+            return event.number != courseNum;
         })
-        if (courseNumber / 100000 >= 1 && skipSaving !== true) {
+        if (courseNum / 100000 >= 1 && skipSaving !== true) {
             // remove the traitor!
-            delete state.flatCourses[termId][courseNumber];
-            delete state.courseInfo[termId][courseNumber];
+            delete state.flatCourses[termId][courseNum];
+            delete state.courseInfo[termId][courseNum];
         }
-        if (state.events[termId].length === 0) {
-            delete state.events[termId];
-        }
-    },
-    removeEmptySection: function(state, termId, courseNumber) {
-        if (typeof state.events[termId] === 'undefined') return;
-        state.events[termId] = state.events[termId].filter(function(event) {
-            if (event.number !== courseNumber)
-                return true;
-            if (event.number == courseNumber && typeof(event.sectionNum) !== 'undefined')
-                return false;
-        })
         if (state.events[termId].length === 0) {
             delete state.events[termId];
         }

@@ -78,6 +78,9 @@ module.exports = {
         },
         dateMap: function() {
             return this.$store.getters.dateMap;
+        },
+        flatCourses: function() {
+            return this.$store.getters.flatCourses;
         }
     },
     methods: {
@@ -140,6 +143,7 @@ module.exports = {
         },
         promptForAction: function(calEvent) {
             if (this.lock) return;
+            var self = this;
             var termId = this.termId;
             var awaitSelection = calEvent.awaitSelection;
 
@@ -150,42 +154,59 @@ module.exports = {
 
                 if (calEvent.sectionNum === null) return;
 
-                this.restoreEventsColor(termId);
-                this.pushSectionToEventSource(calEvent.number, calEvent.sectionNum);
-
-                this.$store.dispatch('refreshCalendar')
-                this.alert.success(this.flatCourses[termId][calEvent.number].c + ' added to the planner!');
-                return;
+                return this.$store.dispatch('restoreEventsColor', termId)
+                .then(function() {
+                    return self.$store.dispatch('pushSectionToEventSource', {
+                        termId: termId,
+                        courseNum: calEvent.number,
+                        sectionNum: calEvent.sectionNum
+                    })
+                })
+                .then(function() {
+                    self.$store.dispatch('refreshCalendar')
+                    self.alert.success(self.flatCourses[termId][calEvent.number].c + ' added to the planner!');
+                })
             }
 
-            if (!this.noAwaitSection(termId)) {
-                if (calEvent.color === this.colorMap.grayOut && calEvent.course.custom !== true) {
-                    this.jumpOutAwait();
-                    return this.displaySectionsOnCalendar(calEvent.number);
-                }
-                return;// this.alert.error('Choose a section first!')
-            }
-
-            var isSection = typeof calEvent.section !== 'undefined';
-            if (isSection && calEvent.sectionNum === null) {
-                // Choose later
-                return this.displaySectionsOnCalendar(calEvent.number);
-            }
-            var course = isSection ? calEvent.section : calEvent.course;
-            var html = this.getCourseDom(termId, course, isSection);
-            return this.alert
-            .okBtn(isSection ? 'Change Section' : 'Remove')
-            .cancelBtn("Go Back")
-            .confirm(html)
-            .then(function(resolved) {
-                resolved.event.preventDefault();
-                if (resolved.buttonClicked !== 'ok') return;
-                if (isSection) {
-                    this.displaySectionsOnCalendar(calEvent.number);
+            return this.$store.dispatch('noAwaitSection', termId)
+            .then(function(noAwaitSection) {
+                if (!noAwaitSection) {
+                    if (calEvent.color === self.colorMap.grayOut && calEvent.course.custom !== true) {
+                        self.jumpOutAwait()
+                        .then(function() {
+                            return self.displaySectionsOnCalendar(calEvent.number);
+                        });
+                    }
+                    return;// this.alert.error('Choose a section first!')
                 }else{
-                    this.promptToRemove(calEvent);
+                    var isSection = typeof calEvent.section !== 'undefined';
+                    if (isSection && calEvent.sectionNum === null) {
+                        // Choose later
+                        return self.displaySectionsOnCalendar(calEvent.number);
+                    }
+                    var course = isSection ? calEvent.section : calEvent.course;
+                    return self.$store.dispatch('getCourseDom', {
+                        termId: termId,
+                        courseObj: course,
+                        isSection: isSection
+                    })
+                    .then(function(html) {
+                        return self.alert
+                        .okBtn(isSection ? 'Change Section' : 'Remove')
+                        .cancelBtn("Go Back")
+                        .confirm(html)
+                        .then(function(resolved) {
+                            resolved.event.preventDefault();
+                            if (resolved.buttonClicked !== 'ok') return;
+                            if (isSection) {
+                                self.displaySectionsOnCalendar(calEvent.number);
+                            }else{
+                                self.promptToRemove(calEvent);
+                            }
+                        });
+                    })
                 }
-            }.bind(this));
+            })
         },
         promptAddClass: function(course) {
             var self = this;
@@ -229,15 +250,20 @@ module.exports = {
         },
         displaySectionsOnCalendar: function(courseNum) {
             this.$store.getters.loading.go(30);
+            var self = this;
             var termId = this.termId;
             this.searchModal = false;
-            this.$store.dispatch('removeFromSource', {
+            return this.$store.dispatch('removeFromSource', {
                 termId: termId,
                 courseNum: courseNum
+            }).then(function() {
+                return self.$store.dispatch('grayOutEvents', termId)
+            }).then(function() {
+                return self.$store.dispatch('pushAwaitSectionsToEventSource', {
+                    termId: termId,
+                    courseNum: courseNum
+                })
             })
-
-            this.grayOutEvents(termId);
-            this.pushAwaitSectionsToEventSource(termId, courseNum);
         },
         initializeCalendar: function() {
             var self = this;
@@ -315,7 +341,7 @@ module.exports = {
         },
         bookmark: function() {
             var html = '';
-            this.dispatchReplaceHash();
+            this.$store.dispatch('dispatchReplaceHash');
 
             html += ['<p>', '<i>', 'Now you can bookmark this page!', '</i>', '</p>'].join('');
             html += ['<p>', 'Your planner will show up when you visit this URL on another device.', '</p>'].join('');

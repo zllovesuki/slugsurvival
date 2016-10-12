@@ -1,5 +1,47 @@
 var self = module.exports = {
 
+    generateCourseObjectFromExtra: function(_, courseNum, extra){
+        var course = {
+            c: extra.title,
+            n: extra.description,
+            num: courseNum,
+            loct: [],
+            custom: true
+        };
+        var locObj = {
+            loc: '',
+            t: {
+                day: [],
+                time: {
+                    start: '',
+                    end: ''
+                }
+            }
+        };
+        locObj.loc = extra.location;
+        locObj.t.time.start = extra.time.start;
+        locObj.t.time.end = extra.time.end;
+        if (extra.repeat.M) locObj.t.day.push('Monday');
+        if (extra.repeat.Tu) locObj.t.day.push('Tuesday');
+        if (extra.repeat.W) locObj.t.day.push('Wednesday');
+        if (extra.repeat.Th) locObj.t.day.push('Thursday');
+        if (extra.repeat.F) locObj.t.day.push('Friday');
+        course.loct.push(locObj);
+        return course;
+    },
+    generateCourseInfoObjectFromExtra: function(_, courseNum, extra){
+        var courseInfo = {
+            ty: 'Other',
+            cr: '0',
+            ge: [],
+            desc: '',
+            re: null,
+            com: [],
+            sec: []
+        };
+        return courseInfo;
+    },
+
     tConvert: function(time) {
         // Check correct time format and split into components
         time = time.toString().match(/^([01]\d|2[0-3])(:)([0-5]\d)(:[0-5]\d)?$/) || [time];
@@ -76,7 +118,7 @@ var self = module.exports = {
 
         var oldStart, newStart, oldEnd, newEnd;
 
-        comingTime = this.tConvertToEpoch(dateMap, course.loct);
+        comingTime = self.tConvertToEpoch(dateMap, course.loct);
 
         for (var j = 0, length = comingTime.length; j < length; j++) {
             newStart = comingTime[j].start;
@@ -85,7 +127,7 @@ var self = module.exports = {
                 for (var k = 0, c = checker[code], length1 = c.length; k < length1; k++) {
                     oldStart = c[k].start;
                     oldEnd = c[k].end;
-                    if (helper.checkTimeConflict(oldStart, oldEnd, newStart, newEnd)) {
+                    if (self.checkTimeConflict(oldStart, oldEnd, newStart, newEnd)) {
                         return code;
                     }
                 }
@@ -174,17 +216,17 @@ var self = module.exports = {
         tracker.coursesWithSections = [];
         tracker.coursesWithSections = self.intersect(Object.keys(tracker.eventsWithSections), Object.keys(tracker.coursesWithoutSections));
 
-        tracker.coursesWithSections.forEach(function(courseNumber) {
-            array.push(courseNumber + '-' + tracker.eventsWithSections[courseNumber])
+        tracker.coursesWithSections.forEach(function(courseNum) {
+            array.push(courseNum + '-' + tracker.eventsWithSections[courseNum])
         });
 
-        for (var courseNumber in tracker.coursesWithoutSections) {
-            if (tracker.coursesWithSections.indexOf(courseNumber) === -1) {
-                if (courseNumber / 100000 >= 1) {
+        for (var courseNum in tracker.coursesWithoutSections) {
+            if (tracker.coursesWithSections.indexOf(courseNum) === -1) {
+                if (courseNum / 100000 >= 1) {
                     // we got a traitor!
-                    array.push(courseNumber + '-' + JSON.stringify(extra[courseNumber]));
+                    array.push(courseNum + '-' + JSON.stringify(extra[courseNum]));
                 }else{
-                    array.push(courseNumber);
+                    array.push(courseNum);
                 }
             }
         }
