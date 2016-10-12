@@ -7,84 +7,108 @@ Vue.use(VueRouter)
 
 var store = require('./lib/vuex/store.js');
 
-var App = require('./app.vue')
-var router = new VueRouter({
-    history: true,
-    saveScrollPosition: true
-})
+var App = Vue.extend(require('./app.vue'));
 
-router.map({
-    '/': {
-        name: 'index',
-        component: require('./views/index.vue')
-    },
-    '/analytics': {
-        name: 'analytics',
-        component: require('./views/analytics/index.vue'),
-        subRoutes: {
-            '/': {
-                name: 'analyticsHelper',
-                component: require('./views/analytics/helper.vue')
-            },
-            '/:termId/:courseNum': {
-                name: 'analyticsCourse',
-                component: require('./views/analytics/course.vue')
-            }
+var router = new VueRouter({
+    mode: 'history',
+    saveScrollPosition: true,
+    routes: [
+        {
+            path: '/',
+            name: 'index',
+            component: require('./views/index.vue')
+        },
+        {
+            path: '/analytics',
+            name: 'analytics',
+            component: require('./views/analytics/index.vue'),
+            children: [
+                {
+                    path: '/',
+                    name: 'analyticsHelper',
+                    component: require('./views/analytics/helper.vue')
+                },
+                {
+                    path: '/analytics/:termId/:courseNum',
+                    name: 'analyticsCourse',
+                    component: require('./views/analytics/course.vue')
+                }
+            ]
+        },
+        {
+            path: '/explain',
+            name: 'explain',
+            component: require('./views/explain/index.vue'),
+            children: [
+                {
+                    path: '/',
+                    name: 'explainText',
+                    component: require('./views/explain/text.vue')
+                },
+                {
+                    path: '/explain/gif',
+                    name: 'explainGif',
+                    component: require('./views/explain/gif.vue')
+                },
+                {
+                    path: '/explain/privacy',
+                    name: 'explainPrivacy',
+                    component: require('./views/explain/privacy.vue')
+                }
+            ]
+        },
+        {
+            path: '/calendar',
+            redirect: '/planner'
+        },
+        {
+            path: '/calendar/:termId',
+            redirect: '/planner/:termId'
+        },
+        {
+            path: '/planner',
+            name: 'planner',
+            component: require('./views/planner/index.vue'),
+            children: [
+                {
+                    path: '/',
+                    name: 'termsList',
+                    component: require('./views/planner/termsList.vue')
+                },
+                {
+                    path: '/planner/:termId',
+                    name: 'term',
+                    component: require('./views/planner/term.vue')
+                }
+            ]
+        },
+        {
+            path: '/enrollment',
+            name: 'enrollment',
+            component: require('./views/enrollment/index.vue'),
+            children: [
+                {
+                    path: '/',
+                    name: 'enrollHelper',
+                    component: require('./views/enrollment/helper.vue')
+                },
+                {
+                    path: '/enrollment/manage',
+                    name: 'enrollManage',
+                    component: require('./views/enrollment/manage.vue')
+                }
+            ]
         }
-    },
-    '/explain': {
-        name: 'explain',
-        component: require('./views/explain/index.vue'),
-        subRoutes: {
-            '/': {
-                name: 'explainText',
-                component: require('./views/explain/text.vue')
-            },
-            '/gif': {
-                name: 'explainGif',
-                component: require('./views/explain/gif.vue')
-            },
-            '/privacy': {
-                name: 'explainPrivacy',
-                component: require('./views/explain/privacy.vue')
-            }
-        }
-    },
-    '/planner': {
-        name: 'planner',
-        component: require('./views/planner/index.vue'),
-        subRoutes: {
-            '/': {
-                name: 'termsList',
-                component: require('./views/planner/termsList.vue')
-            },
-            '/:termId': {
-                name: 'term',
-                component: require('./views/planner/term.vue')
-            }
-        }
-    },
-    '/enrollment': {
-        name: 'enrollment',
-        component: require('./views/enrollment/index.vue'),
-        subRoutes: {
-            '/': {
-                name: 'enrollHelper',
-                component: require('./views/enrollment/helper.vue')
-            },
-            '/manage': {
-                name: 'enrollManage',
-                component: require('./views/enrollment/manage.vue')
-            }
-        }
-    }
+    ]
 })
 
 require('./lib/init.js')(store, router)
-require('./lib/registerIcons.js')(Vue)
 require('./lib/registerComponents.js')(Vue)
-require('./lib/registerTransistions.js')(Vue)
+//require('./lib/registerTransistions.js')(Vue)
 
 sync(store, router);
 
-router.start(App, '#app')
+var vm = new App({
+    router: router,
+    store: store
+}).$mount('#app')

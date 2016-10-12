@@ -1,14 +1,7 @@
 <script>
-
-var getters = require('../lib/vuex/getters.js')
-var actions = require('../lib/vuex/actions.js')
 var config = require('../../config')
 
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     props: {
         graphTitle: {
             type: String,
@@ -28,7 +21,7 @@ module.exports = {
             canvas: null
         }
     },
-    ready: function() {
+    mounted: function() {
         var self = this;
         $script.ready('Chart.js', function() {
             var ctx = document.getElementById(self.canvasId);

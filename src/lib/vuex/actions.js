@@ -3,27 +3,14 @@ var helper = require('./helper'),
     config = require('../../../config')
 
 var self = module.exports = {
-    helper: function(_) {
-        return helper;
-    },
-    alert: function(_) {
-        return _.state.alert.delay(3000);
-    },
     setTitle: function(_, title) {
-        _.dispatch('setTitle', title)
+        _.commit('setTitle', title)
     },
     comingSoon: function(_) {
-        this.alert().okBtn('OK').alert('Coming soon')
+        _.state.alert.okBtn('OK').alert('Coming soon')
     },
-    iOS: function(_) {
-        var userAgent = window.navigator.userAgent;
-        if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i)) {
-            return true;
-        }
-        return false;
-    }, // http://stackoverflow.com/questions/3007480/determine-if-user-navigated-from-mobile-safari
     ensureDataLoaded: function(_) {
-        return this.fetchTermsListAndRMP();
+        return _.dispatch('fetchTermsListAndRMP');
     },
     fetchThreeStatsByTid: function(_, tid) {
         if (typeof _.state.instructorStats[tid] !== 'undefined') {
@@ -49,7 +36,7 @@ var self = module.exports = {
                     stats: stats
                 }
             };
-            _.dispatch('saveInstructorStats', stats);
+            _.commit('saveInstructorStats', stats);
             return stats;
         })
     },
@@ -72,7 +59,12 @@ var self = module.exports = {
             ])
         })
         .spread(function(spring, summer, fall, winter){
-            _.dispatch('saveHistoricData', spring, summer, fall, winter);
+            _.commit('saveHistoricData', {
+                spring: spring,
+                summer: summer,
+                fall: fall,
+                winter: winter
+            });
         })
     },
     loadAutosave: function(_, termId, alert) {
@@ -80,9 +72,16 @@ var self = module.exports = {
         alert = (typeof alert === 'undefined' ? true : alert);
         return storage.getItem(termId).then(function(array) {
             if (array === null) return;
-            var events = this.parseFromCompact(termId, array);
-            _.dispatch('restoreEventSourceSnapshot', termId, events);
-            if (alert) this.alert().okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
+            return _.dispatch('parseFromCompact', {
+                termId: termId,
+                array: array
+            }).then(function(events) {
+                _.commit('restoreEventSourceSnapshot', {
+                    termId: termId,
+                    events: events
+                });
+                if (alert) _.state.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
+            })
         }.bind(this))
     },
     loadTermsAndRMPFromLocal: function(_) {
@@ -110,7 +109,11 @@ var self = module.exports = {
                 !invalid.termsList ? storage.getItem('termsList') : null,
                 !invalid.rmp ? storage.getItem('rmp') : null
             ]).spread(function(termsList, rmp) {
-                return self.dispatchSaveTermsAndRMP(termsList, rmp, true);
+                return _.dispatch('saveTermsAndRMP', {
+                    termsList: termsList,
+                    rmp: rmp,
+                    skipSaving: true
+                })
             })
         }
         return loadOnlineTimestamp()
@@ -177,27 +180,31 @@ var self = module.exports = {
             ])
         })
         .spread(function(termsList, rmp) {
-            return self.dispatchSaveTermsAndRMP(termsList, rmp, false);
+            return _.dispatch('saveTermsAndRMP', {
+                termsList: termsList,
+                rmp: rmp,
+                skipSaving: false
+            })
         })
     },
-    dispatchSaveTermsAndRMP: function(_, termsList, rmp, skipSaving) {
-        if (termsList !== null) _.dispatch('saveTermsList', termsList, skipSaving);
-        if (rmp !== null) _.dispatch('saveInstructorNameToTidMapping', rmp, skipSaving);
+    saveTermsAndRMP: function(_, payload) {
+        if (payload.termsList !== null) _.commit('saveTermsList', payload);
+        if (payload.rmp !== null) _.commit('saveInstructorNameToTidMapping', payload);
     },
     fetchTermsListAndRMP: function(_) {
         if (_.state.flatTermsList.length !== 0) {
             return Promise.resolve();
         }
-        return this.loadTermsAndRMPFromLocal()
+        return _.dispatch('loadTermsAndRMPFromLocal')
         .catch(function(invalid) {
             if (invalid.yes) {
-                return this.loadTermsAndRMPFromOnline(invalid)
+                return _.dispatch('loadTermsAndRMPFromOnline', invalid)
             }
         }.bind(this))
     },
     loadCourseDataFromLocal: function(_, termId) {
         var online;
-        var workaround = this.iOS();
+        var workaround = helper.iOS();
         var self = this;
         var loadOnlineTimestamp = function() {
             return Promise.all([
@@ -225,7 +232,13 @@ var self = module.exports = {
                 !invalid.courseInfo ? storage.getItem('termCourseInfo-' + termId) : null,
                 workaround ? null : (!invalid.index ? storage.getItem('termIndex-' + termId) : null)
             ]).spread(function(coursesData, courseInfo, index) {
-                return self.dispatchSaveCourseData(coursesData, courseInfo, index, true, termId);
+                return _.dispatch('saveCourseData', {
+                    termId: termId,
+                    coursesData: coursesData,
+                    courseInfo: courseInfo,
+                    index: index,
+                    skipSaving: true
+                })
             })
         }
         return loadOnlineTimestamp()
@@ -287,8 +300,9 @@ var self = module.exports = {
             })
         })
     },
-    loadCourseDataFromOnline: function(_, invalid, termId) {
-        var workaround = this.iOS();
+    loadCourseDataFromOnline: function(_, payload) {
+        var workaround = helper.iOS();
+        var invalid = payload.invalid, termId = payload.termId;
         var self = this;
         return Promise.all([
             invalid.coursesData ? fetch(config.dbURL + '/terms/' + termId + '.json') : null,
@@ -303,25 +317,40 @@ var self = module.exports = {
             ])
         })
         .spread(function(coursesData, courseInfo, index) {
-            return self.dispatchSaveCourseData(coursesData, courseInfo, index, false, termId);
+            return _.dispatch('saveCourseData', {
+                termId: termId,
+                coursesData: coursesData,
+                courseInfo: courseInfo,
+                index: index,
+                skipSaving: false
+            })
         })
     },
-    dispatchSaveCourseData: function(_, coursesData, courseInfo, index, skipSaving, termId) {
-        var workaround = this.iOS();
-        if (coursesData !== null) _.dispatch('saveTermCourses', termId, coursesData, skipSaving);
-        if (courseInfo !== null) _.dispatch('saveCourseInfo', termId, courseInfo, skipSaving);
-        if (workaround || index !== null) _.dispatch('buildIndexedSearch', termId, index, workaround, skipSaving);
+    saveCourseData: function(_, payload) {
+        var workaround = helper.iOS();
+        var termId = payload.termId, coursesData = payload.coursesData, courseInfo = payload.courseInfo, skipSaving = payload.skipSaving, index = payload.index;
+        if (coursesData !== null) _.commit('saveTermCourses', payload);
+        if (courseInfo !== null) _.commit('saveCourseInfo', payload);
+        if (workaround || index !== null) _.commit('buildIndexedSearch', {
+            termId: termId,
+            index: index,
+            workaround: workaround,
+            skipSaving: skipSaving
+        });
     },
     fetchTermCourses: function(_, termId) {
-        termId =  termId || this.termId;
-        _.dispatch('setTermName', _.state.termsList[termId])
+        termId =  termId || _.getters.termId;
+        _.commit('setTermName', _.state.termsList[termId])
         if (typeof _.state.flatCourses[termId] !== 'undefined') {
             return Promise.resolve();
         }
-        return this.loadCourseDataFromLocal(termId)
+        return _.dispatch('loadCourseDataFromLocal', termId)
         .catch(function(invalid) {
             if (invalid.yes) {
-                return this.loadCourseDataFromOnline(invalid, termId)
+                return _.dispatch('loadCourseDataFromOnline', {
+                    invalid: invalid,
+                    termId: termId
+                })
             }
         }.bind(this))
     },
@@ -334,11 +363,11 @@ var self = module.exports = {
     },
     dispatchReplaceHash: function(_) {
         var termId = this.termId;
-        _.dispatch('replaceHash', termId);
+        _.commit('replaceHash', termId);
     },
-    parseFromCompact: function(_, termId, array) {
+    parseFromCompact: function(_, payload) {
         var events = [];
-        var index, split = [], courseNum, course, courseInfo;
+        var index, split = [], courseNum, course, courseInfo, termId = payload.termId, array = payload.array;
         array.forEach(function(obj) {
             obj = obj + '';
             index = obj.indexOf('-');
@@ -356,7 +385,7 @@ var self = module.exports = {
                 be careful here, we don't want to override any localized course num,
                 so we are going to reassign course number for the customize events
                 */
-                courseNum = this.findNextCourseNum(termId, 100000);
+                courseNum = helper.findNextCourseNum(_.state.flatCourses[termId], 100000);
                 course = JSON.parse(split[1]);
                 // Remember to override the course number in the course subject
                 course.num = courseNum;
@@ -388,18 +417,24 @@ var self = module.exports = {
                 var split;
                 var course;
 
-                var events = this.parseFromCompact(termId, array);
+                return _.dispatch('parseFromCompact', {
+                    termId: termId,
+                    array: array
+                }).then(function(events) {
+                    _.commit('restoreEventSourceSnapshot', {
+                        termId: termId,
+                        events: events
+                    });
 
-                _.dispatch('restoreEventSourceSnapshot', termId, events);
+                    var html = '';
+                    html += ['<p>', 'Looks like you are accessing the planner via a bookmark link! We have the planner for you!', '</p>'].join('');
+                    html += ['<p>', 'However, you will <b>not</b> be able to make changes if you are viewing the planner via a bookmark link.', '</p>'].join('');
 
-                var html = '';
-                html += ['<p>', 'Looks like you are accessing the planner via a bookmark link! We have the planner for you!', '</p>'].join('');
-                html += ['<p>', 'However, you will <b>not</b> be able to make changes if you are viewing the planner via a bookmark link.', '</p>'].join('');
-
-                this.alert()
-                .okBtn('OK')
-                .alert(html);
-                return Promise.reject();
+                    _.state.alert
+                    .okBtn('OK')
+                    .alert(html);
+                    return Promise.reject();
+                })
             }else{
                 console.log('fallback to local copy')
                 return Promise.resolve();
@@ -414,7 +449,7 @@ var self = module.exports = {
         return _.state.courseInfo[termId][courseNumber].sec.length > 0;
     },
     refreshCalendar: function(_) {
-        $('#calendar-' + this.termId).fullCalendar('refetchEvents');
+        $('#calendar-' + _.getters.termId).fullCalendar('refetchEvents');
         $('.alertify').remove();
     },
     returnEventSourceSnapshot: function(_) {
@@ -422,7 +457,7 @@ var self = module.exports = {
         return _.state.events[termId]
     },
     emptyEventSource: function(_, termId) {
-        _.dispatch('emptyEventSource', termId);
+        _.commit('emptyEventSource', termId);
     },
     getEventObjectsByCourse: function(_, termId, input1, input2, awaitSelection, secSeats) {
         /*
@@ -569,26 +604,38 @@ var self = module.exports = {
         return currentAwait[0];
     },
     grayOutEvents: function(_, termId) {
-        _.dispatch('grayOutEvents', termId);
+        _.commit('grayOutEvents', termId);
     },
     restoreEventsColor: function(_, termId) {
-        _.dispatch('restoreEventsColor', termId);
+        _.commit('restoreEventsColor', termId);
     },
-    pushToEventSource: function(_, course, customEvent) {
-        var termId = this.termId;
+    pushToEventSource: function(_, payload) {
+        var termId = this.termId, course = payload.courseObj, customEvent = payload.custom;
         var events = [];
 
         if (customEvent === true) {
-            this.removeFromSource(termId, course.num, true);
+            _.dispatch('removeFromSource', {
+                termId: termId,
+                courseNum: course.num,
+                skipSaving: true
+            });
 
             events = this.getEventObjectsByCourse(termId, course);
         }else{
-            this.removeFromSource(termId, course.num);
+            _.dispatch('removeFromSource', {
+                termId: termId,
+                courseNum: course.num,
+                skipSaving: false
+            });
 
             events = this.getEventObjectsByCourse(termId, course, null, false, null);
         }
 
-        _.dispatch('mergeEventSource', termId, events);
+        _.commit('mergeEventSource', {
+            termId: termId,
+            events: events,
+            skipSaving: false
+        });
 
         return Promise.resolve();
     },
@@ -596,10 +643,18 @@ var self = module.exports = {
         var termId = this.termId;
         var events = [];
 
-        this.removeFromSource(termId, courseNum);
+        _.dispatch('removeFromSource', {
+            termId: termId,
+            courseNum: course.num,
+            skipSaving: false
+        });
 
         events = this.getEventObjectsByCourse(termId, courseNum, sectionNum);
-        _.dispatch('mergeEventSource', termId, events);
+        _.commit('mergeEventSource', {
+            termId: termId,
+            events: events,
+            skipSaving: false
+        });
 
         return Promise.resolve();
     },
@@ -615,18 +670,22 @@ var self = module.exports = {
             }
             this.loading.go(70);
             events = this.getEventObjectsByCourse(termId, courseNum, null, true, secSeats);
-            _.dispatch('mergeEventSource', termId, events, true);
+            _.commit('mergeEventSource', {
+                termId: termId,
+                events: events,
+                skipSaving: true
+            });
 
             this.refreshCalendar();
             this.loading.go(100);
-            this.alert().success('Now You Are Choosing Section For ' + _.state.flatCourses[termId][courseNum].c)
+            _.state.alert.success('Now You Are Choosing Section For ' + _.state.flatCourses[termId][courseNum].c)
         }.bind(this))
     },
-    removeFromSource: function(_, termId, courseNum, doNotRemove) {
-        _.dispatch('removeFromSource', termId, courseNum, doNotRemove);
+    removeFromSource: function(_, payload) {
+        _.commit('removeFromSource', payload);
     },
     removeEmptySection: function(_, termId, courseNumber) {
-        _.dispatch('removeEmptySection', termId, courseNumber)
+        _.commit('removeEmptySection', termId, courseNumber)
     },
     _showInstructorRMP: function(_, firstName, lastName) {
         this.loading.go(30);
@@ -645,7 +704,7 @@ var self = module.exports = {
                 html += template('Easy', rmp.stats.stats.easy.toFixed(1))
                 html += template('Overall', rmp.stats.stats.overall.toFixed(1))
                 html += template('Based on', rmp.stats.scores.count + ' ratings')
-                this.alert()
+                _.state.alert
                 .okBtn('See it for yourself')
                 .cancelBtn('Go Back')
                 .confirm(html)
@@ -655,14 +714,14 @@ var self = module.exports = {
                     window.open('http://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + rmp.tid);
                 })
             }else{
-                this.alert()
+                _.state.alert
                 .okBtn('Go Back')
                 .alert(['<p>', 'Sorry, we don\'t have', firstName + '\'s', 'ratings!', '</p>'].join(' '))
             }
         }.bind(this))
         .catch(function(e) {
             console.log(e);
-            this.alert().error('Cannot fetch RMP stats!')
+            _.state.alert.error('Cannot fetch RMP stats!')
         }.bind(this))
         .finally(function() {
             this.loading.go(100);
@@ -801,7 +860,7 @@ var self = module.exports = {
         return time.join(''); // return adjusted time or original string
     }, // http://stackoverflow.com/questions/13898423/javascript-convert-24-hour-time-of-day-string-to-12-hour-time-with-am-pm-and-no
     exportICS: function(_) {
-        var termId = this.termId;
+        var termId = _.state.termId;
         var termDates = _.state.termDates[termId];
         var events = _.state.events[termId];
 
@@ -861,14 +920,14 @@ var self = module.exports = {
                 html += template('Waitlist Cap.', seat.waitCap);
                 html += '<p><span class="muted h6">Last Changed: ' + new Date(latest.date * 1000).toLocaleString() + '</span></p>';
 
-                this.alert()
+                _.state.alert
                 .okBtn('Cool')
                 .alert(html)
                 .then(function(resolved) {
                     resolved.event.preventDefault();
                 })
             }else{
-                this.alert().error('Cannot fetch real time data!')
+                _.state.alert.error('Cannot fetch real time data!')
             }
             this.loading.go(100);
         }.bind(this))
@@ -945,19 +1004,13 @@ var self = module.exports = {
         })
         .then(function(res) {
             if (!res.ok) {
-                return self.alert().error(res.message);
+                return _.state.alert.error(res.message);
             }
         })
         .catch(function(e) {
             console.log(e);
-            self.alert().error('An error has occurred.')
+            _.state.alert.error('An error has occurred.')
         })
-    },
-    findNextCourseNum: function(_, termId, currentNum) {
-        if (typeof _.state.flatCourses[termId][currentNum] === 'undefined') {
-            return currentNum;
-        }
-        return this.findNextCourseNum(termId, currentNum + 1);
     },
     generateCourseObjectFromExtra: function(_, termId, courseNum, extra){
         var course = {
@@ -1001,8 +1054,8 @@ var self = module.exports = {
         return courseInfo;
     },
     populateLocalEntriesWithExtra: function(_, termId, courseNum, course, courseInfo) {
-        _.dispatch('appendCourse', termId, courseNum, course);
-        _.dispatch('appendCourseInfo', termId, courseNum, courseInfo);
+        _.commit('appendCourse', termId, courseNum, course);
+        _.commit('appendCourseInfo', termId, courseNum, courseInfo);
     },
     fetchGE: function(_) {
         return fetch(config.dbURL + '/ge.json')

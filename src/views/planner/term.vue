@@ -16,7 +16,7 @@
         </div>
         <div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix h6" v-show="ready">
             <div class="m0 p2">
-                <div id="calendar-{{ termId }}"></div>
+                <div v-bind:id="'calendar-' + termId"></div>
             </div>
         </div>
         <div class="overflow-hidden bg-white rounded mb2 clearfix">
@@ -67,15 +67,7 @@
 </template>
 
 <script>
-
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
-
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     data: function() {
         return {
             ready: false,
@@ -85,12 +77,26 @@ module.exports = {
             lock: false
         }
     },
+    computed: {
+        alert: function() {
+            return this.$store.getters.alert;
+        },
+        termId: function() {
+            return this.$store.getters.termId;
+        },
+        colorMap: function() {
+            return this.$store.getters.colorMap;
+        },
+        dateMap: function() {
+            return this.$store.getters.dateMap;
+        }
+    },
     methods: {
         showSearchModal: function() {
-            var termId = this.route.params.termId;
+            var termId = this.termId;
             if (!this.noAwaitSection(termId)) {
                 this.jumpOutAwait(termId);
-                this.refreshCalendar();
+                this.$store.dispatch('refreshCalendar')
             }
             this.searchModal = true;
             setTimeout(function() {
@@ -98,39 +104,54 @@ module.exports = {
             }, 75);
         },
         promptToRemove: function(calEvent) {
-            var termId = this.route.params.termId;
-            this.alert()
+            var termId = this.termId;
+            this.alert
             .okBtn("Yes")
             .cancelBtn("No")
             .confirm('Remove ' + calEvent.course.c + ' from calendar?')
             .then(function(resolved) {
                 resolved.event.preventDefault();
                 if (resolved.buttonClicked !== 'ok') return;
-                this.removeFromSource(termId, calEvent.number);
+                this.$store.dispatch('removeFromSource', {
+                    termId: termId,
+                    courseNum: calEvent.number
+                })
 
-                this.refreshCalendar();
-                this.alert().success('Removed!');
+                this.$store.dispatch('refreshCalendar')
+                this.alert.success('Removed!');
             }.bind(this));
         },
         jumpOutAwait: function() {
-            var termId = this.route.params.termId;
-            var currentAwait = this.getCurrentAwaitSection(termId);
-            if (currentAwait === false) return;
-            // Of course restore any missing color first
-            this.restoreEventsColor(termId);
-            // we first remove all awaitSelections of the old one
-            this.removeFromSource(termId, currentAwait.number);
-            // Then add back the "chooose later"
-            this.pushToEventSource(currentAwait.course);
+            var self = this;
+            var termId = this.termId;
+            return this.$store.dispatch('getCurrentAwaitSection', termId)
+            .then(function(currentAwait) {
+                if (currentAwait === false) return;
+                // Of course restore any missing color first
+                self.$store.dispatch('restoreEventsColor', termId)
+                .then(function() {
+                    // we first remove all awaitSelections of the old one
+                    return self.$store.dispatch('removeFromSource', {
+                        termId: termId,
+                        courseNum: currentAwait.number
+                    })
+                })
+                .then(function() {
+                    // Then add back the "chooose later"
+                    return self.$store.dispatch('pushToEventSource', {
+                        courseObj: currentAwait.course
+                    })
+                })
+            })
         },
         promptForAction: function(calEvent) {
             if (this.lock) return;
-            var termId = this.route.params.termId;
+            var termId = this.termId;
             var awaitSelection = calEvent.awaitSelection;
 
             if (awaitSelection === true) {
                 if (calEvent.conflict !== false) {
-                    return this.alert().error('Conflict with ' + calEvent.conflict);
+                    return this.alert.error('Conflict with ' + calEvent.conflict);
                 }
 
                 if (calEvent.sectionNum === null) return;
@@ -138,8 +159,8 @@ module.exports = {
                 this.restoreEventsColor(termId);
                 this.pushSectionToEventSource(calEvent.number, calEvent.sectionNum);
 
-                this.refreshCalendar();
-                this.alert().success(this.flatCourses[termId][calEvent.number].c + ' added to the planner!');
+                this.$store.dispatch('refreshCalendar')
+                this.alert.success(this.flatCourses[termId][calEvent.number].c + ' added to the planner!');
                 return;
             }
 
@@ -148,7 +169,7 @@ module.exports = {
                     this.jumpOutAwait();
                     return this.displaySectionsOnCalendar(calEvent.number);
                 }
-                return;// this.alert().error('Choose a section first!')
+                return;// this.alert.error('Choose a section first!')
             }
 
             var isSection = typeof calEvent.section !== 'undefined';
@@ -158,7 +179,7 @@ module.exports = {
             }
             var course = isSection ? calEvent.section : calEvent.course;
             var html = this.getCourseDom(termId, course, isSection);
-            return this.alert()
+            return this.alert
             .okBtn(isSection ? 'Change Section' : 'Remove')
             .cancelBtn("Go Back")
             .confirm(html)
@@ -173,7 +194,7 @@ module.exports = {
             }.bind(this));
         },
         promptAddClass: function(course) {
-            var termId = this.route.params.termId;
+            var termId = this.termId;
             var code = this.checkForConflict(course);
             var alertHandle = function() {};
 
@@ -181,13 +202,13 @@ module.exports = {
 
             if (code !== false || code === null) {
                 alertHandle = function() {
-                    return this.alert()
+                    return this.alert
                     .okBtn(code === null ? 'Taking the same class twice?' : 'Conflict with ' + code)
                     .alert(html)
                 }.bind(this)
             }else{
                 alertHandle = function() {
-                    return this.alert()
+                    return this.alert
                     .okBtn('Add Class')
                     .cancelBtn("Go Back")
                     .confirm(html)
@@ -197,18 +218,21 @@ module.exports = {
 
                         this.pushToEventSource(course);
 
-                        this.refreshCalendar();
-                        this.alert().success(course.c + ' added to the planner!');
+                        this.$store.dispatch('refreshCalendar')
+                        this.alert.success(course.c + ' added to the planner!');
                     }.bind(this));
                 }.bind(this)
             }
             return alertHandle()
         },
         displaySectionsOnCalendar: function(courseNum) {
-            this.loading.go(30);
+            this.$store.getters.loading.go(30);
             var termId = this.termId;
             this.searchModal = false;
-            this.removeFromSource(termId, courseNum);
+            this.$store.dispatch('removeFromSource', {
+                termId: termId,
+                courseNum: courseNum
+            })
 
             this.grayOutEvents(termId);
             this.pushAwaitSectionsToEventSource(termId, courseNum);
@@ -229,7 +253,7 @@ module.exports = {
         },
         initializeCalendar: function() {
             var self = this;
-            var termId = this.route.params.termId;
+            var termId = this.termId;
             $('#calendar-' + termId).fullCalendar({
                 columnFormat: 'ddd',
                 minTime: '07:00',
@@ -244,7 +268,7 @@ module.exports = {
                 contentHeight: 'auto',
                 eventSources: [{
                     events: function(start, end, timezone, callback) {
-                        callback(self.eventSource[termId]);
+                        callback(self.$store.getters.eventSource[termId]);
                     },
                 }],
                 eventClick: function(calEvent, jsEvent, view) {
@@ -255,7 +279,7 @@ module.exports = {
                         return self.showChooseSectionModal();
                     }*/
                     self.jumpOutAwait();
-                    self.refreshCalendar();
+                    self.$store.dispatch('refreshCalendar')
                 }
             })
         },
@@ -267,7 +291,7 @@ module.exports = {
             var self = this;
             $script(dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.min.js', 'canvasRootDep');
             $script.ready('canvasRootDep', function() {
-                self.loading.go(60);
+                self.$store.getters.loading.go(60);
                 $script(dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.svg.min.js', 'canvasBundle')
                 $script.ready('canvasBundle', function() {
                     self.loadFileSaverBundle(callback);
@@ -283,25 +307,25 @@ module.exports = {
         },
         saveCalendarAsImage: function() {
             var self = this;
-            this.loading.go(30);
+            this.$store.getters.loading.go(30);
             this.loadCanvasBundle(function() {
-                self.loading.go(80);
+                self.$store.getters.loading.go(80);
                 html2canvas(document.getElementById('calendar-container'), {
                     useCORS: true
                 }).then(function(canvas) {
                     canvas.toBlob(function(blob) {
-                        self.loading.go(100);
-                        saveAs(blob, 'Schedule for ' + self.termName + '.png');
+                        self.$store.getters.loading.go(100);
+                        saveAs(blob, 'Schedule for ' + self.$store.getters.termName + '.png');
                     });
                 })
             })
         },
         saveCalendarAsICS: function() {
             var self = this;
-            this.loading.go(50);
+            this.$store.getters.loading.go(50);
             this.loadICSBundle(function() {
-                self.loading.go(100);
-                self.exportICS();
+                self.$store.getters.loading.go(100);
+                self.$store.dispatch('exportICS');
             })
         },
         bookmark: function() {
@@ -313,7 +337,7 @@ module.exports = {
             html += ['<p>', '(That means you can share this URL to your friends!)', '</p>'].join('');
             html += ['<p class="pt1 px2 mt1">', '<input type="text" class="field block bookmark" onmouseover="this.setSelectionRange(0, this.value.length)">', '</p>'].join('');
 
-            this.alert()
+            this.alert
             .okBtn('I\'m Done!')
             .alert(html)
             .then(function(resolved) {
@@ -350,7 +374,7 @@ module.exports = {
             html += 'get a bookmark link';
             html += '</a></span>';
 
-            this.alert()
+            this.alert
             .okBtn('OK')
             .alert(html)
         }
@@ -361,22 +385,21 @@ module.exports = {
             $script(dist + 'fullcalender/2.9.1/fullcalendar.min.js', 'calendar')
         })
     },
-    ready: function() {
+    mounted: function() {
         var self = this;
-        this.loading.go(30);
-        this.setTitle('Planner');
+        this.$store.getters.loading.go(30);
+        this.$store.dispatch('setTitle', 'Planner');
 
         $script.ready('jQuery', function() {
-            self.loading.go(50);
+            self.$store.getters.loading.go(50);
         })
         $script.ready('calendar', function() {
-            self.loading.go(70);
-            self.fetchTermCourses().then(function() {
-                self.emptyEventSource(self.termId);
-                return self.decodeHash()
+            self.$store.getters.loading.go(70);
+            self.$store.dispatch('fetchTermCourses').then(function() {
+                return self.$store.dispatch('decodeHash')
                 .then(function() {
                     // no valid was decoded
-                    return self.loadAutosave()
+                    return self.$store.dispatch('loadAutosave')
                 })
                 .catch(function() {
                     // hash was used instead of local copy
@@ -394,10 +417,11 @@ module.exports = {
 
                 })
             }).catch(function(e) {
+                console.log(e);
                 self.ready = false;
-                self.alert().error('Cannot load course data!')
+                self.$store.getters.alert.error('Cannot load course data!')
             }).finally(function() {
-                self.loading.go(100);
+                self.$store.getters.loading.go(100);
             })
         })
     }

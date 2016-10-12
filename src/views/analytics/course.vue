@@ -24,16 +24,9 @@
     </div>
 </template>
 <script>
-
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
 var config = require('../../../config')
 
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     data: function() {
         return {
             ready: false,
@@ -54,7 +47,7 @@ module.exports = {
             return text;
         } // http://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
     },
-    ready: function() {
+    mounted: function() {
         var self = this;
         this.setTitle('Analytics');
         $script.ready('Chart.js', function() {

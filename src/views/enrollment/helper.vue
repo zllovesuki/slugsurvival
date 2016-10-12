@@ -13,7 +13,7 @@
 			</div>
 			<div class="m0 p2 border-top">
 				<div class="clearfix">
-					<a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" v-link="{ name: 'termsList' }">Take me to the Interactive Planner</a>
+					<router-link class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'termsList' }">Take me to the Interactive Planner</router-link>
 				</div>
 			</div>
 		</div>
@@ -29,7 +29,7 @@
 				</div>
                 <div class="clearfix">
 					<span class="ml1 btn black h6 not-clickable">
-                        <a class="h6 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.alert }" v-link="{ name: 'enrollManage' }" target="_blank">But I Signed Up Already</a>
+                        <router-link class="h6 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'enrollManage' }" target="_blank">But I Signed Up Already</router-link>
                     </span>
 				</div>
 			</div>
@@ -84,16 +84,16 @@
 				<form v-on:submit.prevent class="h5">
                     <label for="recipient" class="mt2 block">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.recipient" placeholder="15554443333/hello@me.com">
-                        <button type="submit" class="col-3 btn btn-outline ml1 mb2 inline-block {{ color }}" :disabled="sub.verified || !sub.recipient.length > 0 || sub.sent || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
+                        <button type="submit" v-bind:class="'col-3 btn btn-outline ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.recipient.length > 0 || sub.sent || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
                     </label>
                     <label for="code" class="mt2 block" v-if="sub.sent">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.code" placeholder="passcode received">
-                        <button type="submit" class="col-3 btn btn-outline ml1 mb2 inline-block {{ color }}" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
+                        <button type="submit" v-bind:class="'col-3 btn btn-outline ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
                     </label>
                     <hr />
 					<span class="block mb1">
                         We take privacy seriously.
-                        <a class="h6 bold {{ color }}" v-link="{ name: 'explainPrivacy' }" target="_blank"> Learn More</a>
+                        <router-link v-bind:class="'h6 bold ' + color" :to="{ name: 'explainPrivacy' }" target="_blank"> Learn More</router-link>
                     </span>
 				</form>
 			</span>
@@ -102,15 +102,9 @@
 </template>
 
 <script>
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
 var config = require('../../../config')
 
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     data: function() {
         return {
             ready: false,
@@ -300,10 +294,7 @@ module.exports = {
             }.bind(this));
         }
     },
-    created: function() {
-
-    },
-    ready: function() {
+    mounted: function() {
         var self = this;
         this.loading.go(30);
         this.setTitle('Tracker');

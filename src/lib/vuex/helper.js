@@ -1,5 +1,20 @@
 var self = module.exports = {
 
+    findNextCourseNum: function(courses, currentNum) {
+        if (typeof courses[currentNum] === 'undefined') {
+            return currentNum;
+        }
+        return self.findNextCourseNum(courses, currentNum + 1);
+    },
+
+    iOS: function() {
+        var userAgent = window.navigator.userAgent;
+        if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i)) {
+            return true;
+        }
+        return false;
+    }, // http://stackoverflow.com/questions/3007480/determine-if-user-navigated-from-mobile-safari
+
     intersect: function(a, b) {
         var t;
         if (b.length > a.length) t = b, b = a, a = t; // indexOf to loop over shorter

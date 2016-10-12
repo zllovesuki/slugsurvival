@@ -94,14 +94,7 @@
 </template>
 
 <script>
-var getters = require('../lib/vuex/getters.js')
-var actions = require('../lib/vuex/actions.js')
-
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     props: {
         show: {
             type: Boolean,
@@ -147,6 +140,9 @@ module.exports = {
                     && this.extra.repeat.Th === false
                     && this.extra.repeat.F === false
                 );
+        },
+        colorMap: function() {
+            return this.$store.getters.colorMap;
         }
     },
     watch: {

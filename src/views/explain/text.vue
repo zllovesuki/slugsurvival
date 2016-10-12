@@ -23,7 +23,7 @@
                 <div class="clearfix">
                     <h3 class="muted">TL; DR. Can I just watch a video?</h3>
                     <p>
-                        <a class="h6 ml2 mt1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" v-link="{ name: 'explainGif' }">Sure, Click Here For a Short Introduction</a>
+                        <router-link class="h6 ml2 mt1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'explainGif' }">Sure, Click Here For a Short Introduction</router-link>
                     </p>
                 </div>
             </div>
@@ -76,7 +76,7 @@ module.exports = {
         getters: getters,
         actions: actions
     },
-    ready: function() {
+    mounted: function() {
         this.setTitle('Explain');
     }
 }

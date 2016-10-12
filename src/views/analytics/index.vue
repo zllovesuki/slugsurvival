@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="ml1 mt1 mb1">
-            <span class="btn button-narrow mxn2 muted" v-link="{ name: 'analytics' }">A</span>
+            <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'analytics' }" tag="span">A</router-link>
             <chevron-right></chevron-right>
             <span class="btn button-narrow mxn1">
                 Analytics (alpha)
@@ -13,15 +13,7 @@
     </div>
 </template>
 <script>
-
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
-
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     created: function() {
         var self = this;
         $script([dist + 'Chart.js/2.3.0/Chart.bundle.min.js', dist + 'moment/2.14.1/moment.min.js'], 'Chart.js')

@@ -5,6 +5,8 @@ var	Vue = require('vue'),
 Vue.use(Vuex);
 
 var store = new Vuex.Store({
+    actions: require('./actions'),
+    getters: require('./getters'),
     state: require('./state'),
     mutations: require('./mutations'),
     plugins: [

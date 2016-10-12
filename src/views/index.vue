@@ -12,9 +12,9 @@
                 </div>
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
-                        <a class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" v-link="{ name: 'termsList' }">Interactive Planner</a>
-                        <a class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" v-link="{ name: 'enrollHelper' }">Notify Me When My Classes Are Open</a>
-                        <a class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="comingSoon">Major/Minor Requirements</a>
+                        <router-link class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'termsList' }">Interactive Planner</router-link>
+                        <router-link class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'enrollHelper' }">Notify Me When My Classes Are Open</router-link>
+                        <a class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="$store.dispatch('comingSoon')">Major/Minor Requirements</a>
                     </div>
                 </div>
             </div>
@@ -29,7 +29,7 @@
                 </div>
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
-                        <a class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" v-link="{ name: 'analyticsHelper' }">Enrollment Analytics</a>
+                        <router-link class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'analyticsHelper' }">Enrollment Analytics</router-link>
                     </div>
                 </div>
             </div>
@@ -37,17 +37,17 @@
     </div>
 </template>
 <script>
-
-var getters = require('../lib/vuex/getters.js')
-var actions = require('../lib/vuex/actions.js')
-
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
+    computed: {
+        title: function() {
+            return this.$store.getters.title;
+        },
+        colorMap: function() {
+            return this.$store.getters.colorMap;
+        }
     },
-    ready: function() {
-        this.setTitle('Main')
+    mounted: function() {
+        this.$store.dispatch('setTitle', 'Main')
     }
 }
 </script>

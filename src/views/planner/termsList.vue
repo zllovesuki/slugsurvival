@@ -15,13 +15,13 @@
                     </div>-->
                 </div>
             </div>
-            <template v-for="term in flatTermsList" track-by="code">
-                <div class="m0 p0 border-top" v-bind:class="{ 'hide': $index > 3 && hidePrior }">
+            <template v-for="(term, index) in flatTermsList" track-by="term.code">
+                <div class="m0 p0 border-top" v-bind:class="{ 'hide': index > 3 && hidePrior }">
                     <div class="clearfix">
                         <div class="left black">
-                            <a v-link="{ name: 'term', params: { termId: term.code } }" class="btn block h5" v-bind:class="{ 'muted': $index > 0 }">
+                            <router-link :to="{ name: 'term', params: { termId: term.code } }" class="btn block h5" v-bind:class="{ 'muted': index > 0 }">
                                 {{ term.name }}
-                            </a>
+                            </router-link>
                         </div>
                         <div class="right">
                             <a class="btn h6 muted not-clickabble" v-show="saved.indexOf(term.code) !== -1">
@@ -54,7 +54,7 @@
             </div>
             <div class="m0 p2 border-top" v-bind:class="{ 'hide': hideHistoric }">
                 <div class="clearfix">
-                    <input type="text" class="field block mb2 search-box" v-model="search.string" debounce="750" placeholder="EE 177, ECON 117B, ..." onmouseover="this.focus()">
+                    <input type="text" class="field block mb2 search-box" v-model="search.string" placeholder="EE 177, ECON 117B, ..." onmouseover="this.focus()">
                     <div class="overflow-scroll" v-show="search.results.length > 0">
                         <table class="table-light">
                             <thead class="bg-darken-1 h6">
@@ -83,15 +83,10 @@
 </template>
 
 <script>
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
+var lodash = require('lodash');
 var storage = require('../../lib/vuex/plugins/storage')
 
 module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    },
     data: function() {
         return {
             historicDataLoaded: false,
@@ -105,26 +100,28 @@ module.exports = {
             }
         }
     },
+    computed: {
+        historicData: function() {
+            return this.$store.getters.historicData;
+        },
+        flatTermsList: function() {
+            return this.$store.getters.flatTermsList;
+        }
+    },
     methods: {
         groupBy: function(xs, key) {
             return xs.reduce(function(rv, x) {
                 (rv[x[key]] = rv[x[key]] || []).push(x);
                 return rv;
             }, {});
-        }
-    },
-    watch: {
-        'search.string': function(val, oldVal) {
-            if (val.length < 1) {
-                this.search.results = [];
-                return;
-            }
+        },
+        findHistorical: lodash.debounce(function() {
             var self = this;
             var results = [];
             // TODO: let's not brute force it
             for (var quarter in this.historicData){
                 for (var code in this.historicData[quarter]) {
-                    if (code.toLowerCase().replace(/\s/g, '').indexOf(val.toLowerCase().replace(/\s/g, '')) !== -1) {
+                    if (code.toLowerCase().replace(/\s/g, '').indexOf(this.search.string.toLowerCase().replace(/\s/g, '')) !== -1) {
                         var keys = Object.keys(this.historicData[quarter][code]);
                         results.push({
                             code: code,
@@ -141,6 +138,15 @@ module.exports = {
                 _results = _results.concat(results[code]);
             }
             this.search.results = _results;
+        }, 750)
+    },
+    watch: {
+        'search.string': function(val, oldVal) {
+            if (val.length < 1) {
+                this.search.results = [];
+                return;
+            }
+            this.findHistorical();
         }
     },
     created: function() {
@@ -154,12 +160,12 @@ module.exports = {
                 })
             })
         })
-        this.fetchHistoricData().then(function() {
+        this.$store.dispatch('fetchHistoricData').then(function() {
             self.historicDataLoaded = true;
         })
     },
-    ready: function() {
-        this.setTitle('Terms List');
+    mounted: function() {
+        this.$store.dispatch('setTitle', 'Terms List');
     }
 }
 </script>

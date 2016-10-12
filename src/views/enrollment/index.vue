@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="ml1 mt1 mb1">
-            <span class="btn button-narrow mxn2 muted" v-link="{ name: 'enrollHelper' }">E</span>
+            <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'enrollHelper' }" tag="span">E</router-link>
             <chevron-right></chevron-right>
             <span v-if="route.name === 'enrollHelper'">
                 <span class="btn button-narrow mxn1">
@@ -19,15 +19,3 @@
         </div>
     </div>
 </template>
-<script>
-
-var getters = require('../../lib/vuex/getters.js')
-var actions = require('../../lib/vuex/actions.js')
-
-module.exports = {
-    vuex: {
-        getters: getters,
-        actions: actions
-    }
-}
-</script>
