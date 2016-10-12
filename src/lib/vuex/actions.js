@@ -427,7 +427,7 @@ var self = module.exports = {
         })
     },
     decodeHash: function(_) {
-        var termId = this.termId;
+        var termId = _.getters.termId;
         try {
             console.log('trying to restore events from hash')
             var hash = window.location.hash.substring(1);
@@ -445,7 +445,6 @@ var self = module.exports = {
                     termId: termId,
                     array: array
                 }).then(function(events) {
-                    console.log(events);
                     _.commit('restoreEventSourceSnapshot', {
                         termId: termId,
                         events: events
@@ -455,7 +454,7 @@ var self = module.exports = {
                     html += ['<p>', 'Looks like you are accessing the planner via a bookmark link! We have the planner for you!', '</p>'].join('');
                     html += ['<p>', 'However, you will <b>not</b> be able to make changes if you are viewing the planner via a bookmark link.', '</p>'].join('');
 
-                    _.state.alert
+                    _.getters.alert
                     .okBtn('OK')
                     .alert(html);
                     return Promise.reject();
@@ -790,7 +789,7 @@ var self = module.exports = {
         }).length === 0;
     },
     exportICS: function(_) {
-        var termId = _.state.termId;
+        var termId = _.getters.termId;
         var termDates = _.state.termDates[termId];
         var events = _.state.events[termId];
 

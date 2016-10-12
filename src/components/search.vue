@@ -143,6 +143,9 @@ module.exports = {
                     && this.extra.repeat.F === false
                 );
         },
+        alert: function() {
+            return this.$store.getters.alert;
+        },
         colorMap: function() {
             return this.$store.getters.colorMap;
         },
@@ -254,9 +257,9 @@ module.exports = {
             var termId = this.termId;
             var courseNum = helper.findNextCourseNum(this.$store.getters.flatCourses[termId], 100000)
             var course = helper.generateCourseObjectFromExtra(courseNum, this.extra);
-            var code = this.checkForConflict(dateMap, this.$store.getters.eventSource[termId], course);
+            var code = helper.checkForConflict(this.dateMap, this.$store.getters.eventSource[termId], course);
             if (code !== false) {
-                return this.alert().error('Conflict with ' + code)
+                return this.alert.error('Conflict with ' + code)
             }
             var courseInfo = helper.generateCourseInfoObjectFromExtra(courseNum, this.extra);
             return this.$store.dispatch('populateLocalEntriesWithExtra', {

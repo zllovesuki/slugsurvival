@@ -1,6 +1,6 @@
 var self = module.exports = {
 
-    generateCourseObjectFromExtra: function(_, courseNum, extra){
+    generateCourseObjectFromExtra: function(courseNum, extra){
         var course = {
             c: extra.title,
             n: extra.description,
@@ -29,7 +29,7 @@ var self = module.exports = {
         course.loct.push(locObj);
         return course;
     },
-    generateCourseInfoObjectFromExtra: function(_, courseNum, extra){
+    generateCourseInfoObjectFromExtra: function(courseNum, extra){
         var courseInfo = {
             ty: 'Other',
             cr: '0',
