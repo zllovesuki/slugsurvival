@@ -21,7 +21,7 @@ module.exports = {
     },
     created: function() {
         var self = this;
-        $script([dist + 'Chart.js/2.3.0/Chart.bundle.min.js', dist + 'moment/2.14.1/moment.min.js'], 'Chart.js')
+        $script([dist + 'plotly.js/1.7.3/plotly-basic.min.js', dist + 'moment/2.14.1/moment.min.js'], 'plotly.js')
     }
 }
 </script>

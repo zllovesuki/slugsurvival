@@ -22,7 +22,7 @@
                 </div>
 			</div>
 		</div>
-        <search :show="searchModal" v-on:closeModal="searchModal = false" :callback="openAnalytics" :selected-term-id="monitoredTerm"></search>
+        <search :show="searchModal" v-on:close="searchModal = false" :callback="openAnalytics" :selected-term-id="monitoredTerm"></search>
     </div>
 </template>
 
@@ -62,7 +62,7 @@ module.exports = {
         this.$store.getters.loading.go(30);
         this.$store.dispatch('setTitle', 'Analytics');
 
-        self.$store.dispatch('fetchTermCourses', this.monitoredTerm)
+        return self.$store.dispatch('fetchTermCourses', self.monitoredTerm)
         .then(function() {
             self.$store.getters.loading.go(100);
             self.ready = true;

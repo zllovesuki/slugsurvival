@@ -200,7 +200,7 @@ var self = module.exports = {
             if (invalid.yes) {
                 return _.dispatch('loadTermsAndRMPFromOnline', invalid)
             }
-        }.bind(this))
+        })
     },
     loadCourseDataFromLocal: function(_, termId) {
         var online;
@@ -352,7 +352,7 @@ var self = module.exports = {
                     termId: termId
                 })
             }
-        }.bind(this))
+        })
     },
     fetchThreeStatsByFirstLastName: function(_, payload) {
         var tid = _.state.instructorNameToTidMapping[payload.firstName + payload.lastName];
