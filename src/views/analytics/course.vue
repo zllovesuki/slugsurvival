@@ -8,14 +8,14 @@
             </div>
             <div class="m0 p2" v-if="ready">
                 <div class="clearfix">
-                    <canvas v-bind:id="canvasId"></canvas>
-                    <graph :canvas-id="canvasId" :graph-data="graphData" :graph-title="'Course ' + route.params.courseNum"></graph>
+                    <div v-bind:id="canvasId"></div>
+                    <graph :canvas-id="canvasId" :graph-data="graphData" :graph-title="'Time v Seats: ' + course.c + ' - ' + course.s"></graph>
                 </div>
             </div>
             <div class="m0 p2" v-if="ready">
                 <div class="clearfix">
                     <template v-for="(section, index) in sectionsData">
-                        <canvas v-bind:id="sectionsCanvasId[index]"></canvas>
+                        <div class="border-top" v-bind:id="sectionsCanvasId[index]"></div>
                         <graph :canvas-id="sectionsCanvasId[index]" :graph-data="section" :graph-title="'Section ' + section[0].num"></graph>
                     </template>
                 </div>
@@ -33,7 +33,8 @@ module.exports = {
             canvasId: null,
             sectionsData: [],
             sectionsCanvasId: [],
-            graphData: []
+            graphData: [],
+            monitoredTerm: config.monitoredTerm
         }
     },
     computed: {
@@ -42,6 +43,12 @@ module.exports = {
         },
         route: function() {
             return this.$store.getters.route;
+        },
+        flatCourses: function() {
+            return this.$store.getters.flatCourses
+        },
+        course: function() {
+            return this.flatCourses[this.monitoredTerm][this.route.params.courseNum]
         }
     },
     methods: {
@@ -59,35 +66,38 @@ module.exports = {
         var self = this;
         this.canvasId = this.makeid();
         this.$store.dispatch('setTitle', 'Analytics');
-        $script.ready('Chart.js', function() {
-            fetch(config.trackingURL + '/fetch/' + self.$store.getters.route.params.termId + '/' + self.$store.getters.route.params.courseNum).then(function(res) {
-                return res.json();
-            }).then(function(res) {
-                if (!res.ok) {
-                    return self.alert.error('An error has occurred');
-                }
-                if (res.results && res.results.length === 0) {
-                    return self.alert.error('No data found.');
-                }
-                self.graphData = res.results;
-                var numOfSections = (res.results[0] ? (res.results[0].seats.sec ? res.results[0].seats.sec.length : 0) : 0);
-                if (numOfSections > 0) {
-                    for (var i = 0, length = res.results.length; i < length; i++) {
-                        for (var j = 0; j < numOfSections; j++) {
-                            if (typeof self.sectionsData[j] === 'undefined') {
-                                self.sectionsData[j] = [];
+        return self.$store.dispatch('fetchTermCourses', self.monitoredTerm)
+        .then(function() {
+            $script.ready('plotly.js', function() {
+                return fetch(config.trackingURL + '/fetch/' + self.$store.getters.route.params.termId + '/' + self.$store.getters.route.params.courseNum).then(function(res) {
+                    return res.json();
+                }).then(function(res) {
+                    if (!res.ok) {
+                        return self.alert.error('An error has occurred');
+                    }
+                    if (res.results && res.results.length === 0) {
+                        return self.alert.error('No data found.');
+                    }
+                    self.graphData = res.results;
+                    var numOfSections = (res.results[0] ? (res.results[0].seats.sec ? res.results[0].seats.sec.length : 0) : 0);
+                    if (numOfSections > 0) {
+                        for (var i = 0, length = res.results.length; i < length; i++) {
+                            for (var j = 0; j < numOfSections; j++) {
+                                if (typeof self.sectionsData[j] === 'undefined') {
+                                    self.sectionsData[j] = [];
+                                }
+                                self.sectionsCanvasId[j] = self.makeid();
+                                self.sectionsData[j].push({
+                                    num: res.results[i].seats.sec[j].sec,
+                                    date: res.results[i].date,
+                                    seats: res.results[i].seats.sec[j]
+                                })
                             }
-                            self.sectionsCanvasId[j] = self.makeid();
-                            self.sectionsData[j].push({
-                                num: res.results[i].seats.sec[j].sec,
-                                date: res.results[i].date,
-                                seats: res.results[i].seats.sec[j]
-                            })
                         }
                     }
-                }
-                self.ready = true;
-            });
+                    self.ready = true;
+                });
+            })
         })
     }
 }

@@ -21,100 +21,92 @@ module.exports = {
     },
     data: function() {
         return {
-            canvas: null
+            canvas: null,
+            formatString: 'MMM Do YYYY, h:mm a'
         }
     },
     mounted: function() {
         var self = this;
-        $script.ready('Chart.js', function() {
-            var ctx = document.getElementById(self.canvasId);
-            var graphConfig = {
-                type: 'line',
-                data: {
-                    datasets: []
-                },
-                options: {
-                    responsive: true,
-                    title: {
-                        display: true,
-                        text: self.graphTitle
-                    },
-                    tooltips: {
-                        mode: 'index',
-                    },
-                    hover: {
-                        mode: 'dataset'
-                    },
-                    scales: {
-                        xAxes: [{
-                            type: 'time',
-                            display: true,
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Date'
-                            }
-                        }],
-                        yAxes: [{
-                            type: 'logarithmic',
-                            display: true,
-                            scaleLabel: {
-                                display: true,
-                                labelString: 'Seats'
-                            },
-                            ticks: {
-                                 beginAtZero: true,
-                                 callback: function(value) {if (value % 1 === 0) {return value;}}
-                             } //http://stackoverflow.com/questions/15751571/how-to-change-the-y-axis-values-from-real-numbers-to-integer-in-chartjs
-                        }]
-                    }
-                }
+        var ctx = document.getElementById(self.canvasId);
+        var layout = {
+            title: self.graphTitle,
+            yaxis: {
+                title: 'Seats'
+            },
+            xaxis: {
+                title: 'Time'
+            },
+            font: {
+                family: 'Lato',
+                size: 10
             }
-            var avail = [];
-            var enrolled = [];
-            var cap = [];
-            for (var i = 0, length = self.graphData.length; i < length; i++) {
-                if (typeof self.graphData[i].seats.avail !== 'undefined') {
-                    avail.push({
-                        x: moment(self.graphData[i].date * 1000).format(),
-                        y: self.graphData[i].seats.avail
-                    });
-                }
-                cap.push({
-                    x: moment(self.graphData[i].date * 1000).format(),
-                    y: self.graphData[i].seats.cap
-                });
-                enrolled.push({
-                    x: moment(self.graphData[i].date * 1000).format(),
-                    y: self.graphData[i].seats.enrolled
-                });
+        }
+        var graphConfig = [];
+        var status = {
+            name: 'Status',
+            x: [],
+            y: [],
+            yaxis: 'y2',
+            mode: '',
+            line: {
+                color: 'gray'
             }
-            if (avail.length > 0) {
-                graphConfig.data.datasets.push({
-                    label: 'Available',
-                    data: avail,
-                    fill: false,
-                    pointBorderWidth: 1,
-                    borderColor: 'green',
-                    backgroundColor: 'green'
-                })
+        }
+        var avail = {
+            name: 'Available',
+            x: [],
+            y: [],
+            mode: 'scatter',
+            line: {
+                color: 'green'
             }
-            graphConfig.data.datasets.push({
-                label: 'Capacity',
-                data: cap,
-                fill: false,
-                pointBorderWidth: 1,
-                borderColor: 'red',
-                backgroundColor: 'red'
-            })
-            graphConfig.data.datasets.push({
-                label: 'Enrolled',
-                data: enrolled,
-                fill: false,
-                borderColor: 'blue',
-                backgroundColor: 'blue'
-            })
-            self.canvas = new Chart(ctx, graphConfig);
-        })
+        }
+        var enrolled = {
+            name: 'Enrolled',
+            x: [],
+            y: [],
+            mode: 'scatter',
+            line: {
+                color: 'blue'
+            }
+        }
+        var cap = {
+            name: 'Capacity',
+            x: [],
+            y: [],
+            mode: 'scatter',
+            line: {
+                color: 'red'
+            }
+        }
+        for (var i = 0, length = self.graphData.length; i < length; i++) {
+            if (typeof self.graphData[i].seats.avail !== 'undefined') {
+                avail.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
+                avail.y.push(self.graphData[i].seats.avail)
+            }
+            if (typeof self.graphData[i].seats.status !== 'undefined') {
+                status.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
+                status.y.push(self.graphData[i].seats.status)
+            }
+            cap.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
+            cap.y.push(self.graphData[i].seats.cap)
+            enrolled.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
+            enrolled.y.push(self.graphData[i].seats.enrolled)
+        }
+        if (avail.x.length > 0) {
+            graphConfig.push(avail);
+        }
+        if (status.x.length > 0) {
+            graphConfig.push(status);
+            layout.yaxis2 = {
+                title: 'Status',
+                overlaying: 'y',
+                side: 'right'
+            };
+        }
+        graphConfig.push(enrolled);
+        graphConfig.push(cap);
+        self.canvas = Plotly.newPlot(ctx, graphConfig, layout);
     }
 }
 </script>

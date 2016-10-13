@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="ml1 mt1 mb1">
-            <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'mainPage' }" tag="a">P</router-link>
+            <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'termsList' }" tag="a">P</router-link>
             <chevron-right></chevron-right>
             <span v-if="route.name === 'termsList'">
                 <span class="btn button-narrow mxn1">

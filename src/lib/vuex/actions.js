@@ -14,15 +14,15 @@ var self = module.exports = {
     },
     fetchThreeStatsByTid: function(_, tid) {
         if (typeof _.state.instructorStats[tid] !== 'undefined') {
-            return Promise.resolve(_.state.instructorStats[tid]);
+            return Bluebird.resolve(_.state.instructorStats[tid]);
         }
-        return Promise.all([
+        return Bluebird.all([
             fetch(config.dbURL + '/rmp/ratings/' + tid + '.json'),
             fetch(config.dbURL + '/rmp/scores/' + tid + '.json'),
             fetch(config.dbURL + '/rmp/stats/' + tid + '.json')
         ])
         .spread(function(ratingsRes, scoresRes, statsRes){
-            return Promise.all([
+            return Bluebird.all([
                 ratingsRes.json(),
                 scoresRes.json(),
                 statsRes.json()
@@ -42,16 +42,16 @@ var self = module.exports = {
     },
     fetchHistoricData: function(_) {
         if (typeof _.state.historicData.spring !== 'undefined') {
-            return Promise.resolve();
+            return Bluebird.resolve();
         }
-        return Promise.all([
+        return Bluebird.all([
             fetch(config.dbURL + '/offered/spring.json'),
             fetch(config.dbURL + '/offered/summer.json'),
             fetch(config.dbURL + '/offered/fall.json'),
             fetch(config.dbURL + '/offered/winter.json')
         ])
         .spread(function(springRes, summerRes, fallRes, winterRes){
-            return Promise.all([
+            return Bluebird.all([
                 springRes.json(),
                 summerRes.json(),
                 fallRes.json(),
@@ -88,24 +88,24 @@ var self = module.exports = {
         var online;
         var self = this;
         var loadOnlineTimestamp = function() {
-            return Promise.all([
+            return Bluebird.all([
                 fetch(config.dbURL + '/timestamp/terms.json'),
                 fetch(config.dbURL + '/timestamp/rmp.json')
             ]).spread(function(termsRes, rmpRes){
-                return Promise.all([
+                return Bluebird.all([
                     termsRes.json(),
                     rmpRes.json()
                 ])
             })
         }
         var loadOfflineTimestamp = function() {
-            return Promise.all([
+            return Bluebird.all([
                 storage.getItem('termsListTimestamp'),
                 storage.getItem('rmpTimestamp')
             ])
         }
         var loadFromStorage = function(invalid) {
-            return Promise.all([
+            return Bluebird.all([
                 !invalid.termsList ? storage.getItem('termsList') : null,
                 !invalid.rmp ? storage.getItem('rmp') : null
             ]).spread(function(termsList, rmp) {
@@ -154,7 +154,7 @@ var self = module.exports = {
                             termsList: true,
                             rmp: true
                         }
-                        return Promise.reject(invalid)
+                        return Bluebird.reject(invalid)
                     }
                 }
 
@@ -162,19 +162,19 @@ var self = module.exports = {
                 else console.log('local copies valid')
 
                 return loadFromStorage(invalid).then(function () {
-                    return Promise.reject(invalid);
+                    return Bluebird.reject(invalid);
                 })
             })
         })
     },
     loadTermsAndRMPFromOnline: function(_, invalid) {
         var self = this;
-        return Promise.all([
+        return Bluebird.all([
             invalid.termsList ? fetch(config.dbURL + '/terms.json') : null,
             invalid.rmp ? fetch(config.dbURL + '/rmp.json') : null
         ])
         .spread(function(termsRes, rmpRes){
-            return Promise.all([
+            return Bluebird.all([
                 invalid.termsList ? termsRes.json() : null,
                 invalid.rmp ? rmpRes.json() : null
             ])
@@ -193,26 +193,26 @@ var self = module.exports = {
     },
     fetchTermsListAndRMP: function(_) {
         if (_.state.flatTermsList.length !== 0) {
-            return Promise.resolve();
+            return Bluebird.resolve();
         }
         return _.dispatch('loadTermsAndRMPFromLocal')
         .catch(function(invalid) {
             if (invalid.yes) {
                 return _.dispatch('loadTermsAndRMPFromOnline', invalid)
             }
-        }.bind(this))
+        })
     },
     loadCourseDataFromLocal: function(_, termId) {
         var online;
         var workaround = helper.iOS();
         var self = this;
         var loadOnlineTimestamp = function() {
-            return Promise.all([
+            return Bluebird.all([
                 fetch(config.dbURL + '/timestamp/terms/' + termId + '.json'),
                 fetch(config.dbURL + '/timestamp/courses/' + termId + '.json'),
                 fetch(config.dbURL + '/timestamp/index/' + termId + '.json')
             ]).spread(function(termsRes, InfoRes, indexRes){
-                return Promise.all([
+                return Bluebird.all([
                     termsRes.json(),
                     InfoRes.json(),
                     indexRes.json()
@@ -220,14 +220,14 @@ var self = module.exports = {
             })
         }
         var loadOfflineTimestamp = function() {
-            return Promise.all([
+            return Bluebird.all([
                 storage.getItem('termCourseTimestamp-' + termId),
                 storage.getItem('termCourseInfoTimestamp-' + termId),
                 storage.getItem('termIndexTimestamp-' + termId)
             ])
         }
         var loadFromStorage = function(invalid) {
-            return Promise.all([
+            return Bluebird.all([
                 !invalid.coursesData ? storage.getItem('termCourse-' + termId) : null,
                 !invalid.courseInfo ? storage.getItem('termCourseInfo-' + termId) : null,
                 workaround ? null : (!invalid.index ? storage.getItem('termIndex-' + termId) : null)
@@ -287,7 +287,7 @@ var self = module.exports = {
                             courseInfo: true,
                             index: true
                         }
-                        return Promise.reject(invalid)
+                        return Bluebird.reject(invalid)
                     }
                 }
 
@@ -295,7 +295,7 @@ var self = module.exports = {
                 else console.log('local copies valid')
 
                 return loadFromStorage(invalid).then(function () {
-                    return Promise.reject(invalid);
+                    return Bluebird.reject(invalid);
                 })
             })
         })
@@ -304,13 +304,13 @@ var self = module.exports = {
         var workaround = helper.iOS();
         var invalid = payload.invalid, termId = payload.termId;
         var self = this;
-        return Promise.all([
+        return Bluebird.all([
             invalid.coursesData ? fetch(config.dbURL + '/terms/' + termId + '.json') : null,
             invalid.courseInfo ? fetch(config.dbURL + '/courses/' + termId + '.json') : null,
             workaround ? null : (invalid.index ? fetch(config.dbURL + '/index/' + termId + '.json') : null)
         ])
         .spread(function(courseDataRes, courseInfoRes, indexRes){
-            return Promise.all([
+            return Bluebird.all([
                 invalid.coursesData ? courseDataRes.json() : null,
                 invalid.courseInfo ? courseInfoRes.json() : null,
                 workaround ? null : (invalid.index ? indexRes.json() : null)
@@ -342,7 +342,7 @@ var self = module.exports = {
         termId =  termId || _.getters.termId;
         _.commit('setTermName', _.state.termsList[termId])
         if (typeof _.state.flatCourses[termId] !== 'undefined') {
-            return Promise.resolve();
+            return Bluebird.resolve();
         }
         return _.dispatch('loadCourseDataFromLocal', termId)
         .catch(function(invalid) {
@@ -352,12 +352,12 @@ var self = module.exports = {
                     termId: termId
                 })
             }
-        }.bind(this))
+        })
     },
     fetchThreeStatsByFirstLastName: function(_, payload) {
         var tid = _.state.instructorNameToTidMapping[payload.firstName + payload.lastName];
         if (typeof tid === 'undefined') {
-            return Promise.resolve(null);
+            return Bluebird.resolve(null);
         }
         return _.dispatch('fetchThreeStatsByTid', tid);
     },
@@ -368,7 +368,7 @@ var self = module.exports = {
     parseFromCompact: function(_, payload) {
         var events = [];
         var index, split = [], courseNum, course, courseInfo, termId = payload.termId, array = payload.array;
-        return Promise.mapSeries(array, function(obj) {
+        return Bluebird.mapSeries(array, function(obj) {
             obj = obj + '';
             index = obj.indexOf('-');
             if (index === -1) {
@@ -398,7 +398,7 @@ var self = module.exports = {
                         courseInfo: courseInfo
                     })
                 }else{
-                    return Promise.resolve();
+                    return Bluebird.resolve();
                 }
             }
 
@@ -457,16 +457,16 @@ var self = module.exports = {
                     _.getters.alert
                     .okBtn('OK')
                     .alert(html);
-                    return Promise.reject();
+                    return Bluebird.reject();
                 })
             }else{
                 console.log('fallback to local copy')
-                return Promise.resolve();
+                return Bluebird.resolve();
             }
         }catch(e) {
             console.log(e);
             console.log('fallback to local copy')
-            return Promise.resolve();
+            return Bluebird.resolve();
         }
     },
     refreshCalendar: function(_) {
@@ -672,7 +672,7 @@ var self = module.exports = {
                 skipSaving: false
             });
 
-            return Promise.resolve();
+            return Bluebird.resolve();
         })
 
     },
@@ -699,7 +699,7 @@ var self = module.exports = {
                 skipSaving: false
             });
 
-            return Promise.resolve();
+            return Bluebird.resolve();
         })
     },
     pushAwaitSectionsToEventSource: function(_, payload) {

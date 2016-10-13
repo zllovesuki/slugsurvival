@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="ml1 mt1 mb1">
-            <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'mainPage' }" tag="a">A</router-link>
+            <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'analyticsHelper' }" tag="a">A</router-link>
             <chevron-right></chevron-right>
             <span class="btn button-narrow mxn1">
                 Analytics (alpha)
@@ -19,9 +19,9 @@ module.exports = {
     components: {
         chevronRight: require('../../lib/icons/chevron-right.vue')
     },
-    created: function() {
+    mounted: function() {
         var self = this;
-        $script([dist + 'Chart.js/2.3.0/Chart.bundle.min.js', dist + 'moment/2.14.1/moment.min.js'], 'Chart.js')
+        $script(dist + 'plotly.js/1.17.3-no-promise-polyfill/plotly-basic.min.js', 'plotly.js')
     }
 }
 </script>

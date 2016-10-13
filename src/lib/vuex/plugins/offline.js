@@ -20,7 +20,7 @@ module.exports = function(storage) {
                     return res.json();
                 })
                 .then(function(onlineTimestamp) {
-                    return Promise.all([
+                    return Bluebird.all([
                         storage.setItem('termCourseTimestamp-' + termId, onlineTimestamp),
                         storage.setItem('termCourse-' + termId, coursesData)
                     ])
@@ -40,7 +40,7 @@ module.exports = function(storage) {
                     return res.json();
                 })
                 .then(function(onlineTimestamp) {
-                    return Promise.all([
+                    return Bluebird.all([
                         storage.setItem('termCourseInfoTimestamp-' + termId, onlineTimestamp),
                         storage.setItem('termCourseInfo-' + termId, courseInfo)
                     ])
@@ -60,7 +60,7 @@ module.exports = function(storage) {
                     return res.json();
                 })
                 .then(function(onlineTimestamp) {
-                    return Promise.all([
+                    return Bluebird.all([
                         storage.setItem('rmpTimestamp', onlineTimestamp),
                         storage.setItem('rmp', rmp)
                     ])
@@ -80,7 +80,7 @@ module.exports = function(storage) {
                     return res.json();
                 })
                 .then(function(onlineTimestamp) {
-                    return Promise.all([
+                    return Bluebird.all([
                         storage.setItem('termsListTimestamp', onlineTimestamp),
                         storage.setItem('termsList', termsList)
                     ])
@@ -102,7 +102,7 @@ module.exports = function(storage) {
                         return res.json();
                     })
                     .then(function(onlineTimestamp) {
-                        return Promise.all([
+                        return Bluebird.all([
                             storage.setItem('termIndexTimestamp-' + termId, onlineTimestamp),
                             storage.setItem('termIndex-' + termId, index)
                         ])

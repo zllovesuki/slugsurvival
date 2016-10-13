@@ -90,7 +90,7 @@ module.exports = {
             return this.$store.dispatch('noAwaitSection', termId)
             .then(function(noAwaitSection) {
                 var p = function() {
-                    if (noAwaitSection) return Promise.resolve();
+                    if (noAwaitSection) return Bluebird.resolve();
                     return self.jumpOutAwait(termId).then(function() {
                         return self.$store.dispatch('refreshCalendar')
                     })
@@ -402,7 +402,7 @@ module.exports = {
     },
     created: function() {
         var self = this;
-        $script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'moment/2.14.1/moment.min.js', dist + 'lz-string/1.4.4/lz-string.min.js'], 'jQuery', function() {
+        $script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'lz-string/1.4.4/lz-string.min.js'], 'bundle', function() {
             $script(dist + 'fullcalender/2.9.1/fullcalendar.min.js', 'calendar')
         })
     },
@@ -411,7 +411,7 @@ module.exports = {
         this.$store.getters.loading.go(30);
         this.$store.dispatch('setTitle', 'Planner');
 
-        $script.ready('jQuery', function() {
+        $script.ready('bundle', function() {
             self.$store.getters.loading.go(50);
         })
         $script.ready('calendar', function() {
