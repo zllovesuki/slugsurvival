@@ -1,7 +1,7 @@
 <template>
     <div>
-        <div class="overflow-hidden bg-white rounded mb2 clearfix">
-            <div class="m0 p2" v-show="!ready">
+        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-show="!ready">
+            <div class="m0 p2">
                 <div class="clearfix">
                     Loading...
                 </div>
