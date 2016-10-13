@@ -14,7 +14,7 @@
                             SlugSurvival is not affiliated with UCSC or any of its family of sites.
                         </li>
                         <li>
-                            Selecting courses <b><u>nor</u></b> signing up for notifications on SlugSurvial <b><u>will</u></b> automatically enroll you into the courses in the AIS (my.ucsc.edu).
+                            <b><u>Neither</u></b> selecting courses <b><u>nor</u></b> signing up for notifications on SlugSurvial <b><u>will</u></b> automatically enroll you into the courses in the AIS (my.ucsc.edu).
                         </li>
                     </ol>
                 </div>
