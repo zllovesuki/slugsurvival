@@ -65,6 +65,14 @@
                     </p>
                 </div>
             </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
+                    <h3>(new) Analyze Changes</h3>
+                    <p>
+                        <img src="https://img.s3.fmt01.sdapi.net/slugsurvival-campaign/analytics.gif" alt="" />
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </template>
