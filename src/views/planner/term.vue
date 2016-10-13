@@ -183,6 +183,7 @@ module.exports = {
                     }
                     return;// this.alert.error('Choose a section first!')
                 }else{
+                    if (calEvent.sectionNum === null && self.lock === true) return;
                     var isSection = typeof calEvent.section !== 'undefined';
                     if (isSection && calEvent.sectionNum === null && self.lock !== true) {
                         // Choose later
