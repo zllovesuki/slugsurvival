@@ -30,6 +30,16 @@ module.exports = {
         var ctx = document.getElementById(self.canvasId);
         var layout = {
             title: self.graphTitle,
+            showlegend: true,
+            legend: {
+                orientation: 'h'
+            },
+            margin: {
+                t: 80,
+                l: 60,
+                r: 60,
+                b: 50
+            },
             yaxis: {
                 title: 'Seats'
             },
@@ -56,7 +66,7 @@ module.exports = {
             name: 'Available',
             x: [],
             y: [],
-            mode: 'scatter',
+            mode: 'lines+markers',
             line: {
                 color: 'green'
             }
@@ -65,7 +75,7 @@ module.exports = {
             name: 'Enrolled',
             x: [],
             y: [],
-            mode: 'scatter',
+            mode: 'lines+markers',
             line: {
                 color: 'blue'
             }
@@ -74,7 +84,7 @@ module.exports = {
             name: 'Capacity',
             x: [],
             y: [],
-            mode: 'scatter',
+            mode: 'lines+markers',
             line: {
                 color: 'red'
             }
@@ -106,7 +116,7 @@ module.exports = {
         }
         graphConfig.push(enrolled);
         graphConfig.push(cap);
-        self.canvas = Plotly.newPlot(ctx, graphConfig, layout);
+        self.canvas = Plotly.newPlot(ctx, graphConfig, layout, {displaylogo: false});
     }
 }
 </script>

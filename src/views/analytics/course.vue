@@ -6,21 +6,25 @@
                     Loading...
                 </div>
             </div>
-            <div class="m0 p2" v-if="ready">
+        </div>
+        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-if="ready">
+            <div class="m0 p0">
                 <div class="clearfix">
                     <div v-bind:id="canvasId"></div>
                     <graph :canvas-id="canvasId" :graph-data="graphData" :graph-title="'Time v Seats: ' + course.c + ' - ' + course.s"></graph>
                 </div>
             </div>
-            <div class="m0 p2" v-if="ready">
-                <div class="clearfix">
-                    <template v-for="(section, index) in sectionsData">
-                        <div class="border-top" v-bind:id="sectionsCanvasId[index]"></div>
+        </div>
+        <template v-for="(section, index) in sectionsData" v-if="ready">
+            <div class="overflow-hidden bg-white rounded mb2 clearfix">
+                <div class="m0 p0">
+                    <div class="clearfix">
+                        <div v-bind:id="sectionsCanvasId[index]"></div>
                         <graph :canvas-id="sectionsCanvasId[index]" :graph-data="section" :graph-title="'Section ' + section[0].num"></graph>
-                    </template>
+                    </div>
                 </div>
             </div>
-        </div>
+        </template>
     </div>
 </template>
 <script>
