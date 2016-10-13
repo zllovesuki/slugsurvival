@@ -21,7 +21,7 @@ module.exports = {
     },
     mounted: function() {
         var self = this;
-        $script(dist + 'plotly.js/1.7.3/plotly-basic.min.js', 'plotly.js')
+        $script(dist + 'plotly.js/1.17.3-no-promise-polyfill/plotly-basic.min.js', 'plotly.js')
     }
 }
 </script>
