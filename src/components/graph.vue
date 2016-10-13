@@ -22,7 +22,7 @@ module.exports = {
     data: function() {
         return {
             canvas: null,
-            formatString: 'MMM Do YYYY, h:mm a'
+            formatString: 'YYYY-MM-DD HH:mm'
         }
     },
     mounted: function() {
