@@ -15,7 +15,7 @@
             <div class="m0 p2" v-if="ready">
                 <div class="clearfix">
                     <template v-for="(section, index) in sectionsData">
-                        <div v-bind:id="sectionsCanvasId[index]"></div>
+                        <div class="border-top" v-bind:id="sectionsCanvasId[index]"></div>
                         <graph :canvas-id="sectionsCanvasId[index]" :graph-data="section" :graph-title="'Section ' + section[0].num"></graph>
                     </template>
                 </div>
