@@ -46,5 +46,8 @@ module.exports = {
     },
     dateMap: function(state) {
         return state.dateMap
+    },
+    latestTermCode: function(state) {
+        return (typeof state.flatTermsList[0] === undefined ? null : parseInt(state.flatTermsList[0].code))
     }
 }

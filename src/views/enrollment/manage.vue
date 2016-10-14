@@ -42,7 +42,7 @@
 						<template v-for="course in courses" track-by="course.num">
 							<tr>
 								<td class="col col-6">
-									<span class="btn clickable left" @click="showCourse(monitoredTerm, course)">{{ course.c }} - {{ course.s }}</span>
+									<span class="btn clickable left" @click="showCourse(latestTermCode, course)">{{ course.c }} - {{ course.s }}</span>
 								</td>
 							</tr>
 						</template>
@@ -66,7 +66,7 @@
                 </div>
 			</div>
 		</div>
-        <search :show="searchModal" v-on:closeModal="searchModal = false" :callback="addToNotifyList" :selected-term-id="monitoredTerm"></search>
+        <search :show="searchModal" v-on:closeModal="searchModal = false" :callback="addToNotifyList" :selected-term-id="latestTermCode"></search>
     </div>
 </template>
 
@@ -78,7 +78,7 @@ module.exports = {
         return {
             ready: false,
             searchModal: false,
-            monitoredTerm: config.monitoredTerm,
+            latestTermCode: config.latestTermCode,
             courses: [],
             sub: {
                 recipient: '',
@@ -109,6 +109,9 @@ module.exports = {
         },
         termName: function() {
             return this.$store.getters.termName;
+        },
+        latestTermCode: function() {
+            return this.$store.getters.latestTermCode;
         }
     },
     methods: {
@@ -121,7 +124,7 @@ module.exports = {
         addToNotifyList: function(course) {
             var self = this;
             return self.$store.dispatch('getCourseDom', {
-                termId: self.monitoredTerm,
+                termId: self.latestTermCode,
                 courseObj: course,
                 isSection: false
             })
@@ -224,7 +227,7 @@ module.exports = {
                 self.sub.verified = true;
                 self.sub.inFlight = false;
                 self.courses = res.courses.map(function(num) {
-                    return self.flatCourses[self.monitoredTerm][num]
+                    return self.flatCourses[self.latestTermCode][num]
                 });
             })
             .catch(function(e) {
@@ -273,7 +276,7 @@ module.exports = {
         this.loading.go(30);
         this.$store.dispatch('setTitle', 'Manage');
 
-        self.$store.dispatch('fetchTermCourses', this.monitoredTerm)
+        self.$store.dispatch('fetchTermCourses', this.latestTermCode)
         .then(function() {
             self.loading.go(100);
             self.ready = true;

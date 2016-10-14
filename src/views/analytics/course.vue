@@ -13,7 +13,7 @@
 			</div>
 			<div class="m0 p1 border-top">
                 <div class="clearfix">
-                    <span class="btn black h6 not-clickable"><i>Currently we have the data for {{ termName }}: </i></span>
+                    <span class="btn black h6 not-clickable"><i>Currently we have the data for {{ termName }} until {{ dropDeadline }}: </i></span>
 				</div>
                 <div class="m0 p1">
     				<div class="clearfix">
@@ -22,7 +22,7 @@
                 </div>
 			</div>
 		</div>
-        <search :show="searchModal" v-on:close="searchModal = false" :callback="openAnalytics" :selected-term-id="monitoredTerm"></search>
+        <search :show="searchModal" v-on:close="searchModal = false" :callback="openAnalytics" :selected-term-id="latestTermCode"></search>
         <div class="overflow-hidden bg-white rounded mb2" v-show="!ready || !graphDataReady">
             <div class="m0 p2">
                 <div class="clearfix">
@@ -59,12 +59,12 @@ module.exports = {
             ready: false,
             graphDataReady: true,
             searchModal: false,
+            dropDeadline: null,
             canvasId: null,
             course: {},
             sectionsData: [],
             sectionsCanvasId: [],
-            graphData: [],
-            monitoredTerm: config.monitoredTerm
+            graphData: []
         }
     },
     computed: {
@@ -82,6 +82,9 @@ module.exports = {
         },
         termName: function() {
             return this.$store.getters.termName;
+        },
+        latestTermCode: function() {
+            return this.$store.getters.latestTermCode;
         }
     },
     watch: {
@@ -107,7 +110,7 @@ module.exports = {
         openAnalytics: function(course) {
             this.searchModal = false;
             this.graphDataReady = false;
-            this.$router.push({ name: 'analyticsCourse', params: { termId: this.monitoredTerm, courseNum: course.num }})
+            this.$router.push({ name: 'analyticsCourse', params: { termId: this.latestTermCode, courseNum: course.num }})
         },
         makeid: function() {
             var text = "";
@@ -156,8 +159,12 @@ module.exports = {
         var self = this;
         this.canvasId = this.makeid();
         this.$store.dispatch('setTitle', 'Analytics');
-        return self.$store.dispatch('fetchTermCourses', self.monitoredTerm)
+        return self.$store.dispatch('fetchTermCourses', self.latestTermCode)
         .then(function() {
+            return self.$store.dispatch('calculateDropDeadline', self.latestTermCode)
+        })
+        .then(function(deadline) {
+            self.dropDeadline = moment(deadline).format('YYYY-MM-DD HH:mm');
             $script.ready('plotly.js', function() {
                 self.ready = true;
                 if (!self.route.params.courseNum) return;

@@ -35,6 +35,8 @@ module.exports = {
         awaitSelection: '#45B29D'
     },
 
+    daysTillDeadline: 21,
+
     events: {
 
     },

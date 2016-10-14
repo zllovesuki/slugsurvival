@@ -956,5 +956,20 @@ var self = module.exports = {
         .then(function(res) {
             return res.json();
         })
+    },
+    calculateDropDeadline: function(_, termId) {
+        if (typeof _.state.termDates[termId] === 'undefined') return null;
+        var start = _.state.termDates[termId].start;
+        var deadline = new Date(start);
+        deadline.setDate(deadline.getDate() + _.state.daysTillDeadline);
+        return deadline;
+    },
+    passDropDeadline: function(_, termId) {
+        if (typeof _.state.termDates[termId] === 'undefined') return null;
+        var start = _.state.termDates[termId].start;
+        var today = new Date();
+        var deadline = new Date(start);
+        deadline.setDate(deadline.getDate() + _.state.daysTillDeadline);
+        return deadline.getTime() < today.getTime();
     }
 }

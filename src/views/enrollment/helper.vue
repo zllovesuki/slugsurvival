@@ -59,7 +59,7 @@
 						<template v-for="course in courses" track-by="course.num">
 							<tr>
 								<td class="col col-6">
-									<span class="btn clickable left" @click="showCourse(monitoredTerm, course)">{{ course.c }} - {{ course.s }}</span>
+									<span class="btn clickable left" @click="showCourse(latestTermCode, course)">{{ course.c }} - {{ course.s }}</span>
 								</td>
 							</tr>
 						</template>
@@ -84,7 +84,7 @@
                 </div>
 			</div>
 		</div>
-        <search :show="searchModal" v-on:close="searchModal = false" :callback="addToNotifyList" :selected-term-id="monitoredTerm"></search>
+        <search :show="searchModal" v-on:close="searchModal = false" :callback="addToNotifyList" :selected-term-id="latestTermCode"></search>
         <modal :show="sub.modal" v-on:close="sub.modal = false">
 			<h4 slot="header">Subscribe to Changes</h4>
 			<span slot="body">
@@ -117,7 +117,7 @@ module.exports = {
         return {
             ready: false,
             searchModal: false,
-            monitoredTerm: config.monitoredTerm,
+            passDropDeadline: false,
             courses: [],
             sub: {
                 modal: false,
@@ -155,6 +155,9 @@ module.exports = {
         },
         termName: function() {
             return this.$store.getters.termName;
+        },
+        latestTermCode: function() {
+            return this.$store.getters.latestTermCode;
         }
     },
     methods: {
@@ -305,15 +308,15 @@ module.exports = {
         importPlanner: function() {
             var self = this;
             // In case the user is accessing via a bookmark link
-            return this.$store.dispatch('emptyEventSource', this.monitoredTerm)
+            return this.$store.dispatch('emptyEventSource', this.latestTermCode)
             .then(function() {
                 // Force to load from local
                 return self.$store.dispatch('loadAutosave', {
-                    termId: self.monitoredTerm + '',
+                    termId: self.latestTermCode + '',
                     alert: false
                 })
                 .then(function() {
-                    var events = self.$store.getters.eventSource[self.monitoredTerm];
+                    var events = self.$store.getters.eventSource[self.latestTermCode];
                     if (!events) return;
                     self.courses = [];
                     var compact = helper.compact(events);
@@ -322,7 +325,7 @@ module.exports = {
                     for (var i = 0, length = compact.length; i < length; i++) {
                         split = compact[i].split('-');
                         if (split[0] / 100000 >= 1) continue;
-                        course = self.flatCourses[self.monitoredTerm][split[0]];
+                        course = self.flatCourses[self.latestTermCode][split[0]];
                         self.courses.push(course)
                     }
                 })
@@ -331,7 +334,7 @@ module.exports = {
         addToNotifyList: function(course) {
             var self = this;
             return self.$store.dispatch('getCourseDom', {
-                termId: self.monitoredTerm,
+                termId: self.latestTermCode,
                 courseObj: course,
                 isSection: false
             })
@@ -354,9 +357,13 @@ module.exports = {
         this.loading.go(30);
         this.$store.dispatch('setTitle', 'Tracker');
 
-        self.$store.dispatch('fetchTermCourses', this.monitoredTerm)
+        self.$store.dispatch('fetchTermCourses', this.latestTermCode)
         .then(function() {
-            self.$store.getters.loading.go(100);
+            return self.$store.dispatch('passDropDeadline', self.latestTermCode)
+        })
+        .then(function(is) {
+            self.loading.go(100);
+            self.passDropDeadline = is;
             self.ready = true;
         })
     }
