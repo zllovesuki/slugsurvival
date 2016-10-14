@@ -1,7 +1,7 @@
 <template>
     <div>
         <div class="ml1 mt1 mb1">
-            <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'explainText' }" tag="a">?</router-link>
+            <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'explainText' }" tag="span">?</router-link>
             <chevron-right></chevron-right>
             <span class="btn button-narrow mxn1">
                 Explaining Things

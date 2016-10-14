@@ -1,6 +1,6 @@
 {
   "name": "slugsurvival",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "scripts": {
     "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
     "prod": "NODE_ENV=production node node_modules/browserify/bin/cmd.js -t stringify -t vueify -e src/main.js | ./node_modules/uglifyjs/bin/uglifyjs -c -m > public/prod.js",
@@ -30,10 +30,10 @@
     "nanobar": "^0.4.2",
     "stringify": "^5.1.0",
     "uglifyjs": "^2.4.10",
-    "vue": "^2.0.2",
+    "vue": "^2.0.3",
     "vue-hot-reload-api": "^2.0.6",
     "vue-resource": "^1.0.3",
-    "vue-router": "^2.0.0",
+    "vue-router": "^2.0.1",
     "vueify": "^9.2.4",
     "vueify-insert-css": "^1.0.0",
     "vuex": "^2.0.0",
