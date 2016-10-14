@@ -17,6 +17,13 @@
 				</div>
 			</div>
 		</div>
+        <div class="overflow-hidden bg-white rounded mb2" v-show="!ready">
+            <div class="m0 p2">
+                <div class="clearfix">
+                    Loading...
+                </div>
+            </div>
+        </div>
 		<div class="overflow-hidden bg-white rounded mb2" v-if="ready">
 			<div class="m0 p1">
 				<div class="clearfix">

@@ -11,6 +11,9 @@ module.exports = {
     title: function(state) {
         return state.title;
     },
+    termListsLoaded: function(state) {
+        return state.flatTermsList.length !== 0;
+    },
     termId: function(state) {
         return state.route.params.termId;
     },
