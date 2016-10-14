@@ -1,21 +1,44 @@
 <template>
     <div>
-        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-show="!ready">
+        <div class="overflow-hidden bg-white rounded mb2" v-show="ready">
+			<div class="m0 p1">
+				<div class="clearfix">
+					<span class="btn black h5">Course Opening Analytics: </span>
+				</div>
+				<div class="clearfix">
+					<span class="ml1 btn black h6 muted not-clickable">
+                        You can check the historical enrollment data of a course.
+                    </span>
+				</div>
+			</div>
+			<div class="m0 p1 border-top">
+                <div class="clearfix">
+                    <span class="btn black h6 not-clickable"><i>Currently we have the data for {{ termName }}: </i></span>
+				</div>
+                <div class="m0 p1">
+    				<div class="clearfix">
+    				    <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal">search anything</a>
+    				</div>
+                </div>
+			</div>
+		</div>
+        <search :show="searchModal" v-on:close="searchModal = false" :callback="openAnalytics" :selected-term-id="monitoredTerm"></search>
+        <div class="overflow-hidden bg-white rounded mb2" v-show="!ready || !graphDataReady">
             <div class="m0 p2">
                 <div class="clearfix">
                     Loading...
                 </div>
             </div>
         </div>
-        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-if="ready">
+        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-if="ready && graphDataReady && graphData.length > 0">
             <div class="m0 p0">
                 <div class="clearfix">
                     <div v-bind:id="canvasId"></div>
-                    <graph :canvas-id="canvasId" :graph-data="graphData" :graph-title="'Time v Seats: ' + course.c + ' - ' + course.s"></graph>
+                    <graph :canvas-id="canvasId" :graph-data="graphData" :graph-title="'Time v Seats: ' + course.c + ' - ' + course.n"></graph>
                 </div>
             </div>
         </div>
-        <template v-for="(section, index) in sectionsData" v-if="ready">
+        <template v-for="(section, index) in sectionsData" v-if="ready && graphDataReady && sectionsData.length > 0">
             <div class="overflow-hidden bg-white rounded mb2 clearfix">
                 <div class="m0 p0">
                     <div class="clearfix">
@@ -34,7 +57,10 @@ module.exports = {
     data: function() {
         return {
             ready: false,
+            graphDataReady: true,
+            searchModal: false,
             canvasId: null,
+            course: {},
             sectionsData: [],
             sectionsCanvasId: [],
             graphData: [],
@@ -51,11 +77,38 @@ module.exports = {
         flatCourses: function() {
             return this.$store.getters.flatCourses
         },
-        course: function() {
-            return this.flatCourses[this.monitoredTerm][this.route.params.courseNum]
+        colorMap: function() {
+            return this.$store.getters.colorMap;
+        },
+        termName: function() {
+            return this.$store.getters.termName;
+        }
+    },
+    watch: {
+        'route': function(val, oldVal) {
+            if (!this.route.params.termId || !this.route.params.courseNum) {
+                this.graphData = [];
+                this.sectionsData = [];
+                this.graphDataReady = true;
+                return;
+            }
+            this.$nextTick(function() {
+                return this.loadGraph(this.route.params)
+            })
         }
     },
     methods: {
+        showSearchModal: function() {
+            this.searchModal = true;
+            setTimeout(function() {
+                document.getElementsByClassName('search-box')[0].focus();
+            }, 75);
+        },
+        openAnalytics: function(course) {
+            this.searchModal = false;
+            this.graphDataReady = false;
+            this.$router.push({ name: 'analyticsCourse', params: { termId: this.monitoredTerm, courseNum: course.num }})
+        },
         makeid: function() {
             var text = "";
             var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -64,7 +117,40 @@ module.exports = {
                 text += possible.charAt(Math.floor(Math.random() * possible.length));
 
             return text;
-        } // http://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+        }, // http://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+        loadGraph: function(params) {
+            var self = this;
+            self.graphData = [];
+            return fetch(config.trackingURL + '/fetch/' + params.termId + '/' + params.courseNum).then(function(res) {
+                return res.json();
+            }).then(function(res) {
+                if (!res.ok) {
+                    return self.alert.error('An error has occurred');
+                }
+                if (res.results && res.results.length === 0) {
+                    return self.alert.error('No data found.');
+                }
+                self.graphData = res.results;
+                var numOfSections = (res.results[0] ? (res.results[0].seats.sec ? res.results[0].seats.sec.length : 0) : 0);
+                if (numOfSections > 0) {
+                    for (var i = 0, length = res.results.length; i < length; i++) {
+                        for (var j = 0; j < numOfSections; j++) {
+                            if (typeof self.sectionsData[j] === 'undefined') {
+                                self.sectionsData[j] = [];
+                            }
+                            self.sectionsCanvasId[j] = self.makeid();
+                            self.sectionsData[j].push({
+                                num: res.results[i].seats.sec[j].sec,
+                                date: res.results[i].date,
+                                seats: res.results[i].seats.sec[j]
+                            })
+                        }
+                    }
+                }
+                self.course = self.flatCourses[params.termId][params.courseNum];
+                self.graphDataReady = true;
+            });
+        }
     },
     mounted: function() {
         var self = this;
@@ -73,34 +159,10 @@ module.exports = {
         return self.$store.dispatch('fetchTermCourses', self.monitoredTerm)
         .then(function() {
             $script.ready('plotly.js', function() {
-                return fetch(config.trackingURL + '/fetch/' + self.$store.getters.route.params.termId + '/' + self.$store.getters.route.params.courseNum).then(function(res) {
-                    return res.json();
-                }).then(function(res) {
-                    if (!res.ok) {
-                        return self.alert.error('An error has occurred');
-                    }
-                    if (res.results && res.results.length === 0) {
-                        return self.alert.error('No data found.');
-                    }
-                    self.graphData = res.results;
-                    var numOfSections = (res.results[0] ? (res.results[0].seats.sec ? res.results[0].seats.sec.length : 0) : 0);
-                    if (numOfSections > 0) {
-                        for (var i = 0, length = res.results.length; i < length; i++) {
-                            for (var j = 0; j < numOfSections; j++) {
-                                if (typeof self.sectionsData[j] === 'undefined') {
-                                    self.sectionsData[j] = [];
-                                }
-                                self.sectionsCanvasId[j] = self.makeid();
-                                self.sectionsData[j].push({
-                                    num: res.results[i].seats.sec[j].sec,
-                                    date: res.results[i].date,
-                                    seats: res.results[i].seats.sec[j]
-                                })
-                            }
-                        }
-                    }
-                    self.ready = true;
-                });
+                self.ready = true;
+                if (!self.route.params.courseNum) return;
+                self.graphDataReady = false;
+                return self.loadGraph(self.route.params)
             })
         })
     }

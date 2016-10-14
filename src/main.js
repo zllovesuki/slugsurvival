@@ -24,12 +24,7 @@ var router = new VueRouter({
             component: require('./views/analytics/index.vue'),
             children: [
                 {
-                    path: '',
-                    name: 'analyticsHelper',
-                    component: require('./views/analytics/helper.vue')
-                },
-                {
-                    path: ':termId/:courseNum',
+                    path: ':termId?/:courseNum?',
                     name: 'analyticsCourse',
                     component: require('./views/analytics/course.vue')
                 }

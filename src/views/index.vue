@@ -36,7 +36,7 @@
                 </div>
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
-                        <router-link class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'analyticsHelper' }">Enrollment Analytics</router-link>
+                        <router-link class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'analyticsCourse' }">Enrollment Analytics</router-link>
                     </div>
                 </div>
             </div>
