@@ -77,7 +77,7 @@ module.exports = {
 <style>
 .modal-mask {
     position: fixed;
-    z-index: 98;
+    z-index: 100001;
     top: 0;
     left: 0;
     width: 100%;
