@@ -515,6 +515,7 @@ var self = module.exports = {
             obj.end = dateMap['Saturday'];
             obj.course = course;
             obj.color = colorMap.course;
+            if (course.custom) obj.color = colorMap.custom;
             if (t === false) {
                 // class is cancelled
                 obj.color = 'black';
@@ -526,7 +527,6 @@ var self = module.exports = {
                 obj.start = dateMap[startDay] + ' ' + t.time.start;
                 obj.end = dateMap[endDay] + ' ' + t.time.end;
             }
-            if (course.custom) obj.color = colorMap.custom;
             return obj;
         }
 
@@ -593,7 +593,7 @@ var self = module.exports = {
             return events;
         }
 
-        var secObj = function(course, section, awaitSelection, startDay, endDay, t) {
+        var secObj = function(course, section, conflict, awaitSelection, startDay, endDay, t) {
             var obj = {};
             obj.title = [course.c, 'Section ' + section.sec].join("\n")
             obj.number = course.num;
@@ -601,10 +601,13 @@ var self = module.exports = {
             obj.color = colorMap.section;
             obj.course = course;
             obj.section = section;
-            obj.conflict = false;
+            obj.conflict = conflict;
             obj.awaitSelection = awaitSelection;
             obj.start = dateMap['Monday'];
             obj.end = dateMap['Saturday'];
+            if (awaitSelection) {
+                obj.color = colorMap.awaitSelection;
+            }
             if (t === false) {
                 // section is cancelled
                 obj.color = 'black';
@@ -616,8 +619,9 @@ var self = module.exports = {
                 obj.start = dateMap[startDay] + ' ' + t.time.start;
                 obj.end = dateMap[endDay] + ' ' + t.time.end;
             }
-            if (awaitSelection) {
-                obj.color = colorMap.awaitSelection;
+            if (secSeats && awaitSelection) {
+                seat = getSeatBySectionNum(secSeats, section.num);
+                obj.title = [section.sec + ' - ' + seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
             }
             return obj;
         }
@@ -625,10 +629,11 @@ var self = module.exports = {
         for (var i = 0, sections = courseInfo.sec, length = sections.length; i < length; i++) {
             if (!awaitSelection && sectionNumber !== null && sections[i].num != sectionNumber) continue;
             if (!!!sections[i].loct[0].t) {
-                events.push(secObj(course, sections[i], awaitSelection, 'Monday', 'Saturday', sections[i].loct[0].t))
+                events.push(secObj(course, sections[i], false, awaitSelection, 'Monday', 'Saturday', sections[i].loct[0].t, null))
             }else{
                 for (var j = 0, days = sections[i].loct[0].t.day, length2 = days.length; j < length2; j++) {
-                    events.push(secObj(course, sections[i], awaitSelection, days[j], days[j], sections[i].loct[0].t))
+                    conflict = helper.checkForConflict(dateMap, _.state.events[termId], sections[i]);
+                    events.push(secObj(course, sections[i], conflict, awaitSelection, days[j], days[j], sections[i].loct[0].t, secSeats))
                 }
             }
         }
