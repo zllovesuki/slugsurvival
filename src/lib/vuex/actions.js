@@ -89,8 +89,8 @@ var self = module.exports = {
         var self = this;
         var loadOnlineTimestamp = function() {
             return Bluebird.all([
-                fetch(config.dbURL + '/timestamp/terms.json'),
-                fetch(config.dbURL + '/timestamp/rmp.json')
+                fetch(config.dbURL + '/timestamp/terms.json', {cache: 'no-cache'}),
+                fetch(config.dbURL + '/timestamp/rmp.json', {cache: 'no-cache'})
             ]).spread(function(termsRes, rmpRes){
                 return Bluebird.all([
                     termsRes.json(),
@@ -208,9 +208,9 @@ var self = module.exports = {
         var self = this;
         var loadOnlineTimestamp = function() {
             return Bluebird.all([
-                fetch(config.dbURL + '/timestamp/terms/' + termId + '.json'),
-                fetch(config.dbURL + '/timestamp/courses/' + termId + '.json'),
-                fetch(config.dbURL + '/timestamp/index/' + termId + '.json')
+                fetch(config.dbURL + '/timestamp/terms/' + termId + '.json', {cache: 'no-cache'}),
+                fetch(config.dbURL + '/timestamp/courses/' + termId + '.json', {cache: 'no-cache'}),
+                fetch(config.dbURL + '/timestamp/index/' + termId + '.json', {cache: 'no-cache'})
             ]).spread(function(termsRes, InfoRes, indexRes){
                 return Bluebird.all([
                     termsRes.json(),
