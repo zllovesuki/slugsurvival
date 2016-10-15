@@ -614,7 +614,7 @@ var self = module.exports = {
             if (t === false) {
                 // section is cancelled
                 obj.color = 'black';
-                obj.title = [section.sec, 'Cancelled'].join("\n")
+                obj.title = [course.c, 'Section ' + section.sec, 'Cancelled'].join("\n")
             }else if (t === null) {
                 // section is indeed to be annouced
                 obj.color = colorMap.TBA;
