@@ -506,6 +506,61 @@ var self = module.exports = {
             courseInfo = _.state.courseInfo[termId][courseNum];
         }
 
+        var courseObj = function(course, startDay, endDay, t) {
+            var obj = {};
+            obj.title = [(typeof course.s === 'undefined' ? course.c : course.c + ' - ' + course.s), courseInfo.ty].join("\n");
+            obj.number = course.num;
+            obj.allDay = false;
+            obj.start = dateMap['Monday'];
+            obj.end = dateMap['Saturday'];
+            obj.course = course;
+            obj.color = colorMap.course;
+            if (t === false) {
+                // class is cancelled
+                obj.color = 'black';
+            }else if (t === null) {
+                // class is indeed to be annouced
+                obj.color = colorMap.TBA;
+            }else{
+                // Normal class
+                obj.start = dateMap[startDay] + ' ' + t.time.start;
+                obj.end = dateMap[endDay] + ' ' + t.time.end;
+            }
+            if (course.custom) obj.color = colorMap.custom;
+            return obj;
+        }
+
+        // Process course
+        for (var j = 0, locts = course.loct, length = locts.length; j < length; j++) {
+            if (!!!locts[j].t) {
+                events.push(courseObj(course, 'Monday', 'Saturday', course.loct[0].t))
+            }else{
+                for (var i = 0, days = locts[j].t.day, length1 = days.length; i < length1; i++) {
+                    events.push(courseObj(course, days[i], days[i], locts[j].t))
+                }
+            }
+        }
+
+        section = _.getters.courseInfo[termId][courseNum].sec.length > 0;
+
+        if (section === false && awaitSelection !== true) return events;
+
+        // Now we process sections
+
+        if (typeof payload.sectionNum !== 'undefined' && payload.sectionNum !== null) {
+            sectionNumber = payload.sectionNum;
+        }else if (payload.sectionNum === null && awaitSelection !== true) {
+            sectionNumber = null;
+        }
+
+        var seat = null;
+
+        var getSeatBySectionNum = function(seats, secNum) {
+            return seats.filter(function(el) {
+                return el.num == secNum;
+            })[0];
+        }
+
         if (awaitSelection) {
 
             obj.title = ['Now You Are Choosing Section', 'For ' + course.c].join("\n");
@@ -522,94 +577,58 @@ var self = module.exports = {
             obj = {};
         }
 
-        // Process course
-        if (course.loct.length === 1 && !!!course.loct[0].t) {
-            // TBA will be in the allDaySlot
-            obj.title = [course.c + ' - ' + course.s, courseInfo.ty, course.n].join("\n");
+        if (!awaitSelection && sectionNumber === null) {
+            obj.title = ['Please Choose a Section', 'For ' + course.c].join("\n");
             obj.number = course.num;
-            obj.allDay = true;
+            obj.sectionNum = null
+            obj.color = colorMap.awaitSelection;
+            obj.course = course;
+            obj.section = false;
+            obj.conflict = false;
+            obj.awaitSelection = awaitSelection;
             obj.start = dateMap['Monday'];
             obj.end = dateMap['Saturday'];
-            obj.course = course;
-            obj.color = colorMap.TBA;
             events.push(obj);
             obj = {};
-        }else{
-            for (var j = 0, locts = course.loct, length = locts.length; j < length; j++) {
-                for (var i = 0, days = locts[j].t.day, length1 = days.length; i < length1; i++) {
-                    obj.title = [(typeof course.s === 'undefined' ? course.c : course.c + ' - ' + course.s), courseInfo.ty].join("\n");
-                    obj.number = course.num;
-                    obj.allDay = false;
-                    obj.start = dateMap[days[i]] + ' ' + locts[j].t.time.start;
-                    obj.end = dateMap[days[i]] + ' ' + locts[j].t.time.end;
-                    obj.course = course;
-                    obj.color = colorMap.course;
-                    if (course.custom) obj.color = colorMap.custom;
-                    events.push(obj);
-                    obj = {};
-                }
+            return events;
+        }
+
+        var secObj = function(course, section, awaitSelection, startDay, endDay, t) {
+            var obj = {};
+            obj.title = [course.c, 'Section ' + section.sec].join("\n")
+            obj.number = course.num;
+            obj.sectionNum = section.num;
+            obj.color = colorMap.section;
+            obj.course = course;
+            obj.section = section;
+            obj.conflict = false;
+            obj.awaitSelection = awaitSelection;
+            obj.start = dateMap['Monday'];
+            obj.end = dateMap['Saturday'];
+            if (t === false) {
+                // section is cancelled
+                obj.color = 'black';
+            }else if (t === null) {
+                // section is indeed to be annouced
+                obj.color = colorMap.TBA;
+            }else{
+                // Normal section
+                obj.start = dateMap[startDay] + ' ' + t.time.start;
+                obj.end = dateMap[endDay] + ' ' + t.time.end;
             }
-        }
-
-        if (typeof payload.sectionNum !== 'undefined' && payload.sectionNum !== null) {
-            sectionNumber = payload.sectionNum;
-        }else if (payload.sectionNum === null && awaitSelection !== true) {
-            sectionNumber = null;
-        }else{
-            section = false;
-        }
-
-        if (section === false && awaitSelection !== true) return events;
-
-        var seat = null;
-
-        var getSeatBySectionNum = function(seats, secNum) {
-            return seats.filter(function(el) {
-                return el.num == secNum;
-            })[0];
+            if (awaitSelection) {
+                obj.color = colorMap.awaitSelection;
+            }
+            return obj;
         }
 
         for (var i = 0, sections = courseInfo.sec, length = sections.length; i < length; i++) {
             if (!awaitSelection && sectionNumber !== null && sections[i].num != sectionNumber) continue;
-            if (sectionNumber === null || (sections[i].loct.length === 1 && !!!sections[i].loct[0].t)) {
-                // TBA in the allDaySlot
-                obj.title = [course.c, 'Section ' + sections[i].sec].join("\n");
-                if (sectionNumber === null) {
-                    obj.title = ['Please Choose a Section', 'For ' + course.c].join("\n");
-                }
-                obj.number = course.num;
-                obj.sectionNum = (sectionNumber === null ? null : sections[i].num);
-                obj.color = (awaitSelection ? colorMap.awaitSelection : (sectionNumber === null ? colorMap.awaitSelection : colorMap.TBA));
-                //obj.color = (sectionNumber !== null || awaitSelection !== true ? 'green' : color);
-                obj.course = course;
-                obj.section = sections[i];
-                obj.conflict = false;
-                obj.awaitSelection = awaitSelection;
-                obj.start = dateMap['Monday'];
-                obj.end = dateMap['Saturday'];
-                events.push(obj);
-                obj = {};
-                if (sectionNumber === null); break;
-            } else {
+            if (!!!sections[i].loct[0].t) {
+                events.push(secObj(course, sections[i], awaitSelection, 'Monday', 'Saturday', sections[i].loct[0].t))
+            }else{
                 for (var j = 0, days = sections[i].loct[0].t.day, length2 = days.length; j < length2; j++) {
-                    conflict = helper.checkForConflict(dateMap, _.state.events[termId], sections[i]);
-                    obj.title = [course.c, 'Section ' + sections[i].sec].join("\n")
-                    if (secSeats && awaitSelection) {
-                        seat = getSeatBySectionNum(secSeats, sections[i].num);
-                        obj.title = [sections[i].sec + ' - ' + seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
-                    }
-                    obj.number = course.num;
-                    obj.sectionNum = sections[i].num;
-                    obj.color = (awaitSelection ? colorMap.awaitSelection: colorMap.section)
-                    obj.course = course;
-                    obj.section = sections[i];
-                    obj.conflict = conflict;
-                    obj.awaitSelection = awaitSelection;
-                    obj.start = dateMap[days[j]] + ' ' + sections[i].loct[0].t.time.start;
-                    obj.end = dateMap[days[j]] + ' ' + sections[i].loct[0].t.time.end;
-                    events.push(obj);
-                    obj = {};
-                    conflict = false;
+                    events.push(secObj(course, sections[i], awaitSelection, days[j], days[j], sections[i].loct[0].t))
                 }
             }
         }
@@ -893,20 +912,17 @@ var self = module.exports = {
             html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + course.ins.f.replace(/'/g, '\\\'') + '+' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
         }
 
-        html += '<hr />'
+        html += '<hr />';
 
-        if (course.loct.length === 1) {
-            html += template('Location', !!!course.loct[0].loc ? 'TBA': course.loct[0].loc);
-            html += template('Meeting Day', !!!course.loct[0].t ? 'TBA' : course.loct[0].t.day.join(', '));
-            html += template('Meeting Time', !!!course.loct[0].t ? 'TBA' : helper.tConvert(course.loct[0].t.time.start) + '-' + helper.tConvert(course.loct[0].t.time.end));
-        }else{
-            var complex = '';
-            for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
-                html += template('Location', !!!course.loct[j].loc ? 'TBA': course.loct[j].loc);
-                html += template('Meeting Day', !!!course.loct[j].t ? 'TBA' : course.loct[j].t.day.join(', '));
-                html += template('Meeting Time', !!!course.loct[j].t ? 'TBA' : helper.tConvert(course.loct[j].t.time.start) + '-' + helper.tConvert(course.loct[j].t.time.end));
-                html += '<hr />'
-            }
+        var loctTmpl = function(index) {
+            html += template('Location', course.loct[index].t === false ? 'Cancelled' : !!!course.loct[index].loc ? 'TBA': course.loct[index].loc);
+            html += template('Meeting Day', course.loct[index].t === false ? 'Cancelled' : course.loct[index].t === null ? 'TBA' : course.loct[index].t.day.join(', '));
+            html += template('Meeting Time', !!!course.loct[index].t ? 'TBA' : course.loct[index].t === false ? 'Cancelled' : course.loct[index].t === null ? 'TBA' : helper.tConvert(course.loct[index].t.time.start) + '-' + helper.tConvert(course.loct[index].t.time.end));
+        }
+
+        for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
+            loctTmpl(j);
+            html += '<hr />'
         }
 
         if (!isSection && course.custom !== true) {
