@@ -610,6 +610,7 @@ var self = module.exports = {
             if (t === false) {
                 // section is cancelled
                 obj.color = 'black';
+                obj.title = [section.sec, 'Cancelled'].join("\n")
             }else if (t === null) {
                 // section is indeed to be annouced
                 obj.color = colorMap.TBA;
@@ -617,10 +618,10 @@ var self = module.exports = {
                 // Normal section
                 obj.start = dateMap[startDay] + ' ' + t.time.start;
                 obj.end = dateMap[endDay] + ' ' + t.time.end;
-            }
-            if (secSeats && awaitSelection) {
-                seat = getSeatBySectionNum(secSeats, section.num);
-                obj.title = [section.sec + ' - ' + seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
+                if (secSeats && awaitSelection) {
+                    seat = getSeatBySectionNum(secSeats, section.num);
+                    obj.title = [section.sec + ' - ' + seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
+                }
             }
             return obj;
         }
