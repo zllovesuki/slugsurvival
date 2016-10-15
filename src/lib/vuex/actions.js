@@ -607,6 +607,10 @@ var self = module.exports = {
             if (awaitSelection) {
                 obj.color = colorMap.awaitSelection;
             }
+            if (secSeats && awaitSelection) {
+                seat = getSeatBySectionNum(secSeats, section.num);
+                obj.title = [section.sec + ' - ' + seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
+            }
             if (t === false) {
                 // section is cancelled
                 obj.color = 'black';
@@ -618,10 +622,6 @@ var self = module.exports = {
                 // Normal section
                 obj.start = dateMap[startDay] + ' ' + t.time.start;
                 obj.end = dateMap[endDay] + ' ' + t.time.end;
-                if (secSeats && awaitSelection) {
-                    seat = getSeatBySectionNum(secSeats, section.num);
-                    obj.title = [section.sec + ' - ' + seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
-                }
             }
             return obj;
         }
