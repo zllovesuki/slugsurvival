@@ -510,7 +510,6 @@ var self = module.exports = {
             var obj = {};
             obj.title = [(typeof course.s === 'undefined' ? course.c : course.c + ' - ' + course.s), courseInfo.ty].join("\n");
             obj.number = course.num;
-            obj.allDay = false;
             obj.start = dateMap['Monday'];
             obj.end = dateMap['Saturday'];
             obj.course = course;
