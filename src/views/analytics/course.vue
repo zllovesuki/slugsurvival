@@ -127,7 +127,9 @@ module.exports = {
             return fetch(config.trackingURL + '/fetch/' + params.termId + '/' + params.courseNum).then(function(res) {
                 return res.json();
             }).then(function(res) {
-                if (!res.ok) {
+                if (!res.ok && res.message && res.message.indexOf('not tracked') !== -1) {
+                    return self.alert.error('This term is not yet being tracked, please come back later.')
+                }else if (!res.ok) {
                     return self.alert.error('An error has occurred');
                 }
                 if (res.results && res.results.length === 0) {

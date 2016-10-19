@@ -891,6 +891,8 @@ var self = module.exports = {
                 .then(function(resolved) {
                     resolved.event.preventDefault();
                 })
+            }else if (res.message && res.message.indexOf('not tracked') !== -1) {
+                _.getters.alert.error('This term is not yet being tracked, please come back later.')
             }else{
                 _.getters.alert.error('Cannot fetch real time data!')
             }
