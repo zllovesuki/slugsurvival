@@ -871,6 +871,11 @@ var self = module.exports = {
             courseNum: courseNum
         })
         .then(function(res) {
+            if (typeof _.state.termDates[_.getters.termId] !== 'undefined') {
+                var start =_.state.termDates[_.getters.termId].start;
+                var monitorStart = new Date(start);
+                monitorStart.setDate(monitorStart.getDate() - 75);
+            }
             _.getters.loading.go(70);
             if (res.ok && res.results[0] && res.results[0].seats) {
                 var latest = res.results[0];
@@ -892,9 +897,20 @@ var self = module.exports = {
                     resolved.event.preventDefault();
                 })
             }else if (res.message && res.message.indexOf('not tracked') !== -1) {
-                _.getters.alert.error('This term is not yet being tracked, please come back later.')
-            }else{
+                if (typeof monitorStart === 'undefined') {
+                    _.getters.alert.error('This term is not yet being tracked, please check again later.')
+                }else{
+                    _.getters.alert.error('This term is not yet being tracked, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
+                }
+            }else if (!res.ok) {
                 _.getters.alert.error('Cannot fetch real time data!')
+            }
+            if (res.results && res.results.length === 0) {
+                if (typeof monitorStart === 'undefined') {
+                    _.getters.alert.error('No data found.')
+                }else{
+                    _.getters.alert.error('No data found, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
+                }
             }
             _.getters.loading.go(100);
         }.bind(this))

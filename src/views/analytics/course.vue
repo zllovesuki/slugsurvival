@@ -127,13 +127,26 @@ module.exports = {
             return fetch(config.trackingURL + '/fetch/' + params.termId + '/' + params.courseNum).then(function(res) {
                 return res.json();
             }).then(function(res) {
+                if (typeof self.$store.state.termDates[self.latestTermCode] !== 'undefined') {
+                    var start = self.$store.state.termDates[self.latestTermCode].start;
+                    var monitorStart = new Date(start);
+                    monitorStart.setDate(monitorStart.getDate() - 75);
+                }
                 if (!res.ok && res.message && res.message.indexOf('not tracked') !== -1) {
-                    return self.alert.error('This term is not yet being tracked, please come back later.')
+                    if (typeof monitorStart === 'undefined') {
+                        return self.alert.error('This term is not yet being tracked, please check again later.')
+                    }else{
+                        return self.alert.error('This term is not yet being tracked, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
+                    }
                 }else if (!res.ok) {
                     return self.alert.error('An error has occurred');
                 }
                 if (res.results && res.results.length === 0) {
-                    return self.alert.error('No data found.');
+                    if (typeof monitorStart === 'undefined') {
+                        return self.alert.error('No data found.')
+                    }else{
+                        return self.alert.error('No data found, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
+                    }
                 }
                 self.graphData = res.results;
                 var numOfSections = (res.results[0] ? (res.results[0].seats.sec ? res.results[0].seats.sec.length : 0) : 0);
