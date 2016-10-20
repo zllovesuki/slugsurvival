@@ -1,14 +1,7 @@
 <template>
     <div>
         <div class="mt2 mb1">
-            <div class="overflow-hidden bg-white rounded mb2" v-show="!termListsLoaded">
-                <div class="m0 p2">
-                    <div class="clearfix">
-                        Loading...
-                    </div>
-                </div>
-            </div>
-            <div class="overflow-hidden bg-white rounded mb2" v-show="termListsLoaded">
+            <div class="overflow-hidden bg-white rounded mb2">
                 <div class="m0 p1">
                     <div class="clearfix">
                         <span class="btn black h4">Class Related: </span>
@@ -51,9 +44,6 @@ module.exports = {
         },
         colorMap: function() {
             return this.$store.getters.colorMap;
-        },
-        termListsLoaded: function() {
-            return this.$store.getters.termListsLoaded;
         }
     },
     mounted: function() {

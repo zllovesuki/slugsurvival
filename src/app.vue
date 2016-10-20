@@ -12,6 +12,15 @@
                     <transition name="fade" mode="out-in">
                         <router-view></router-view>
                     </transition>
+                    <div class="mt2 mb1">
+                        <div class="overflow-hidden bg-white rounded mb2" v-show="!termListsLoaded">
+                            <div class="m0 p2">
+                                <div class="clearfix">
+                                    Loading...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -48,6 +57,9 @@ module.exports = {
         },
         colorMap: function() {
             return this.$store.getters.colorMap;
+        },
+        termListsLoaded: function() {
+            return this.$store.getters.termListsLoaded;
         }
     },
     methods: {
