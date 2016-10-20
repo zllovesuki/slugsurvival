@@ -195,10 +195,12 @@ module.exports = {
                 self.sub.sent = true;
                 self.sub.timer = setInterval(function() {
                     if (self.sub.counter === 0) {
-                        self.sub.text = 'Resend';
-                        self.sub.shouldResend = true;
-                        self.sub.sent = false;
-                        self.sub.counter = 300;
+                        self.$nextTick(function() {
+                            self.sub.text = 'Resend';
+                            self.sub.shouldResend = true;
+                            self.sub.sent = false;
+                            self.sub.counter = 300;
+                        })
                         return clearInterval(self.sub.timer);
                     }
                     self.sub.text = 'Resend (' + self.sub.counter + ')'
