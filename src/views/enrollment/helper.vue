@@ -124,7 +124,7 @@ module.exports = {
                 recipient: '',
                 code: '',
                 text: 'Get code',
-                counter: 300,
+                counter: 60,
                 sent: false,
                 sendInflight: false,
                 verified: false,
@@ -199,7 +199,7 @@ module.exports = {
                             self.sub.text = 'Resend';
                             self.sub.shouldResend = true;
                             self.sub.sent = false;
-                            self.sub.counter = 300;
+                            self.sub.counter = 60;
                         })
                         return clearInterval(self.sub.timer);
                     }
