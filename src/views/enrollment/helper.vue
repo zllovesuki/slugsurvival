@@ -91,7 +91,7 @@
 				<form v-on:submit.prevent class="h5">
                     <label for="recipient" class="mt2 block">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.recipient" placeholder="15554443333/hello@me.com">
-                        <button type="submit" v-bind:class="'col-3 btn btn-outline ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.recipient.length > 0 || sub.sent || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
+                        <button type="submit" v-bind:class="'col-3 btn btn-outline ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.recipient.length > 0 || (sub.counter > 0 && sub.counter < 60) || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
                     </label>
                     <label for="code" class="mt2 block" v-if="sub.sent">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.code" placeholder="passcode received">
@@ -190,6 +190,7 @@ module.exports = {
             .then(function(res) {
                 self.loading.go(100);
                 self.sub.sendInflight = false;
+                self.sub.counter = 59;
                 if (!res.ok) {
                     return self.alert.error(res.message);
                 }
@@ -199,7 +200,6 @@ module.exports = {
                         self.$nextTick(function() {
                             self.sub.text = 'Resend';
                             self.sub.shouldResend = true;
-                            self.sub.sent = false;
                             self.sub.counter = 60;
                         })
                         return clearInterval(self.sub.timer);
