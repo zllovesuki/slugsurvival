@@ -1040,6 +1040,7 @@ var self = module.exports = {
         return new Promise(function(resolve) {
             fetch('/version')
             .then(function(res) {
+                if (res.status != 200) return _.getters.version; // fake it until you make it
                 return res.text()
             })
             .then(function(version) {
