@@ -13,9 +13,9 @@ WORKDIR /usr/src/app
 RUN cd $(npm root -g)/npm \
  && npm install fs-extra \
  && sed -i -e s/graceful-fs/fs-extra/ -e s/fs\.rename/fs.move/ ./lib/utils/rename.js \
- && npm install
-
-RUN npm run prod && npm prune --production
+ && npm install \
+ && npm run prod \
+ && npm prune --production
 
 EXPOSE 3001
 
