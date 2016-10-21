@@ -915,9 +915,26 @@ var self = module.exports = {
             _.getters.loading.go(100);
         }.bind(this))
     },
+    _showCoursePreReq: function(_, string) {
+        var split = string.split('+');
+        var termId = split[0], courseNum = split[1];
+        var course = _.getters.flatCourses[termId][courseNum]
+        var courseInfo = _.getters.courseInfo[termId][courseNum];
+        var html = '';
+
+        html += '<p class="h6">Requirements for ' + course.c + '</p>';
+        html += '<p>' + courseInfo.re + '</p>';
+
+        _.getters.alert
+        .okBtn('Got It')
+        .alert(html)
+        .then(function(resolved) {
+            resolved.event.preventDefault();
+        })
+    },
     getCourseDom: function(_, payload) {
-        // TODO: Reduce special cases
         var termId = payload.termId, course = payload.courseObj, isSection = payload.isSection;
+        var courseInfo = _.getters.courseInfo[termId][course.num];
         isSection = isSection || false;
         if (!isSection) {
             var courseHasSections = _.getters.courseInfo[termId][course.num].sec.length > 0;
@@ -936,7 +953,7 @@ var self = module.exports = {
             html += template('Section', 'DIS - ' + course.sec);
             html += template('TA', course.ins);
         }else if (course.custom !== true){
-            html += template('Course Number', course.num);
+            html += template('Course Number', course.num + (courseInfo.re === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCoursePreReq\', \'' + termId + '+' + course.num + '\')">Pre-Req</sup>') );
             html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
             html += template('Course Name', course.n);
             html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + course.ins.f.replace(/'/g, '\\\'') + '+' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
