@@ -167,7 +167,8 @@ module.exports = {
                 },
                 body: JSON.stringify({
                     recipient: self.sub.recipient,
-                    code: self.sub.code
+                    code: self.sub.code,
+                    termId: self.latestTermCode
                 })
             })
             .then(function(res) {
@@ -206,7 +207,8 @@ module.exports = {
                 },
                 body: JSON.stringify({
                     recipient: self.sub.recipient,
-                    code: self.sub.code
+                    code: self.sub.code,
+                    termId: self.latestTermCode
                 })
             })
             .then(function(res) {

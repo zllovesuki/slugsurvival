@@ -974,7 +974,8 @@ var self = module.exports = {
                 code: code,
                 courses: courses.map(function(el) {
                     return el.num
-                })
+                }),
+                termId: _.getters.latestTermCode
             })
         })
         .then(function(res) {

@@ -176,7 +176,8 @@ module.exports = {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    recipient: self.sub.recipient
+                    recipient: self.sub.recipient,
+                    termId: self.latestTermCode
                 })
             })
             .then(function(res) {
@@ -226,7 +227,8 @@ module.exports = {
                 },
                 body: JSON.stringify({
                     recipient: self.sub.recipient,
-                    code: self.sub.code
+                    code: self.sub.code,
+                    termId: self.latestTermCode
                 })
             })
             .then(function(res) {
