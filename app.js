@@ -3,7 +3,8 @@ module.exports = function() {
         path = require('path'),
         config = require('./config.js'),
         fs = require('fs'),
-        app = express();
+        app = express(),
+        pkg = require('./package.json');
 
     app.enable('trust proxy');
     app.set('trust proxy', 'loopback, linklocal, uniquelocal');
@@ -30,6 +31,10 @@ module.exports = function() {
     }else{
         html = html.replace('__ANALYTICS__', '');
     }
+
+    app.get('/version', function(req, res, next) {
+        return res.end(pkg.version);
+    });
 
     app.use('/*', function(req, res, next) {
         return res.end(html);

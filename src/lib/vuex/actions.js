@@ -1018,5 +1018,33 @@ var self = module.exports = {
         var deadline = new Date(start);
         deadline.setDate(deadline.getDate() + _.state.daysTillDeadline);
         return deadline.getTime() < today.getTime();
+    },
+    compareVersion: function(_) {
+        return new Promise(function(resolve) {
+            fetch('/version')
+            .then(function(res) {
+                return res.text()
+            })
+            .then(function(version) {
+                if (_.getters.version != version) return resolve(false)
+                else return resolve(true)
+            })
+            .catch(function(e) {
+                // network error? give it a pass
+                return resolve(true)
+            })
+        });
+    },
+    checkVersion: function(_) {
+        return _.dispatch('compareVersion').then(function(isUpdated) {
+            if (!isUpdated) {
+                _.commit('blockCheckVersion')
+                _.getters.alert.delay(0).success('A new version of SlugSurvival is available, please refresh this page.')
+            }
+            if (_.state.blockCheckVersion) return;
+            setTimeout(function() {
+                _.dispatch('checkVersion')
+            }, 120 * 1000)
+        })
     }
 }

@@ -152,5 +152,8 @@ module.exports = {
         var array = helper.compact(state.events[termId]);
 
         window.location.hash = '#' + LZString.compressToEncodedURIComponent(JSON.stringify(array));
+    },
+    blockCheckVersion: function(state) {
+        state.blockCheckVersion = true;
     }
 }

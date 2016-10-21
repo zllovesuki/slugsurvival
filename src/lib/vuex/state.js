@@ -49,6 +49,8 @@ module.exports = {
         'Saturday': '2016-08-06'
     },
 
+    blockCheckVersion: false,
+
     loading: new Nanobar(),
     alert: alertify.reset().closeLogOnClick(true).logPosition("bottom right").maxLogItems(1)
 }
