@@ -2,6 +2,22 @@
 
 This is a project aims to help new and continuing students with their Slug Life.
 
+## Special Thanks
+
+SlugSurvival's development is not possible without the help and support of (no particular order):
+
+1. My parents
+2. Niraj R.
+3. Alex H.
+4. Ching C.
+5. Alex R.
+6. Julia Z.
+7. Taiki M.
+8. Tiffany K.
+9. Carol J. (my supervisor)
+10. Kate B. (for not killing me when I accidentally DoS the school)
+11. etc (I will update this list...)
+
 ## Functionalities
 
 ### Disclaimer
