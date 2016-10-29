@@ -73,11 +73,10 @@ module.exports = {
             Thus, the workaround for iOS devices is to build the index from scratch
 
             */
-            var obj;
+            var obj, _obj = {};
             state.search[termId] = elasticlunr(function() {
                 this.addField('c');
                 this.addField('n');
-                this.addField('lo');
                 this.addField('f');
                 this.addField('la');
                 this.addField('d');
@@ -86,11 +85,16 @@ module.exports = {
             });
             for (var courseNum in state.flatCourses[termId]) {
                 obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNum]));
-                obj.b = obj.num;
-                obj.c = obj.c.split(/(\d+)/).filter(Boolean).map(function(el) { return el.trim(); }).join(" ");
-                obj.n = obj.n.split(/(?=[A-Z])/).map(function(el) { return el.trim(); }).join(" ")
-                state.search[termId].addDoc(obj);
+
+                _obj.b = obj.num;
+                _obj.c = obj.c;
+                _obj.n = obj.n;
+                _obj.f = obj.ins.f;
+                _obj.la = obj.ins.l;
+                _obj.d = obj.ins.d[0];
+                state.search[termId].addDoc(_obj);
                 obj = {};
+                _obj = {};
             }
         }else{
             state.search[termId] = elasticlunr.Index.load(json);
