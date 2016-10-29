@@ -9,14 +9,12 @@ module.exports = function() {
     app.enable('trust proxy');
     app.set('trust proxy', 'loopback, linklocal, uniquelocal');
 
-    var root;
+    var root = __dirname + '/src/static/index.html', js = 'prod.js';
 
     app.use('/public', express.static(path.join(__dirname, 'public')));
 
     if (process.env.RDB_HOST) {
-        root = __dirname + '/src/static/dev.html'
-    }else{
-        root = __dirname + '/src/static/prod.html';
+        js = 'app.js'
     }
 
     var html = fs.readFileSync(root).toString('utf-8');
@@ -31,6 +29,8 @@ module.exports = function() {
     }else{
         html = html.replace('__ANALYTICS__', '');
     }
+
+    html = html.replace('__JS__', js)
 
     app.get('/version', function(req, res, next) {
         return res.end(pkg.version);

@@ -26,6 +26,7 @@ module.exports = {
         searchAnything: '#F27B50',
         share: '#EFC94C',
         alert: '#E05649',
+        blank: '#FFFFFF',
         // Calendar
         TBA: '#E27A3F',
         custom: '#DF5A49',

@@ -17,7 +17,9 @@
 				</div>
                 <div class="m0 p1">
     				<div class="clearfix">
-    				    <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal">search anything</a>
+                        <div class="sm-flex">
+                            <div class="p1 h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
+                        </div>
     				</div>
                 </div>
 			</div>

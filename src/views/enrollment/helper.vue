@@ -11,14 +11,16 @@
                     </span>
 				</div>
 			</div>
-			<div class="m0 p2 border-top">
+			<div class="m0 p1 border-top">
 				<div class="clearfix">
-					<router-link class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'termsList' }">Take me to the Interactive Planner</router-link>
+                    <div class="sm-flex">
+                        <router-link class="p1 m2 h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'termsList' }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Take me to the Interactive Planner</router-link>
+                    </div>
 				</div>
 			</div>
 		</div>
         <div class="overflow-hidden bg-white rounded mb2" v-show="!ready">
-            <div class="m0 p2">
+            <div class="m0 p1">
                 <div class="clearfix">
                     Loading...
                 </div>
@@ -35,20 +37,21 @@
                     </span>
 				</div>
                 <div class="clearfix">
-					<span class="ml1 btn black h6 not-clickable">
-                        <router-link class="h6 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'enrollManage' }" target="_blank">But I Signed Up Already</router-link>
-                    </span>
+                    <div class="sm-flex ml1">
+                        <router-link class="p1 m1 h6 btn red clickable" v-bind:style="{ backgroundColor: colorMap.blank }" :to="{ name: 'enrollManage' }" target="_blank" tag="div"><i class="fa fa-warning fa-lg">&nbsp;</i> But I Signed Up Already</router-link>
+                    </div>
 				</div>
 			</div>
             <div class="m0 p1 border-top">
 				<div class="clearfix">
                     <span class="btn black h5">First, add the classes that you want to be notified for: </span>
                 </div>
-                <div class="m0 p2">
+                <div class="m0 p1">
                     <div class="clearfix">
-                        <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal">search anything</a>
-                        &nbsp; or,
-                        <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="importPlanner">Import from Local Planner</a>
+                        <div class="sm-flex">
+                            <div class="p1 flex m1 h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
+                            <div class="p1 flex m1 h6 btn black clickable" v-bind:style="{ backgroundColor: colorMap.blank }" @click="importPlanner"><i class="fa fa-cart-arrow-down fa-lg">&nbsp;</i>or, Import from Local Planner</div>
+                        </div>
                     </div>
                 </div>
                 <div class="clearfix">
@@ -75,11 +78,13 @@
                 <div class="clearfix">
                     <span class="btn black h5">Then, select one or more ways to be notified. </span>
                 </div>
-                <div class="m0 p2">
+                <div class="m0 p1">
     				<div class="clearfix">
-    					<a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="showSub">Via SMS</a>
-                        <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="showSub">Via Email</a>
-                        <a class="h6 ml1 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="$store.dispatch('comingSoon')">Via Push Notifications</a>
+                        <div class="sm-flex">
+                            <div class="p1 flex m1 h6 btn black clickable" v-bind:style="{ backgroundColor: colorMap.blank }" @click="showSub"><i class="fa fa-phone-square fa-lg">&nbsp;</i>Via SMS</div>
+                            <div class="p1 flex m1 h6 btn black clickable" v-bind:style="{ backgroundColor: colorMap.blank }" @click="showSub"><i class="fa fa-envelope fa-lg">&nbsp;</i>Via Email</div>
+                            <!--<div class="p1 flex-auto m1 h6 white clickable" v-bind:style="{ backgroundColor: colorMap.regular }" @click="$store.dispatch('comingSoon')"><i class="fa fa-arrow-down fa-lg">&nbsp;</i>Via Push Notifications</div>-->
+                        </div>
     				</div>
                 </div>
 			</div>
@@ -91,16 +96,16 @@
 				<form v-on:submit.prevent class="h5">
                     <label for="recipient" class="mt2 block">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.recipient" placeholder="15554443333/hello@me.com">
-                        <button type="submit" v-bind:class="'col-3 btn btn-outline ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.recipient.length > 0 || (sub.counter > 0 && sub.counter < 60) || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
+                        <button type="submit" v-bind:class="'col-3 btn ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.recipient.length > 0 || (sub.counter > 0 && sub.counter < 60) || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
                     </label>
                     <label for="code" class="mt2 block" v-if="sub.sent">
                         <input type="text" class="col-8 mb2 field inline-block" v-model="sub.code" placeholder="passcode received">
-                        <button type="submit" v-bind:class="'col-3 btn btn-outline ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
+                        <button type="submit" v-bind:class="'col-3 btn ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
                     </label>
                     <hr />
 					<span class="block mb1">
                         We take privacy seriously.
-                        <router-link v-bind:class="'h6 bold ' + color" :to="{ name: 'explainPrivacy' }" target="_blank"> Learn More</router-link>
+                        <router-link v-bind:class="'h6 ' + color" :to="{ name: 'explainPrivacy' }" target="_blank"> Learn More</router-link>
                     </span>
 				</form>
 			</span>

@@ -7,9 +7,9 @@
             <div class="m0 p2" v-show="ready">
                 <div class="clearfix">
                     <div class="right">
-                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal">
-                            search anything
-                        </a>
+                        <div class="sm-flex">
+                            <div class="p1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -43,9 +43,9 @@
             <div class="m0 p2">
                 <div class="clearfix">
                     <div class="right">
-                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.share }" @click="showShareMenu">
-                            click here to share the planner
-                        </a>
+                        <div class="sm-flex">
+                            <div class="p1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.share }" v-on:click.prevent.stop="showShareMenu"><i class="fa fa-share fa-lg">&nbsp;</i>click here to share the planner</div>
+                        </div>
                     </div>
                 </div>
             </div>
