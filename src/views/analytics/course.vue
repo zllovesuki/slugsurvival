@@ -181,7 +181,7 @@ module.exports = {
             return self.$store.dispatch('calculateDropDeadline', self.latestTermCode)
         })
         .then(function(deadline) {
-            self.dropDeadline = moment(deadline).format('YYYY-MM-DD HH:mm');
+            self.dropDeadline = moment(deadline).format('YYYY-MM-DD');
             $script.ready('plotly.js', function() {
                 self.ready = true;
                 if (!self.route.params.courseNum) return;

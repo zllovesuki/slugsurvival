@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="overflow-hidden bg-white rounded mb2">
+        <!--<div class="overflow-hidden bg-white rounded mb2">
 			<div class="m0 p1">
 				<div class="clearfix">
 					<span class="btn black h5">Check Openings in Real Time: </span>
@@ -18,7 +18,7 @@
                     </div>
 				</div>
 			</div>
-		</div>
+		</div>-->
         <div class="overflow-hidden bg-white rounded mb2" v-show="!ready">
             <div class="m0 p1">
                 <div class="clearfix">
@@ -29,22 +29,17 @@
 		<div class="overflow-hidden bg-white rounded mb2" v-if="ready">
 			<div class="m0 p1">
 				<div class="clearfix">
-					<span class="btn black h5">Notify Me When There Are Changes: </span>
+					<span class="btn black h5">Notify Me When My Class Changes: </span>
 				</div>
 				<div class="clearfix">
 					<span class="ml1 btn black h6 muted not-clickable">
-                        SlugSurvival will notify you when your desired classes have significant changes (eg. Open -> Closed, 25% seats remaining, etc).
+                        SlugSurvival will notify you when your desired classes have significant changes (eg. Open -> Closed, 25% seats remaining, cancelled, etc).
                     </span>
-				</div>
-                <div class="clearfix">
-                    <div class="sm-flex ml1">
-                        <router-link class="p1 m1 h6 btn red clickable" v-bind:style="{ backgroundColor: colorMap.blank }" :to="{ name: 'enrollManage' }" target="_blank" tag="div"><i class="fa fa-warning fa-lg">&nbsp;</i> But I Signed Up Already</router-link>
-                    </div>
 				</div>
 			</div>
             <div class="m0 p1 border-top">
 				<div class="clearfix">
-                    <span class="btn black h5">First, add the classes that you want to be notified for: </span>
+                    <span class="btn black h4">First, add the classes that you want to be notified for: </span>
                 </div>
                 <div class="m0 p1">
                     <div class="clearfix">
@@ -74,9 +69,9 @@
 					</table>
 				</div>
 			</div>
-			<div class="m0 p1 border-top" v-show="courses.length > 0">
+			<div class="m0 p1 border-top">
                 <div class="clearfix">
-                    <span class="btn black h5">Then, select one or more ways to be notified. </span>
+                    <span class="btn black h4">Then, select one or more ways to be notified. </span>
                 </div>
                 <div class="m0 p1">
     				<div class="clearfix">
@@ -87,6 +82,25 @@
                         </div>
     				</div>
                 </div>
+			</div>
+        </div>
+        <div class="overflow-hidden bg-white rounded mb2">
+            <div class="m0 p1">
+                <div class="clearfix">
+					<span class="btn black h5">Manage My Subscription: </span>
+				</div>
+				<div class="clearfix">
+					<span class="ml1 btn black h6 muted not-clickable">
+                        You can edit the list of classes being notified, or unsubscribe notification altogether.
+                    </span>
+				</div>
+			</div>
+            <div class="m0 p1 border-top">
+                <div class="clearfix">
+                    <div class="sm-flex ml1">
+                        <router-link class="p1 m1 h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'enrollManage' }" target="_blank" tag="div"><i class="fa fa-pencil fa-lg">&nbsp;</i> Manage subscription</router-link>
+                    </div>
+				</div>
 			</div>
 		</div>
         <search :show="searchModal" v-on:close="searchModal = false" :callback="addToNotifyList" :selected-term-id="latestTermCode"></search>
@@ -167,6 +181,7 @@ module.exports = {
     },
     methods: {
         showSub: function() {
+            if (this.courses.length === 0) return this.alert.error('Add classes first!')
             this.sub.recipient = '';
             this.sub.modal = true;
         },
