@@ -12,7 +12,7 @@
                 </div>
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
-                        <router-link class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'termsList' }">Interactive Planner</router-link>
+                        <router-link class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'termsList' }">Interactive Planner</router-link>
                         <router-link class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'enrollHelper' }">Notify Me When My Classes Are Open</router-link>
                         <a class="h6 ml2 mb1 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.regular }" @click="$store.dispatch('comingSoon')">Major/Minor Requirements</a>
                     </div>
