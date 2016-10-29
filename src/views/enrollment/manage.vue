@@ -31,7 +31,9 @@
             <div class="m0 p1 border-top" v-show="sub.verified">
                 <div class="m0 p2">
                     <div class="clearfix">
-                        <a class="h6 bold btn btn-outline white" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal">search anything</a>
+                        <div class="sm-flex">
+                            <div class="p1 flex m1 h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
+                        </div>
                     </div>
                 </div>
                 <div class="clearfix">
@@ -66,7 +68,7 @@
                 </div>
 			</div>
 		</div>
-        <search :show="searchModal" v-on:closeModal="searchModal = false" :callback="addToNotifyList" :selected-term-id="latestTermCode"></search>
+        <search :show="searchModal" v-on:close="searchModal = false" :callback="addToNotifyList" :selected-term-id="latestTermCode"></search>
     </div>
 </template>
 
