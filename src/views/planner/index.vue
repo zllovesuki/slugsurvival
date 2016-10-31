@@ -13,7 +13,7 @@
                     Schedule for {{ termName }}
                 </span>
             </span>
-            <span v-if="route.name === 'termListView'">
+            <span v-if="route.name === 'viewList'">
                 <span class="btn button-narrow mxn1">
                     List of Classes for {{ termName }}
                 </span>

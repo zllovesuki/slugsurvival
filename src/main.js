@@ -77,7 +77,7 @@ var router = new VueRouter({
                 },
                 {
                     path: ':termId/list',
-                    name: 'termListView',
+                    name: 'viewList',
                     component: require('./views/planner/list.vue')
                 }
             ]

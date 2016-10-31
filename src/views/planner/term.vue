@@ -6,6 +6,11 @@
             </div>
             <div class="m0 p2" v-show="ready">
                 <div class="clearfix">
+                    <div class="left">
+                        <div class="sm-flex">
+                            <router-link class="p1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'viewList', params: { termId: termId } }" tag="div"><i class="fa fa-list fa-lg">&nbsp;</i>all classes</router-link>
+                        </div>
+                    </div>
                     <div class="right">
                         <div class="sm-flex">
                             <div class="p1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
