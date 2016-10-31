@@ -183,25 +183,6 @@ module.exports = {
             }
             return result;
         }, // http://stackoverflow.com/questions/2878703/split-string-once-in-javascript
-        naturalSorter: function(as, bs){
-            var a, b, a1, b1, i= 0, n, L,
-            rx=/(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;
-            if(as=== bs) return 0;
-            a= as.toLowerCase().match(rx);
-            b= bs.toLowerCase().match(rx);
-            L= a.length;
-            while(i<L){
-                if(!b[i]) return 1;
-                a1= a[i],
-                b1= b[i++];
-                if(a1!== b1){
-                    n= a1-b1;
-                    if(!isNaN(n)) return n;
-                    return a1>b1? 1:-1;
-                }
-            }
-            return b[i]? -1:0;
-        }, // http://stackoverflow.com/questions/2802341/javascript-natural-sort-of-alphanumerical-strings
         searchCourses: debounce(function() {
             var val = this.search.string;
             var self = this;
@@ -245,9 +226,7 @@ module.exports = {
                 val = self.splitOnce(val, /(\d+)/).map(function(el) { return el.replace(/\s+/g, ''); }).join(' ')
                 this.search.results = this.indexSearch[this.selectedTermId].search(val, options).map(function(result) {
                     return self.flatCourses[self.selectedTermId][result.ref]
-                }).sort(function(a, b) {
-                    return self.naturalSorter(a.c.split(/(\d+)/).filter(Boolean)[1], b.c.split(/(\d+)/).filter(Boolean)[1])
-                });
+                })
                 if (list.length > 0) {
                     this.search.results = this.search.results.filter(function(course) {
                         return list.indexOf(course.num) !== -1;
