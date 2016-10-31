@@ -41,6 +41,9 @@ module.exports = {
     courseInfo: function(state) {
         return state.courseInfo;
     },
+    subjectList: function(state) {
+        return state.subjectList;
+    },
     eventSource: function(state) {
         return state.events
     },

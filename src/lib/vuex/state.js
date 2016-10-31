@@ -11,6 +11,9 @@ module.exports = {
 
     courseInfo: {},
 
+    flatSubjectList: [],
+    subjectList: {},
+
     instructorNameToTidMapping: {},
     instructorStats: {},
 

@@ -13,6 +13,11 @@
                     Schedule for {{ termName }}
                 </span>
             </span>
+            <span v-if="route.name === 'termListView'">
+                <span class="btn button-narrow mxn1">
+                    List of Classes for {{ termName }}
+                </span>
+            </span>
         </div>
         <div class="mt2 mb1">
             <transition name="fade" mode="out-in">

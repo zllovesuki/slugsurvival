@@ -8,6 +8,13 @@ module.exports = {
     setTermName: function(state, name) {
         state.termName = name;
     },
+    saveSubjects: function(state, payload) {
+        var subjects = payload.subjects;
+        state.flatSubjectList = subjects;
+        subjects.forEach(function(subject) {
+            state.subjectList[subject.code] = subject.name;
+        })
+    },
     saveTermsList: function(state, payload) {
         var terms = payload.termsList, skipSaving = payload.skipSaving
         state.flatTermsList = terms;
