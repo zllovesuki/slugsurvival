@@ -8,6 +8,7 @@ module.exports = {
     termName: '',
 
     flatCourses: {},
+    sortedCourses: {},
 
     courseInfo: {},
 
