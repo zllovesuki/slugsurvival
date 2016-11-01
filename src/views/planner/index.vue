@@ -38,6 +38,9 @@ module.exports = {
         termName: function() {
             return this.$store.getters.termName;
         }
+    },
+    created: function() {
+        $script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'lz-string/1.4.4/lz-string.min.js'], 'bundle')
     }
 }
 </script>

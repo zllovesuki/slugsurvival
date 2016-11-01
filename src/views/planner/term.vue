@@ -405,12 +405,6 @@ module.exports = {
             .alert(html)
         }
     },
-    created: function() {
-        var self = this;
-        $script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'lz-string/1.4.4/lz-string.min.js'], 'bundle', function() {
-            $script(dist + 'fullcalender/2.9.1/fullcalendar.min.js', 'calendar')
-        })
-    },
     mounted: function() {
         var self = this;
         this.$store.getters.loading.go(30);
@@ -418,6 +412,7 @@ module.exports = {
 
         $script.ready('bundle', function() {
             self.$store.getters.loading.go(50);
+            $script(dist + 'fullcalender/2.9.1/fullcalendar.min.js', 'calendar')
         })
         $script.ready('calendar', function() {
             self.$store.getters.loading.go(70);
