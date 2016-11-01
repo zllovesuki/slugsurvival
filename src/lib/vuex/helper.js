@@ -350,15 +350,18 @@ var self = module.exports = {
             if (el == 'Wednesday') return 'WE';
             if (el == 'Thursday') return 'TH';
             if (el == 'Friday') return 'FR';
-            return 'SA';
+            if (el == 'Saturday') return 'SA';
+            if (el == 'Sunday') return 'SU';
         })
     },
     dayToNum: function(el) {
+        if (el == 'Sunday') return 0
         if (el == 'Monday') return 1
         if (el == 'Tuesday') return 2
         if (el == 'Wednesday') return 3
         if (el == 'Thursday') return 4
         if (el == 'Friday') return 5
+        if (el == 'Saturday') return 6
     },
     formattedDate: function(date) {
         var d = new Date(date || Date.now()),
