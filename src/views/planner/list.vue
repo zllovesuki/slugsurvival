@@ -297,7 +297,8 @@ module.exports = {
             this.IDs.locationID = this.makeid();
             this.$nextTick(function() {
                 $('#' + this.IDs.subjectID).select2({
-                    placeholder: 'Subject...'
+                    placeholder: 'Subject...',
+                    minimumResultsForSearch: Infinity
                 }).on('select2:select', function(evt) {
                     self.filter.subject.push(evt.params.data.element.value);
                     self.doFilter();
@@ -308,19 +309,22 @@ module.exports = {
                     self.doFilter();
                 });
                 $('#' + this.IDs.geID).select2({
-                    placeholder: 'GE...'
+                    placeholder: 'GE...',
+                    minimumResultsForSearch: Infinity
                 }).on('change', function(evt) {
                     self.filter.ge = evt.target.value
                     self.doFilter()
                 })
                 $('#' + this.IDs.timeblockID).select2({
-                    placeholder: 'Start time...'
+                    placeholder: 'Start time...',
+                    minimumResultsForSearch: Infinity
                 }).on('change', function(evt) {
                     self.filter.timeblock = evt.target.value
                     self.doFilter()
                 })
                 $('#' + this.IDs.locationID).select2({
-                    placeholder: 'Location...'
+                    placeholder: 'Location...',
+                    minimumResultsForSearch: Infinity
                 }).on('change', function(evt) {
                     self.filter.location = evt.target.value
                     self.doFilter()
