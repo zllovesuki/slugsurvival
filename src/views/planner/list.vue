@@ -7,14 +7,11 @@
                 </div>
             </div>
         </div>
-        <div id="filter-bar-placeholder" class="bg-white rounded mb2 border" v-show="fixedToTop">
-            <filterBy :courses="courses" :ge="listOfGE" :timeblocks="timeblocks" :locations="locations" :filter="filter"></filterBy>
-        </div>
-		<div id="filter-bar" class="bg-white rounded mb2 border" v-bind:class="{ 'fixed': fixedToTop, 'top-0': fixedToTop}" v-if="ready">
+		<div id="filter-bar" class="bg-white rounded border fixed bottom-0" v-if="ready">
             <filterBy v-bind:ids="IDs" :courses="courses" :ge="listOfGE" :timeblocks="timeblocks" :locations="locations" :filter="filter"></filterBy>
         </div>
         <hr id="separator" class="mb2" />
-        <div class="bg-white rounded mb2" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="hideSubject[subject] !== true">
+        <div class="bg-white rounded mb2" v-for="(subjectCourses, subject) in courses" v-show="hideSubject[subject] !== true">
             <div class="m0 p1">
                 <div class="clearfix">
                     <span class="btn black h4">{{ subject }}</span>
@@ -212,15 +209,13 @@ module.exports = {
             var self = this;
             var courseInfo = self.courseInfo[self.termId];
             for (var subject in this.courses) {
-                if (this.filter.subject.length === 0) {
-                    self.hideSubject = {};
+                if (this.filter.subject.length === 0 || this.filter.subject.indexOf(subject) !== -1) {
+                    self.hideSubject[subject] = false;
                 }else{
-                    if (this.filter.subject.indexOf(subject) === -1) {
-                        self.$set(self.hideSubject, subject, true)
-                    }else{
-                        self.$set(self.hideSubject, subject, false)
-                    }
+                    self.hideSubject[subject] = true;
                 }
+            }
+            for (var subject in this.courses) {
                 this.courses[subject].map(function(course) {
                     if (self.filter.ge != 'all' && self.filter.ge != '' && courseInfo[course.num].ge.indexOf(self.filter.ge) === -1) {
                         self.hideGE[course.num] = true
@@ -246,49 +241,61 @@ module.exports = {
             for (var subject in this.courses) {
                 if (this.courses[subject].reduce(function(total, course) {
                     return (self.hideGE[course.num] === true || self.hideTimeblocks[course.num] === true || self.hideCourses[course.num] === true) ? total : total + 1;
-                }, 0) === 0) self.$set(self.hideSubject, subject, true)
+                }, 0) === 0) {
+                    self.hideSubject[subject] = true;
+                }
             }
         },
-        initSelectize: function() {
+        initSelect2: function() {
             var self = this;
             this.IDs.subjectID = this.makeid();
             this.IDs.geID = this.makeid();
             this.IDs.timeblockID = this.makeid();
             this.IDs.locationID = this.makeid();
             this.$nextTick(function() {
-                $('#' + this.IDs.subjectID).selectize({
-                    dropdownParent: 'body',
-                    onChange: function(params) {
-                        self.filter.subject = params;
-                        self.doFilter();
-                    }
+                $('#' + this.IDs.subjectID).select2({
+                    placeholder: 'Subject...'
+                }).on('select2:select', function(evt) {
+                    self.filter.subject.push(evt.params.data.element.value);
+                    self.doFilter();
+                }).on('select2:unselect', function(evt) {
+                    self.filter.subject = self.filter.subject.filter(function(el) {
+                        return el != evt.params.data.element.value;
+                    })
+                    self.doFilter();
+                });
+                $('#' + this.IDs.geID).select2({
+                    placeholder: 'GE...'
+                }).on('change', function(evt) {
+                    self.filter.ge = evt.target.value
+                    self.doFilter()
                 })
-                $('#' + this.IDs.geID).selectize({
-                    dropdownParent: 'body',
-                    onChange: function(params) {
-                        self.filter.ge = params;
-                        self.doFilter();
-                    }
+                $('#' + this.IDs.timeblockID).select2({
+                    placeholder: 'Timeblock...'
+                }).on('change', function(evt) {
+                    self.filter.timeblock = evt.target.value
+                    self.doFilter()
                 })
-                $('#' + this.IDs.timeblockID).selectize({
-                    dropdownParent: 'body',
-                    onChange: function(params) {
-                        self.filter.timeblock = params;
-                        self.doFilter();
-                    }
-                })
-                $('#' + this.IDs.locationID).selectize({
-                    dropdownParent: 'body',
-                    onChange: function(params) {
-                        self.filter.location = params;
-                        self.doFilter();
-                    }
-                })
-                $('#lulz').selectize({
-                    create: true,
-                    dropdownParent: 'body'
+                $('#' + this.IDs.locationID).select2({
+                    placeholder: 'Location...'
+                }).on('change', function(evt) {
+                    self.filter.location = evt.target.value
+                    self.doFilter()
                 })
             })
+        },
+        initReactive: function() {
+            var self = this;
+            for (var subject in self.courses) {
+                self.$set(self.hideSubject, subject, false);
+            }
+            for (var subject in this.courses) {
+                this.courses[subject].map(function(course) {
+                    self.$set(self.hideGE, course.num, false);
+                    self.$set(self.hideCourses, course.num, false);
+                    self.$set(self.hideTimeblocks, course.num, false);
+                })
+            }
         }
     },
     mounted: function() {
@@ -300,22 +307,15 @@ module.exports = {
         ])
         .spread(function(ge) {
             self.courses = self.$store.getters.sortedCourses[self.termId];
+            self.initReactive();
             self.doFilter();
             self.listOfGE = ge;
             self.locations = self.getLocations();
             self.timeblocks = self.getTimeblocks();
             self.ready = true;
-            $script.ready('selectize', function() {
-                self.initSelectize();
+            $script.ready('select2', function() {
                 self.$nextTick(function() {
-                    var elementPosition = $('#separator').offset();
-                    $(window).scroll(debounce(function () {
-                        if ($(window).scrollTop() > elementPosition.top) {
-                            self.fixedToTop = true;
-                        }else{
-                            self.fixedToTop = false;
-                        }
-                    }, 50))
+                    self.initSelect2();
                 })
             })
         })
@@ -328,5 +328,8 @@ module.exports = {
     width: 100%;
     max-width: 64em;
     z-index: 10;
+}
+.select2-selection--multiple input[type="search"] {
+    height: 1rem;
 }
 </style>
