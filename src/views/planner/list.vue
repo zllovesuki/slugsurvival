@@ -7,53 +7,11 @@
                 </div>
             </div>
         </div>
-        <div id="filter-bar-placeholder" class="overflow-hidden bg-white rounded mb2 border" v-if="ready">
-            <div class="m0 p1">
-				<div class="clearfix">
-					<span class="btn black h4 left">Filter By: </span>
-                    <router-link class="h6 white btn clickable right" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Calender View</router-link>
-				</div>
-			</div>
-            <div class="m0 p2 border-top">
-                <div class="clearfix">
-                    <select class="inline-block col col-4 field" v-model="filter.subject">
-                        <option value="all">Subject...</option>
-                        <option :value="code" v-for="(name, code) in subjectList" v-show="typeof courses[code] !== 'undefined'">{{ name }}</option>
-                    </select>
-                    <select class="inline-block col col-4 field" v-model="filter.timeblock">
-                        <option value="all">Timeblock...</option>
-                        <option :value="timeblock" v-for="timeblock in timeblocks">{{ timeblock }}</option>
-                    </select>
-                    <select class="inline-block col col-4 field" v-model="filter.location">
-                        <option value="all">Location...</option>
-                        <option :value="location" v-for="location in locations">{{ location }}</option>
-                    </select>
-                </div>
-            </div>
+        <div id="filter-bar-placeholder" class="bg-white rounded mb2 border" v-show="fixedToTop">
+            <filterBy :courses="courses" :ge="listOfGE" :timeblocks="timeblocks" :locations="locations" :filter="filter"></filterBy>
         </div>
-		<div id="filter-bar" class="overflow-hidden bg-white rounded mb2 border fixed top-0" v-show="fixedToTop">
-			<div class="m0 p1">
-				<div class="clearfix">
-					<span class="btn black h4">Filter By: </span>
-                    <router-link class="h6 white btn clickable right" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Planner View</router-link>
-				</div>
-			</div>
-            <div class="m0 p2 border-top bg-darken-1">
-                <div class="clearfix">
-                    <select class="inline-block col col-4 field" v-model="filter.subject">
-                        <option value="all">Subject...</option>
-                        <option :value="code" v-for="(name, code) in subjectList" v-show="typeof courses[code] !== 'undefined'">{{ name }}</option>
-                    </select>
-                    <select class="inline-block col col-4 field" v-model="filter.timeblock">
-                        <option value="all">Timeblock...</option>
-                        <option :value="timeblock" v-for="timeblock in timeblocks">{{ timeblock }}</option>
-                    </select>
-                    <select class="inline-block col col-4 field" v-model="filter.location">
-                        <option value="all">Location...</option>
-                        <option :value="location" v-for="location in locations">{{ location }}</option>
-                    </select>
-                </div>
-            </div>
+		<div id="filter-bar" class="bg-white rounded mb2 border" v-bind:class="{ 'fixed': fixedToTop, 'top-0': fixedToTop}" v-if="ready">
+            <filterBy v-bind:ids="IDs" :courses="courses" :ge="listOfGE" :timeblocks="timeblocks" :locations="locations" :filter="filter"></filterBy>
         </div>
         <hr id="separator" class="mb2" />
         <div class="bg-white rounded mb2" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="hideSubject[subject] !== true">
@@ -80,7 +38,7 @@
                         Time and Location
                     </div>
                 </div>
-                <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" track-by="course.num" v-show="hideCourses[course.num] !== true && hideTimeblocks[course.num] !== true">
+                <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" track-by="course.num" v-show="hideGE[course.num] !== true && hideCourses[course.num] !== true && hideTimeblocks[course.num] !== true">
                     <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
                         {{ course.c }} - {{ course.s }}
                     </div>
@@ -121,13 +79,22 @@ module.exports = {
             helper: helper,
             fixedToTop: false,
             filter: {
-                subject: 'all',
-                location: 'all',
-                timeblock: 'all'
+                subject: [],
+                ge: '',
+                location: '',
+                timeblock: ''
             },
             hideSubject: {},
+            hideGE: {},
             hideCourses: {},
-            hideTimeblocks: {}
+            hideTimeblocks: {},
+            IDs: {
+                subjectID: '',
+                geID: '',
+                timeblockID: '',
+                locationID: ''
+            },
+            listOfGE: {}
         }
     },
     computed: {
@@ -137,17 +104,26 @@ module.exports = {
         termId: function() {
             return this.$store.getters.termId;
         },
-        colorMap: function() {
-            return this.$store.getters.colorMap;
-        },
         dateMap: function() {
             return this.$store.getters.dateMap;
         },
         subjectList: function() {
             return this.$store.getters.subjectList;
+        },
+        courseInfo: function() {
+            return this.$store.getters.courseInfo;
         }
     },
     methods: {
+        makeid: function() {
+            var text = "";
+            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+            for( var i=0; i < 5; i++ )
+                text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+            return text;
+        }, // http://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
         long2short: function(el) {
             if (el == 'Monday') return 'M';
             if (el == 'Tuesday') return 'Tu';
@@ -234,70 +210,103 @@ module.exports = {
         },
         doFilter: function() {
             var self = this;
+            var courseInfo = self.courseInfo[self.termId];
             for (var subject in this.courses) {
-                if (this.filter.subject == 'all') {
+                if (this.filter.subject.length === 0) {
                     self.hideSubject = {};
                 }else{
-                    if (subject != this.filter.subject) self.hideSubject[subject] = true
-                    else self.hideSubject[subject] = false
+                    if (this.filter.subject.indexOf(subject) === -1) {
+                        self.$set(self.hideSubject, subject, true)
+                    }else{
+                        self.$set(self.hideSubject, subject, false)
+                    }
                 }
-                if (this.filter.location == 'all') {
-                    self.hideCourses = {};
-                }else{
-                    this.courses[subject].map(function(course) {
-                        if (course.loct.filter(function(loct) {
-                            return (loct.t === false ? 'Cancelled' : loct.loc === null ? 'TBA' : loct.loc) == self.filter.location;
-                        }).length === 0) {
-                            self.hideCourses[course.num] = true
-                        }else{
-                            self.hideCourses[course.num] = false
-                        }
-                    })
-                }
-                if (this.filter.timeblock == 'all') {
-                    self.hideTimeblocks = {};
-                }else{
-                    this.courses[subject].map(function(course) {
-                        if (course.loct.filter(function(loct) {
-                            return (loct.t === false ? 'Cancelled' : loct.t === null ? 'TBA' : helper.tConvert(loct.t.time.start) + '-' + helper.tConvert(loct.t.time.end)) == self.filter.timeblock;
-                        }).length === 0) {
-                            self.hideTimeblocks[course.num] = true
-                        }else{
-                            self.hideTimeblocks[course.num] = false
-                        }
-                    })
-                }
+                this.courses[subject].map(function(course) {
+                    if (self.filter.ge != 'all' && self.filter.ge != '' && courseInfo[course.num].ge.indexOf(self.filter.ge) === -1) {
+                        self.hideGE[course.num] = true
+                    }else{
+                        self.hideGE[course.num] = false
+                    }
+                    if (self.filter.timeblock != 'all' && self.filter.timeblock != '' && course.loct.filter(function(loct) {
+                        return ( (loct.t === false ? 'Cancelled' : loct.t === null ? 'TBA' : helper.tConvert(loct.t.time.start) + '-' + helper.tConvert(loct.t.time.end)) == self.filter.timeblock);
+                    }).length === 0) {
+                        self.hideTimeblocks[course.num] = true
+                    }else{
+                        self.hideTimeblocks[course.num] = false
+                    }
+                    if (self.filter.location != 'all' && self.filter.location != '' && course.loct.filter(function(loct) {
+                        return (loct.t === false ? 'Cancelled' : loct.loc === null ? 'TBA' : loct.loc) == self.filter.location;
+                    }).length === 0) {
+                        self.hideCourses[course.num] = true
+                    }else{
+                        self.hideCourses[course.num] = false
+                    }
+                })
             }
             for (var subject in this.courses) {
                 if (this.courses[subject].reduce(function(total, course) {
-                    return self.hideCourses[course.num] === true ? total : total + 1;
-                }, 0) === 0 || this.courses[subject].reduce(function(total, course) {
-                    return self.hideTimeblocks[course.num] === true ? total : total + 1;
-                }, 0) === 0) self.hideSubject[subject] = true
+                    return (self.hideGE[course.num] === true || self.hideTimeblocks[course.num] === true || self.hideCourses[course.num] === true) ? total : total + 1;
+                }, 0) === 0) self.$set(self.hideSubject, subject, true)
             }
-        }
-    },
-    watch: {
-        'filter.subject': function() {
-            this.doFilter();
         },
-        'filter.location': function() {
-            this.doFilter();
-        },
-        'filter.timeblock': function() {
-            this.doFilter();
+        initSelectize: function() {
+            var self = this;
+            this.IDs.subjectID = this.makeid();
+            this.IDs.geID = this.makeid();
+            this.IDs.timeblockID = this.makeid();
+            this.IDs.locationID = this.makeid();
+            this.$nextTick(function() {
+                $('#' + this.IDs.subjectID).selectize({
+                    dropdownParent: 'body',
+                    onChange: function(params) {
+                        self.filter.subject = params;
+                        self.doFilter();
+                    }
+                })
+                $('#' + this.IDs.geID).selectize({
+                    dropdownParent: 'body',
+                    onChange: function(params) {
+                        self.filter.ge = params;
+                        self.doFilter();
+                    }
+                })
+                $('#' + this.IDs.timeblockID).selectize({
+                    dropdownParent: 'body',
+                    onChange: function(params) {
+                        self.filter.timeblock = params;
+                        self.doFilter();
+                    }
+                })
+                $('#' + this.IDs.locationID).selectize({
+                    dropdownParent: 'body',
+                    onChange: function(params) {
+                        self.filter.location = params;
+                        self.doFilter();
+                    }
+                })
+                $('#lulz').selectize({
+                    create: true,
+                    dropdownParent: 'body'
+                })
+            })
         }
     },
     mounted: function() {
         this.$store.dispatch('setTitle', 'All Classes');
         var self = this;
-        self.$store.dispatch('fetchTermCourses').then(function() {
+        Bluebird.all([
+            this.$store.dispatch('fetchGE'),
+            self.$store.dispatch('fetchTermCourses')
+        ])
+        .spread(function(ge) {
             self.courses = self.$store.getters.sortedCourses[self.termId];
             self.doFilter();
+            self.listOfGE = ge;
             self.locations = self.getLocations();
             self.timeblocks = self.getTimeblocks();
             self.ready = true;
-            $script.ready('bundle', function() {
+            $script.ready('selectize', function() {
+                self.initSelectize();
                 self.$nextTick(function() {
                     var elementPosition = $('#separator').offset();
                     $(window).scroll(debounce(function () {
