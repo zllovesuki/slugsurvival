@@ -1033,7 +1033,8 @@ var self = module.exports = {
         _.commit('appendCourseInfo', payload);
     },
     fetchGE: function(_) {
-        return fetch(config.dbURL + '/ge.json')
+        var timestamp = Date.now() / 1000;
+        return fetch(config.dbURL + '/ge.json?' + timestamp)
         .then(function(res) {
             return res.json();
         })
