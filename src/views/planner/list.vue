@@ -7,7 +7,7 @@
                 </div>
             </div>
         </div>
-        <div id="filter-bar-placeholder" class="overflow-hidden bg-white rounded mb2 border" v-show="ready">
+        <div id="filter-bar-placeholder" class="overflow-hidden bg-white rounded mb2 border" v-if="ready">
             <div class="m0 p1">
 				<div class="clearfix">
 					<span class="btn black h4">Filter By: </span>
@@ -15,11 +15,15 @@
 			</div>
             <div class="m0 p2 border-top">
                 <div class="clearfix">
-                    <select class="inline-block col-4 field" v-model="filter.subject">
+                    <select class="inline-block col col-4 field" v-model="filter.subject">
                         <option value="all">Subject...</option>
-                        <option :value="code" v-for="(name, code) in subjectList">{{ name }}</option>
+                        <option :value="code" v-for="(name, code) in subjectList" v-show="typeof courses[code] !== 'undefined'">{{ name }}</option>
                     </select>
-                    <select class="inline-block col-4 field" v-model="filter.location">
+                    <select class="inline-block col col-4 field" v-model="filter.timeblock">
+                        <option value="all">Timeblock...</option>
+                        <option :value="timeblock" v-for="timeblock in timeblocks">{{ timeblock }}</option>
+                    </select>
+                    <select class="inline-block col col-4 field" v-model="filter.location">
                         <option value="all">Location...</option>
                         <option :value="location" v-for="location in locations">{{ location }}</option>
                     </select>
@@ -32,20 +36,24 @@
 					<span class="btn black h4">Filter By: </span>
 				</div>
 			</div>
-            <div class="m0 p2 border-top">
+            <div class="m0 p2 border-top bg-darken-1">
                 <div class="clearfix">
-                    <select class="inline-block col-4 field" v-model="filter.subject">
+                    <select class="inline-block col col-4 field" v-model="filter.subject">
                         <option value="all">Subject...</option>
-                        <option :value="code" v-for="(name, code) in subjectList">{{ name }}</option>
+                        <option :value="code" v-for="(name, code) in subjectList" v-show="typeof courses[code] !== 'undefined'">{{ name }}</option>
                     </select>
-                    <select class="inline-block col-4 field" v-model="filter.location">
+                    <select class="inline-block col col-4 field" v-model="filter.timeblock">
+                        <option value="all">Timeblock...</option>
+                        <option :value="timeblock" v-for="timeblock in timeblocks">{{ timeblock }}</option>
+                    </select>
+                    <select class="inline-block col col-4 field" v-model="filter.location">
                         <option value="all">Location...</option>
                         <option :value="location" v-for="location in locations">{{ location }}</option>
                     </select>
                 </div>
             </div>
         </div>
-        <hr class="mb2" />
+        <hr id="separator" class="mb2" />
         <div class="bg-white rounded mb2" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="hideSubject[subject] !== true">
             <div class="m0 p1">
                 <div class="clearfix">
@@ -70,7 +78,7 @@
                         Time and Location
                     </div>
                 </div>
-                <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" track-by="course.num" v-show="hideCourses[course.num] !== true">
+                <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" track-by="course.num" v-show="hideCourses[course.num] !== true && hideTimeblocks[course.num] !== true">
                     <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
                         {{ course.c }} - {{ course.s }}
                     </div>
@@ -107,14 +115,17 @@ module.exports = {
             ready: false,
             courses: {},
             locations: [],
+            timeblocks: [],
             helper: helper,
             fixedToTop: false,
             filter: {
                 subject: 'all',
-                location: 'all'
+                location: 'all',
+                timeblock: 'all'
             },
             hideSubject: {},
-            hideCourses: {}
+            hideCourses: {},
+            hideTimeblocks: {}
         }
     },
     computed: {
@@ -129,7 +140,7 @@ module.exports = {
         },
         subjectList: function() {
             return this.$store.getters.subjectList;
-        },
+        }
     },
     methods: {
         long2short: function(el) {
@@ -180,6 +191,24 @@ module.exports = {
                 return alertHandle()
             })
         },
+        getTimeblocks: function() {
+            var flatCourses = this.$store.getters.flatCourses[this.termId];
+            return Object.keys(flatCourses).map(function(courseNum) {
+                return flatCourses[courseNum].loct.map(function(loct) {
+                    if (loct.t === false) {
+                        return 'Cancelled'
+                    }else if (loct.t === null) {
+                        return 'TBA'
+                    }else{
+                        return helper.tConvert(loct.t.time.start) + '-' + helper.tConvert(loct.t.time.end)
+                    }
+                })
+            }).reduce(function(a, b) {
+                return a.concat(b);
+            }).filter(function(value, index, self) {
+                return self.indexOf(value) === index;
+            }).sort(helper.naturalSorter);
+        },
         getLocations: function() {
             var flatCourses = this.$store.getters.flatCourses[this.termId];
             return Object.keys(flatCourses).map(function(courseNum) {
@@ -207,8 +236,6 @@ module.exports = {
                     if (subject != this.filter.subject) self.hideSubject[subject] = true
                     else self.hideSubject[subject] = false
                 }
-            }
-            for (var subject in this.courses) {
                 if (this.filter.location == 'all') {
                     self.hideCourses = {};
                 }else{
@@ -222,8 +249,25 @@ module.exports = {
                         }
                     })
                 }
+                if (this.filter.timeblock == 'all') {
+                    self.hideTimeblocks = {};
+                }else{
+                    this.courses[subject].map(function(course) {
+                        if (course.loct.filter(function(loct) {
+                            return (loct.t === false ? 'Cancelled' : loct.t === null ? 'TBA' : helper.tConvert(loct.t.time.start) + '-' + helper.tConvert(loct.t.time.end)) == self.filter.timeblock;
+                        }).length === 0) {
+                            self.hideTimeblocks[course.num] = true
+                        }else{
+                            self.hideTimeblocks[course.num] = false
+                        }
+                    })
+                }
+            }
+            for (var subject in this.courses) {
                 if (this.courses[subject].reduce(function(total, course) {
                     return self.hideCourses[course.num] === true ? total : total + 1;
+                }, 0) === 0 || this.courses[subject].reduce(function(total, course) {
+                    return self.hideTimeblocks[course.num] === true ? total : total + 1;
                 }, 0) === 0) self.hideSubject[subject] = true
             }
         }
@@ -234,6 +278,9 @@ module.exports = {
         },
         'filter.location': function() {
             this.doFilter();
+        },
+        'filter.timeblock': function() {
+            this.doFilter();
         }
     },
     mounted: function() {
@@ -243,10 +290,11 @@ module.exports = {
             self.courses = self.$store.getters.sortedCourses[self.termId];
             self.doFilter();
             self.locations = self.getLocations();
+            self.timeblocks = self.getTimeblocks();
             self.ready = true;
             $script.ready('bundle', function() {
                 self.$nextTick(function() {
-                    var elementPosition = $('#filter-bar-placeholder').offset();
+                    var elementPosition = $('#separator').offset();
                     $(window).scroll(debounce(function () {
                         if ($(window).scrollTop() > elementPosition.top) {
                             self.fixedToTop = true;
