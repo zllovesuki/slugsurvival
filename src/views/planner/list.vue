@@ -10,7 +10,8 @@
         <div id="filter-bar-placeholder" class="overflow-hidden bg-white rounded mb2 border" v-if="ready">
             <div class="m0 p1">
 				<div class="clearfix">
-					<span class="btn black h4">Filter By: </span>
+					<span class="btn black h4 left">Filter By: </span>
+                    <router-link class="h6 white btn clickable right" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Calender View</router-link>
 				</div>
 			</div>
             <div class="m0 p2 border-top">
@@ -34,6 +35,7 @@
 			<div class="m0 p1">
 				<div class="clearfix">
 					<span class="btn black h4">Filter By: </span>
+                    <router-link class="h6 white btn clickable right" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Planner View</router-link>
 				</div>
 			</div>
             <div class="m0 p2 border-top bg-darken-1">
@@ -134,6 +136,9 @@ module.exports = {
         },
         termId: function() {
             return this.$store.getters.termId;
+        },
+        colorMap: function() {
+            return this.$store.getters.colorMap;
         },
         dateMap: function() {
             return this.$store.getters.dateMap;
