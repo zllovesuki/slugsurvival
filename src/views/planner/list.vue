@@ -7,10 +7,48 @@
                 </div>
             </div>
         </div>
-		<div id="filter-bar" class="bg-white rounded border fixed bottom-0" v-if="ready">
-            <filterBy v-bind:ids="IDs" :courses="courses" :ge="listOfGE" :timeblocks="timeblocks" :locations="locations" :filter="filter"></filterBy>
+        <div class="bar-mask" @click="show = !show" v-show="ready && show && initialized">
         </div>
-        <hr id="separator" class="mb2" />
+        <transition name="fade" mode="out-in">
+            <div id="filter-bar" class="bg-white rounded border fixed bottom-0" v-if="ready">
+                <div class="m0 p1" v-bind:class="{ 'bg-darken-2': !show }">
+                    <div class="clearfix">
+                        <span class="btn black h5 left" @click="show = !show">Filter By: </span>
+                        <router-link class="p1 h6 white bold clickable right" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Calender View</router-link>
+                    </div>
+                </div>
+                <div class="m0 p2 border-top" v-show="show">
+                    <div class="clearfix">
+                        <span class="inline-block col col-3">
+                            <select multiple v-bind:id="IDs.subjectID" class="col col-12">
+                                <option :value="code" v-for="(name, code) in subjectList" v-show="typeof courses[code] !== 'undefined'">({{ code }}) {{ name }}</option>
+                            </select>
+                        </span>
+                        <span class="inline-block col col-3">
+                            <select v-bind:id="IDs.geID" class="col col-12">
+                                <option></option>
+                                <option value="all">(All Classes)</option>
+                                <option :value="code" v-for="(desc, code) in listOfGE">({{ code }}) {{ desc }}</option>
+                            </select>
+                        </span>
+                        <span class="inline-block col col-3">
+                            <select v-bind:id="IDs.timeblockID" class="col col-12">
+                                <option></option>
+                                <option value="all">(All Timeblocks)</option>
+                                <option :value="timeblock" v-for="timeblock in timeblocks">{{ timeblock }}</option>
+                            </select>
+                        </span>
+                        <span class="inline-block col col-3">
+                            <select v-bind:id="IDs.locationID" class="col col-12">
+                                <option></option>
+                                <option value="all">(All Locations)</option>
+                                <option :value="location" v-for="location in locations">{{ location }}</option>
+                            </select>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </transition>
         <div class="bg-white rounded mb2" v-for="(subjectCourses, subject) in courses" v-show="hideSubject[subject] !== true">
             <div class="m0 p1">
                 <div class="clearfix">
@@ -21,9 +59,9 @@
                 </div>
             </div>
             <div class="m0 p0 border-top">
-                <div class="h5 clearfix bg-darken-2 bold">
+                <div class="h5 clearfix bg-silver bold">
                     <div class="p1 sm-col sm-col-2 nowrap">
-                        &nbsp;
+                        Class
                     </div>
                     <div class="p1 sm-col sm-col-3 nowrap">
                         Title
@@ -70,6 +108,8 @@ module.exports = {
     data: function() {
         return {
             ready: false,
+            show: true,
+            initialized: false,
             courses: {},
             locations: [],
             timeblocks: [],
@@ -103,6 +143,9 @@ module.exports = {
         },
         dateMap: function() {
             return this.$store.getters.dateMap;
+        },
+        colorMap: function () {
+            return this.$store.getters.colorMap;
         },
         subjectList: function() {
             return this.$store.getters.subjectList;
@@ -178,7 +221,7 @@ module.exports = {
                     }else if (loct.t === null) {
                         return 'TBA'
                     }else{
-                        return helper.tConvert(loct.t.time.start) + '-' + helper.tConvert(loct.t.time.end)
+                        return helper.tConvert(loct.t.time.start)
                     }
                 })
             }).reduce(function(a, b) {
@@ -223,7 +266,7 @@ module.exports = {
                         self.hideGE[course.num] = false
                     }
                     if (self.filter.timeblock != 'all' && self.filter.timeblock != '' && course.loct.filter(function(loct) {
-                        return ( (loct.t === false ? 'Cancelled' : loct.t === null ? 'TBA' : helper.tConvert(loct.t.time.start) + '-' + helper.tConvert(loct.t.time.end)) == self.filter.timeblock);
+                        return ( (loct.t === false ? 'Cancelled' : loct.t === null ? 'TBA' : helper.tConvert(loct.t.time.start)) == self.filter.timeblock);
                     }).length === 0) {
                         self.hideTimeblocks[course.num] = true
                     }else{
@@ -271,7 +314,7 @@ module.exports = {
                     self.doFilter()
                 })
                 $('#' + this.IDs.timeblockID).select2({
-                    placeholder: 'Timeblock...'
+                    placeholder: 'Start time...'
                 }).on('change', function(evt) {
                     self.filter.timeblock = evt.target.value
                     self.doFilter()
@@ -282,6 +325,10 @@ module.exports = {
                     self.filter.location = evt.target.value
                     self.doFilter()
                 })
+                setTimeout(function() {
+                    self.initialized = true;
+                    self.show = false;
+                }, 500)
             })
         },
         initReactive: function() {
@@ -312,8 +359,8 @@ module.exports = {
             self.listOfGE = ge;
             self.locations = self.getLocations();
             self.timeblocks = self.getTimeblocks();
-            self.ready = true;
             $script.ready('select2', function() {
+                self.ready = true;
                 self.$nextTick(function() {
                     self.initSelect2();
                 })
@@ -324,6 +371,17 @@ module.exports = {
 </script>
 
 <style>
+.bar-mask {
+    position: fixed;
+    z-index: 9;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, .3);
+    display: table;
+    transition: opacity .3s ease;
+}
 #filter-bar {
     width: 100%;
     max-width: 64em;
