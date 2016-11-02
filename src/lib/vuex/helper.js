@@ -1,5 +1,58 @@
 var self = module.exports = {
 
+    pad: function(n, width, z) {
+        z = z || '0';
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join(z) + n;
+    }, // http://stackoverflow.com/questions/10073699/pad-a-number-with-leading-zeros-in-javascript
+
+    getMaterialsLink: function(termId, course) {
+        var url = 'http://ucsc.verbacompare.com/comparison?id='; // SSI16__BME__185__01
+        var id = '';
+        switch (termId[termId.length - 1]) {
+            case '0': // Winter
+            id = 'WT';
+            break;
+            case '2': // Spring
+            id = 'SP';
+            break;
+            case '8': // Fall
+            id = 'FL';
+            break;
+            case '4': // Summer
+            if (course.l) {
+                if (course.l == '5S2') id = 'SSII';
+                else id = 'SSI'
+            }else{
+                return false;
+            }
+            break;
+        }
+        // SSI
+        id += (termId % 2000).toString().substring(0, 2);
+        // SSI16
+        id += '__';
+        // SSI16__
+        id += course.c.split(' ').filter(Boolean)[0];
+        // SSI16__BME
+        id += '__'
+        // SSI16_BME__
+        var nbr = course.c.split(' ').filter(Boolean)[1];
+        console.log(nbr, parseInt(nbr).toString())
+        if (parseInt(nbr).toString().length !== nbr.length) {
+            // Probably something like 10A
+            id += self.pad(parseInt(nbr), 3, 0) + nbr.slice(-1);
+        }else{
+            id += self.pad(nbr, 3, 0)
+        }
+        // SSI16__BME_185
+        id += '__'
+        // SSI16__BME_185__
+        id += course.s;
+        // SSI16__BME__185__01
+        return url + id;
+    },
+
     naturalSorter: function(as, bs){
         var a, b, a1, b1, i= 0, n, L,
         rx=/(\.\d+)|(\d+(\.\d+)?)|([^\d.]+)|(\.\D+)|(\.$)/g;

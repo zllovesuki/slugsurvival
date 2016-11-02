@@ -972,6 +972,7 @@ var self = module.exports = {
         isSection = isSection || false;
         if (!isSection) {
             var courseHasSections = _.getters.courseInfo[termId][course.num].sec.length > 0;
+            var materialLink = helper.getMaterialsLink(termId, course);
         }
         var html = '';
         var template = function(key, value) {
@@ -988,7 +989,7 @@ var self = module.exports = {
             html += template('TA', course.ins);
         }else if (course.custom !== true){
             html += template('Course Number', course.num + (courseInfo.re === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCoursePreReq\', \'' + termId + '+' + course.num + '\')">Pre-Req</sup>') );
-            html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
+            html += template(course.c, (courseHasSections ? 'has sections': 'has NO sections') + (materialLink === false ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.open(\'' + materialLink  + '\')">Books</sup>'));
             html += template('Course Name', course.n + (courseInfo.desc === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCourseDesc\', \'' + termId + '+' + course.num + '\')">Desc.</sup>'));
             html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + course.ins.f.replace(/'/g, '\\\'') + '+' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
         }
