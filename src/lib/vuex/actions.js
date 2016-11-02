@@ -939,8 +939,25 @@ var self = module.exports = {
         var courseInfo = _.getters.courseInfo[termId][courseNum];
         var html = '';
 
-        html += '<p class="h6">Requirements for ' + course.c + '</p>';
+        html += '<p class="h6 muted">Requirements for ' + course.c + '</p>';
         html += '<p>' + courseInfo.re + '</p>';
+
+        _.getters.alert
+        .okBtn('Got It')
+        .alert(html)
+        .then(function(resolved) {
+            resolved.event.preventDefault();
+        })
+    },
+    _showCourseDesc: function(_, string) {
+        var split = string.split('+');
+        var termId = split[0], courseNum = split[1];
+        var course = _.getters.flatCourses[termId][courseNum]
+        var courseInfo = _.getters.courseInfo[termId][courseNum];
+        var html = '';
+
+        html += '<p class="h6 muted">Description for ' + course.c + '</p>';
+        html += '<p>' + courseInfo.desc + '</p>';
 
         _.getters.alert
         .okBtn('Got It')
@@ -972,7 +989,7 @@ var self = module.exports = {
         }else if (course.custom !== true){
             html += template('Course Number', course.num + (courseInfo.re === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCoursePreReq\', \'' + termId + '+' + course.num + '\')">Pre-Req</sup>') );
             html += template(course.c, courseHasSections ? 'has sections': 'has NO sections');
-            html += template('Course Name', course.n);
+            html += template('Course Name', course.n + (courseInfo.desc === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCourseDesc\', \'' + termId + '+' + course.num + '\')">Desc.</sup>'));
             html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + course.ins.f.replace(/'/g, '\\\'') + '+' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
         }
 
