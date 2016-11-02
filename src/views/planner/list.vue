@@ -13,17 +13,17 @@
             <div class="bar-mask" @click="flip" v-show="ready && show && initialized">
             </div>
         </transition>
-        <div id="filter-bar" class="bg-white rounded fixed bottom-0" v-if="ready">
+        <div id="filter-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-white': show }" v-if="ready">
             <transition-group name="list-complete" appear>
-                <div class="m0 p0" v-bind:class="{ 'bg-black': !show }" key="title">
+                <div class="m0 p0 rounded" key="title">
                     <div class="clearfix">
-                        <div class="left">
+                        <div class="left rounded" v-bind:class="{ 'bg-black-transparent': !show }">
                             <span class="m1 btn h5" @click="flip" v-bind:class="{ 'white': !show, 'black': show }">Filter By: </span>
                         </div>
-                        <div class="right">
+                        <div class="right rounded" v-bind:class="{ 'bg-black-transparent': !show }">
                             <div class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg"></i></div>
                             <router-link v-show="!show" class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg"></i></router-link>
-                            <div @click="flip" v-show="show" class="inline-block m1 p1 h6 black bold clickable" v-bind:style="{ backgroundColor: colorMap.blank }"><i class="fa fa-arrow-down fa-lg"></i></div>
+                            <div @click="flip" v-show="show" class="inline-block m1 p1 h6 black bold clickable" v-bind:style="{ backgroundColor: colorMap.blank }"><i class="fa fa-arrow-up fa-lg"></i></div>
                         </div>
                     </div>
                 </div>
@@ -398,6 +398,9 @@ module.exports = {
 </script>
 
 <style>
+.bg-black-transparent {
+    background-color: rgba(0, 0, 0, 0.5);
+}
 .bar-mask {
     position: fixed;
     z-index: 9;
@@ -405,7 +408,7 @@ module.exports = {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.5);
     display: table;
     transition: opacity .3s ease;
 }

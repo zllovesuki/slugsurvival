@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="fixed top-0 right-0 m2">
+        <div class="fixed bottom-0 right-0 m2" style="z-index: 2000">
 			<a class="btn block muted" @click="showFeedback">
 				<i class="fa fa-warning">&nbsp;</i>
 			</a>
