@@ -10,15 +10,15 @@
             </div>
         </transition>
         <transition name="fade" mode="out-in">
-            <div class="bar-mask" @click="show = !show" v-show="ready && show && initialized">
+            <div class="bar-mask" @click="flip" v-show="ready && show && initialized">
             </div>
         </transition>
         <div id="filter-bar" class="bg-white rounded border fixed bottom-0" v-if="ready">
             <transition-group name="list-complete" appear>
-                <div class="m0 p0" v-bind:class="{ 'bg-darken-3': !show }" v-show="!show" key="title">
+                <div class="m0 p0" v-bind:class="{ 'bg-black': !show }" v-show="!show" key="title">
                     <div class="clearfix">
-                        <span class="m1 btn black h5 left" @click="show = !show">Filter By: </span>
-                        <router-link class="m1 p1 h6 white bold clickable right" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Calender View</router-link>
+                        <span class="m1 btn white h5 left" @click="flip">Filter By: </span>
+                        <router-link class="m1 p1 h6 black bold clickable right" v-bind:style="{ backgroundColor: colorMap.blank }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Calender View</router-link>
                     </div>
                 </div>
                 <div class="m0 p1 h5" v-show="show" key="selects">
@@ -53,7 +53,7 @@
                 </div>
             </transition-group>
         </div>
-        <div class="bg-white rounded border mb2" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="hideSubject[subject] !== true">
+        <div class="bg-white rounded border mb2" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="initialized && hideSubject[subject] !== true">
             <div class="m0 p1">
                 <div class="clearfix">
                     <span class="btn black h4">{{ subject }}</span>
@@ -358,6 +358,11 @@ module.exports = {
                     self.$set(self.hideCourses, course.num, false);
                 })
             }
+        },
+        flip: function() {
+            this.show = !this.show;
+            $('#' + this.IDs.subjectID).select2('close')
+            this.$store.dispatch('blockScroll')
         }
     },
     mounted: function() {
@@ -393,7 +398,7 @@ module.exports = {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, .3);
+    background-color: rgba(0, 0, 0, .7);
     display: table;
     transition: opacity .3s ease;
 }

@@ -103,6 +103,9 @@ body {
 body.modal-open {
     overflow: hidden;
 }
+#container.modal-open {
+    overflow: hidden;
+}
 
 ::selection {
     background: #ffb7b7;

@@ -58,5 +58,8 @@ module.exports = {
     },
     latestTermCode: function(state) {
         return (typeof state.flatTermsList[0] === undefined ? null : parseInt(state.flatTermsList[0].code))
+    },
+    blockScroll: function(state) {
+        return state.blockScroll;
     }
 }

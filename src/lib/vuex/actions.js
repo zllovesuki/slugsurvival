@@ -1100,5 +1100,12 @@ var self = module.exports = {
                 _.dispatch('checkVersion')
             }, 120 * 1000)
         })
+    },
+    blockScroll: function(_) {
+        if (document.body.className == '') {
+            document.body.className = 'modal-open';
+        } else {
+            document.body.className = '';
+        }
     }
 }
