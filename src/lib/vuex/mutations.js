@@ -37,7 +37,7 @@ module.exports = {
                 if (!skipSaving) {
                     return helper.naturalSorter(a.c, b.c)
                 }else{
-                    return helper.naturalSorter(a.c.split(/(\d+)/).filter(Boolean)[1], b.c.split(/(\d+)/).filter(Boolean)[1])
+                    return helper.naturalSorter(a.c.split(' ').filter(Boolean)[1], b.c.split(' ').filter(Boolean)[1])
                 }
             });
             courses[subject].forEach(function(course) {
