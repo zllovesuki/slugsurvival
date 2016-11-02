@@ -38,8 +38,14 @@ module.exports = {
     flatCourses: function(state) {
         return state.flatCourses;
     },
+    sortedCourses: function(state) {
+        return state.sortedCourses;
+    },
     courseInfo: function(state) {
         return state.courseInfo;
+    },
+    subjectList: function(state) {
+        return state.subjectList;
     },
     eventSource: function(state) {
         return state.events

@@ -74,6 +74,11 @@ var router = new VueRouter({
                     path: ':termId',
                     name: 'term',
                     component: require('./views/planner/term.vue')
+                },
+                {
+                    path: ':termId/list',
+                    name: 'viewList',
+                    component: require('./views/planner/list.vue')
                 }
             ]
         },

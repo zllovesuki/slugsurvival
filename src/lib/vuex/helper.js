@@ -69,8 +69,11 @@ var self = module.exports = {
             time = time.slice(1); // Remove full string match value
             time[5] = +time[0] < 12 ? 'AM' : 'PM'; // Set AM/PM
             time[0] = +time[0] % 12 || 12; // Adjust hours
+            time[0] = time[0] < 10 ? '0' + time[0] : time[0]
         }
-        return time.join(''); // return adjusted time or original string
+        var string = time.join(''); // return adjusted time or original string
+        if (string === '12:00AM') return 'Tentative';
+        else return string;
     }, // http://stackoverflow.com/questions/13898423/javascript-convert-24-hour-time-of-day-string-to-12-hour-time-with-am-pm-and-no
 
     tConvertToEpoch: function(dateMap, locts) {
@@ -350,15 +353,18 @@ var self = module.exports = {
             if (el == 'Wednesday') return 'WE';
             if (el == 'Thursday') return 'TH';
             if (el == 'Friday') return 'FR';
-            return 'SA';
+            if (el == 'Saturday') return 'SA';
+            if (el == 'Sunday') return 'SU';
         })
     },
     dayToNum: function(el) {
+        if (el == 'Sunday') return 0
         if (el == 'Monday') return 1
         if (el == 'Tuesday') return 2
         if (el == 'Wednesday') return 3
         if (el == 'Thursday') return 4
         if (el == 'Friday') return 5
+        if (el == 'Saturday') return 6
     },
     formattedDate: function(date) {
         var d = new Date(date || Date.now()),

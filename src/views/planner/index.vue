@@ -13,6 +13,11 @@
                     Schedule for {{ termName }}
                 </span>
             </span>
+            <span v-if="route.name === 'viewList'">
+                <span class="btn button-narrow mxn1">
+                    List of Classes for {{ termName }}
+                </span>
+            </span>
         </div>
         <div class="mt2 mb1">
             <transition name="fade" mode="out-in">
@@ -33,6 +38,11 @@ module.exports = {
         termName: function() {
             return this.$store.getters.termName;
         }
+    },
+    created: function() {
+        $script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'lz-string/1.4.4/lz-string.min.js'], 'bundle', function() {
+            $script(dist + 'select2/4.0.3/select2.min.js', 'select2')
+        })
     }
 }
 </script>

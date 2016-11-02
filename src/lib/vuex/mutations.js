@@ -8,6 +8,13 @@ module.exports = {
     setTermName: function(state, name) {
         state.termName = name;
     },
+    saveSubjects: function(state, payload) {
+        var subjects = payload.subjects;
+        state.flatSubjectList = subjects;
+        subjects.forEach(function(subject) {
+            state.subjectList[subject.code] = subject.name;
+        })
+    },
     saveTermsList: function(state, payload) {
         var terms = payload.termsList, skipSaving = payload.skipSaving
         state.flatTermsList = terms;
@@ -21,7 +28,18 @@ module.exports = {
         if (typeof state.flatCourses[termId] === 'undefined') {
             state.flatCourses[termId] = {};
         }
-        Object.keys(courses).forEach(function(subject) {
+        if (typeof state.sortedCourses[termId] === 'undefined') {
+            state.sortedCourses[termId] = {};
+        }
+        Object.keys(courses).sort().forEach(function(subject) {
+            state.sortedCourses[termId][subject] = courses[subject];
+            state.sortedCourses[termId][subject].sort(function(a, b) {
+                if (!skipSaving) {
+                    return helper.naturalSorter(a.c, b.c)
+                }else{
+                    return helper.naturalSorter(a.c.split(/(\d+)/).filter(Boolean)[1], b.c.split(/(\d+)/).filter(Boolean)[1])
+                }
+            });
             courses[subject].forEach(function(course) {
                 if (!skipSaving) {
                     obj = course;

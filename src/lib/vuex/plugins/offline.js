@@ -5,6 +5,7 @@ module.exports = function(storage) {
         store.subscribe(function(mutation, state) {
 
             var termId;
+            var timestamp = Date.now() / 1000;
             if (mutation.payload && mutation.payload.termId) termId = mutation.payload.termId;
 
             switch (mutation.type) {
@@ -15,7 +16,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/terms/' + termId + '.json')
+                return fetch(config.dbURL + '/timestamp/terms/' + termId + '.json?' + timestamp)
                 .then(function(res) {
                     return res.json();
                 })
@@ -35,7 +36,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/courses/' + termId + '.json')
+                return fetch(config.dbURL + '/timestamp/courses/' + termId + '.json?' + timestamp)
                 .then(function(res) {
                     return res.json();
                 })
@@ -55,7 +56,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/rmp.json')
+                return fetch(config.dbURL + '/timestamp/rmp.json?' + timestamp)
                 .then(function(res) {
                     return res.json();
                 })
@@ -75,7 +76,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/terms.json')
+                return fetch(config.dbURL + '/timestamp/terms.json?' + timestamp)
                 .then(function(res) {
                     return res.json();
                 })
@@ -83,6 +84,26 @@ module.exports = function(storage) {
                     return Bluebird.all([
                         storage.setItem('termsListTimestamp', onlineTimestamp),
                         storage.setItem('termsList', termsList)
+                    ])
+                })
+
+                break;
+
+                case 'saveSubjects':
+
+                var subjects = mutation.payload.subjects;
+                var skipSaving = mutation.payload.skipSaving || false;
+
+                if (skipSaving) return;
+
+                return fetch(config.dbURL + '/timestamp/subjects.json?' + timestamp)
+                .then(function(res) {
+                    return res.json();
+                })
+                .then(function(onlineTimestamp) {
+                    return Bluebird.all([
+                        storage.setItem('subjectsTimestamp', onlineTimestamp),
+                        storage.setItem('subjects', subjects)
                     ])
                 })
 
@@ -97,7 +118,7 @@ module.exports = function(storage) {
                 if (skipSaving) return;
 
                 if (!workaround) {
-                    return fetch(config.dbURL + '/timestamp/index/' + termId + '.json')
+                    return fetch(config.dbURL + '/timestamp/index/' + termId + '.json?' + timestamp)
                     .then(function(res) {
                         return res.json();
                     })

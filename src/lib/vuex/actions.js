@@ -93,28 +93,33 @@ var self = module.exports = {
             var timestamp = Date.now() / 1000;
             return Bluebird.all([
                 fetch(config.dbURL + '/timestamp/terms.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/rmp.json?' + timestamp)
-            ]).spread(function(termsRes, rmpRes){
+                fetch(config.dbURL + '/timestamp/rmp.json?' + timestamp),
+                fetch(config.dbURL + '/timestamp/subjects.json?' + timestamp)
+            ]).spread(function(termsRes, rmpRes, subjectsRes){
                 return Bluebird.all([
                     termsRes.json(),
-                    rmpRes.json()
+                    rmpRes.json(),
+                    subjectsRes.json()
                 ])
             })
         }
         var loadOfflineTimestamp = function() {
             return Bluebird.all([
                 storage.getItem('termsListTimestamp'),
-                storage.getItem('rmpTimestamp')
+                storage.getItem('rmpTimestamp'),
+                storage.getItem('subjectsTimestamp')
             ])
         }
         var loadFromStorage = function(invalid) {
             return Bluebird.all([
                 !invalid.termsList ? storage.getItem('termsList') : null,
-                !invalid.rmp ? storage.getItem('rmp') : null
-            ]).spread(function(termsList, rmp) {
+                !invalid.rmp ? storage.getItem('rmp') : null,
+                !invalid.subjects ? storage.getItem('subjects') : null
+            ]).spread(function(termsList, rmp, subjects) {
                 return _.dispatch('saveTermsAndRMP', {
                     termsList: termsList,
                     rmp: rmp,
+                    subjects: subjects,
                     skipSaving: true
                 })
             })
@@ -132,7 +137,8 @@ var self = module.exports = {
                 var invalid = {
                     yes: false,
                     termsList: false,
-                    rmp: false
+                    rmp: false,
+                    subjects: false
                 }
                 if (typeof online !== 'undefined') {
                     // loadOnlineTimestamp() success
@@ -146,16 +152,23 @@ var self = module.exports = {
                         invalid.rmp = true;
                         console.log('rmp mapping timestamp differs');
                     }
+                    if (online[2] !== offline[2]) {
+                        invalid.yes = true;
+                        invalid.subjects = true;
+                        console.log('subjects timestamp differs');
+                    }
                 }else{
                     // possibly no connectivity
                     if (offline[0] === null
-                        || offline[1] === null) {
+                        || offline[1] === null
+                        || offline[2] === null) {
                         // We don't have a local copy
                         console.log(('no local copies to fallback'));
                         invalid = {
                             yes: true,
                             termsList: true,
-                            rmp: true
+                            rmp: true,
+                            subjects: true
                         }
                         return Bluebird.reject(invalid)
                     }
@@ -175,18 +188,21 @@ var self = module.exports = {
         var timestamp = Date.now() / 1000;
         return Bluebird.all([
             invalid.termsList ? fetch(config.dbURL + '/terms.json?' + timestamp) : null,
-            invalid.rmp ? fetch(config.dbURL + '/rmp.json?' + timestamp) : null
+            invalid.rmp ? fetch(config.dbURL + '/rmp.json?' + timestamp) : null,
+            invalid.subjects ? fetch(config.dbURL + '/subjects.json?' + timestamp) : null
         ])
-        .spread(function(termsRes, rmpRes){
+        .spread(function(termsRes, rmpRes, subjectsRes){
             return Bluebird.all([
                 invalid.termsList ? termsRes.json() : null,
-                invalid.rmp ? rmpRes.json() : null
+                invalid.rmp ? rmpRes.json() : null,
+                invalid.subjects ? subjectsRes.json() : null
             ])
         })
-        .spread(function(termsList, rmp) {
+        .spread(function(termsList, rmp, subjects) {
             return _.dispatch('saveTermsAndRMP', {
                 termsList: termsList,
                 rmp: rmp,
+                subjects: subjects,
                 skipSaving: false
             })
         })
@@ -194,6 +210,7 @@ var self = module.exports = {
     saveTermsAndRMP: function(_, payload) {
         if (payload.termsList !== null) _.commit('saveTermsList', payload);
         if (payload.rmp !== null) _.commit('saveInstructorNameToTidMapping', payload);
+        if (payload.subjects !== null) _.commit('saveSubjects', payload);
     },
     fetchTermsListAndRMP: function(_) {
         if (_.state.flatTermsList.length !== 0) {
@@ -963,8 +980,8 @@ var self = module.exports = {
 
         var loctTmpl = function(index) {
             html += template('Location', course.loct[index].t === false ? 'Cancelled' : !!!course.loct[index].loc ? 'TBA': course.loct[index].loc);
-            html += template('Meeting Day', course.loct[index].t === false ? 'Cancelled' : course.loct[index].t === null ? 'TBA' : course.loct[index].t.day.join(', '));
-            html += template('Meeting Time', course.loct[index].t === false ? 'Cancelled' : course.loct[index].t === null ? 'TBA' : helper.tConvert(course.loct[index].t.time.start) + '-' + helper.tConvert(course.loct[index].t.time.end));
+            html += template('Meeting Day', course.loct[index].t === false ? 'Cancelled' : course.loct[index].t === null ? 'TBA' : course.loct[index].t.day.length === 0 ? 'Tentative' : course.loct[index].t.day.join(', '));
+            html += template('Meeting Time', course.loct[index].t === false ? 'Cancelled' : course.loct[index].t === null ? 'TBA' : helper.tConvert(course.loct[index].t.time.start) == 'Tentative' ? 'Tentative' : helper.tConvert(course.loct[index].t.time.start) + '-' + helper.tConvert(course.loct[index].t.time.end));
         }
 
         for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
@@ -1016,7 +1033,8 @@ var self = module.exports = {
         _.commit('appendCourseInfo', payload);
     },
     fetchGE: function(_) {
-        return fetch(config.dbURL + '/ge.json')
+        var timestamp = Date.now() / 1000;
+        return fetch(config.dbURL + '/ge.json?' + timestamp)
         .then(function(res) {
             return res.json();
         })

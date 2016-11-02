@@ -6,6 +6,11 @@
             </div>
             <div class="m0 p2" v-show="ready">
                 <div class="clearfix">
+                    <div class="left">
+                        <div class="sm-flex">
+                            <router-link class="p1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'viewList', params: { termId: termId } }" tag="div"><i class="fa fa-list fa-lg">&nbsp;</i>all classes</router-link>
+                        </div>
+                    </div>
                     <div class="right">
                         <div class="sm-flex">
                             <div class="p1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
@@ -400,12 +405,6 @@ module.exports = {
             .alert(html)
         }
     },
-    created: function() {
-        var self = this;
-        $script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'lz-string/1.4.4/lz-string.min.js'], 'bundle', function() {
-            $script(dist + 'fullcalender/2.9.1/fullcalendar.min.js', 'calendar')
-        })
-    },
     mounted: function() {
         var self = this;
         this.$store.getters.loading.go(30);
@@ -413,6 +412,7 @@ module.exports = {
 
         $script.ready('bundle', function() {
             self.$store.getters.loading.go(50);
+            $script(dist + 'fullcalender/2.9.1/fullcalendar.min.js', 'calendar')
         })
         $script.ready('calendar', function() {
             self.$store.getters.loading.go(70);
