@@ -44,7 +44,7 @@
                 </div>
             </transition-group>
         </div>
-        <div class="bg-white rounded mb2" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="hideSubject[subject] !== true">
+        <div class="bg-white rounded border mb2" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="hideSubject[subject] !== true">
             <div class="m0 p1">
                 <div class="clearfix">
                     <span class="btn black h4">{{ subject }}</span>
@@ -54,17 +54,17 @@
                 </div>
             </div>
             <div class="m0 p0 border-top">
-                <div class="h5 clearfix bg-silver bold">
+                <div class="h5 clearfix bg-darken-1">
                     <div class="p1 sm-col sm-col-2 nowrap">
                         Class
                     </div>
-                    <div class="p1 sm-col sm-col-3 nowrap">
+                    <div class="p1 sm-col sm-col-3 nowrap bold">
                         Title
                     </div>
                     <div class="p1 sm-col sm-col-2 nowrap">
                         Instructor(s)
                     </div>
-                    <div class="p1 sm-col sm-col-5 nowrap">
+                    <div class="p1 sm-col sm-col-5 nowrap bold">
                         Time and Location
                     </div>
                 </div>
