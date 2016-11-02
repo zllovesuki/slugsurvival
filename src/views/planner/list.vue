@@ -13,7 +13,7 @@
             <div class="bar-mask" @click="flip" v-show="ready && show && initialized">
             </div>
         </transition>
-        <div id="filter-bar" class="bg-white rounded border fixed bottom-0" v-if="ready">
+        <div id="filter-bar" class="bg-white rounded fixed bottom-0" v-if="ready">
             <transition-group name="list-complete" appear>
                 <div class="m0 p0" v-bind:class="{ 'bg-black': !show }" v-show="!show" key="title">
                     <div class="clearfix">
