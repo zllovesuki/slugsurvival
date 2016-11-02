@@ -162,6 +162,13 @@ svg {
 .fade-enter, .fade-leave-active {
   opacity: 0
 }
+.list-complete-enter, .list-complete-leave-active {
+  opacity: 0;
+  transform: translateY(30px);
+}
+.list-complete-leave-active {
+  position: absolute;
+}
 
 .x-scrollable {
     overflow-x: auto;

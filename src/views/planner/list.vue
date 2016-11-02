@@ -7,17 +7,19 @@
                 </div>
             </div>
         </div>
-        <div class="bar-mask" @click="show = !show" v-show="ready && show && initialized">
-        </div>
         <transition name="fade" mode="out-in">
-            <div id="filter-bar" class="bg-white rounded border fixed bottom-0" v-if="ready">
-                <div class="m0 p1" v-bind:class="{ 'bg-darken-2': !show }">
+            <div class="bar-mask" @click="show = !show" v-show="ready && show && initialized">
+            </div>
+        </transition>
+        <div id="filter-bar" class="bg-white rounded border fixed bottom-0" v-if="ready">
+            <transition-group name="list-complete" appear>
+                <div class="m0 p0" v-bind:class="{ 'bg-darken-3': !show }" v-show="!show" key="title">
                     <div class="clearfix">
-                        <span class="btn black h5 left" @click="show = !show">Filter By: </span>
-                        <router-link class="p1 h6 white bold clickable right" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Calender View</router-link>
+                        <span class="m1 btn black h5 left" @click="show = !show">Filter By: </span>
+                        <router-link class="m1 p1 h6 white bold clickable right" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Calender View</router-link>
                     </div>
                 </div>
-                <div class="m0 p2 border-top h5" v-show="show">
+                <div class="m0 p1 h5" v-show="show" key="selects">
                     <div class="clearfix">
                         <span class="inline-block col col-4">
                             <select multiple v-bind:id="IDs.subjectID" class="col col-12">
@@ -40,9 +42,9 @@
                         </span>
                     </div>
                 </div>
-            </div>
-        </transition>
-        <div class="bg-white rounded mb2" v-for="(subjectCourses, subject) in courses" v-show="hideSubject[subject] !== true">
+            </transition-group>
+        </div>
+        <div class="bg-white rounded mb2" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="hideSubject[subject] !== true">
             <div class="m0 p1">
                 <div class="clearfix">
                     <span class="btn black h4">{{ subject }}</span>
