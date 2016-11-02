@@ -15,37 +15,41 @@
         </transition>
         <div id="filter-bar" class="bg-white rounded fixed bottom-0" v-if="ready">
             <transition-group name="list-complete" appear>
-                <div class="m0 p0" v-bind:class="{ 'bg-black': !show }" v-show="!show" key="title">
+                <div class="m0 p0" v-bind:class="{ 'bg-black': !show }" key="title">
                     <div class="clearfix">
-                        <span class="m1 btn white h5 left" @click="flip">Filter By: </span>
-                        <router-link class="m1 p1 h6 black bold clickable right" v-bind:style="{ backgroundColor: colorMap.blank }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Calender View</router-link>
+                        <div class="left">
+                            <span class="m1 btn h5" @click="flip" v-bind:class="{ 'white': !show, 'black': show }">Filter By: </span>
+                        </div>
+                        <div class="right">
+                            <router-link v-show="!show" class="m1 p1 h6 black bold clickable" v-bind:style="{ backgroundColor: colorMap.blank }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Calender View</router-link>
+                            <div @click="flip" v-show="show" class="m1 p1 h6 black bold clickable" v-bind:style="{ backgroundColor: colorMap.blank }"><i class="fa fa-arrow-down fa-lg"></i></div>
+                        </div>
                     </div>
                 </div>
                 <div class="m0 p1 h5" v-show="show" key="selects">
                     <div class="clearfix">
-                        <span class="inline-block col col-3">
-                            <select multiple v-bind:id="IDs.subjectID" class="col col-12">
-                                <option :value="code" v-for="(name, code) in subjectList" v-show="typeof courses[code] !== 'undefined'">({{ code }}) {{ name }}</option>
+                        <span class="sm-col sm-col-4">
+                            <select multiple v-bind:id="IDs.subject" class="m1" style="width: 100%">
+                                <option :value="code" v-for="(name, code) in subjectList" v-if="typeof courses[code] !== 'undefined'">({{ code }}) {{ name }}</option>
                             </select>
                         </span>
-                        <span class="inline-block col col-3">
-                            <select v-bind:id="IDs.geID" class="col col-12">
-                                <option></option>
-                                <option value="all">(All Classes)</option>
+                        <span class="sm-col sm-col-2">
+                            <select multiple v-bind:id="IDs.ge" class="m1" style="width: 100%">
                                 <option :value="code" v-for="(desc, code) in listOfGE">({{ code }}) {{ desc }}</option>
                             </select>
                         </span>
-                        <span class="inline-block col col-3">
-                            <select v-bind:id="IDs.timeblockID" class="col col-12">
-                                <option></option>
-                                <option value="all">(All Timeblocks)</option>
+                        <span class="sm-col sm-col-2">
+                            <select multiple v-bind:id="IDs.unit" class="m1" style="width: 100%">
+                                <option :value="cr" v-for="cr in credits">{{ cr }}</option>
+                            </select>
+                        </span>
+                        <span class="sm-col sm-col-2">
+                            <select multiple v-bind:id="IDs.timeblock" class="m1" style="width: 100%">
                                 <option :value="timeblock" v-for="timeblock in timeblocks">{{ timeblock }}</option>
                             </select>
                         </span>
-                        <span class="inline-block col col-3">
-                           <select v-bind:id="IDs.locationID" class="col col-12">
-                               <option></option>
-                               <option value="all">(All Locations)</option>
+                        <span class="sm-col sm-col-2">
+                           <select multiple v-bind:id="IDs.location" class="m1" style="width: 100%">
                                <option :value="location" v-for="location in locations">{{ location }}</option>
                            </select>
                        </span>
@@ -68,7 +72,7 @@
                         Class
                     </div>
                     <div class="p1 sm-col sm-col-3 nowrap bold">
-                        Title
+                        Title (units)
                     </div>
                     <div class="p1 sm-col sm-col-2 nowrap">
                         Instructor(s)
@@ -77,12 +81,12 @@
                         Time and Location
                     </div>
                 </div>
-                <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" track-by="course.num" v-show="hideGE[course.num] !== true && hideTimeblocks[course.num] !== true && hideCourses[course.num] !== true">
+                <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" track-by="course.num" v-show="hideCourses[course.num] !== true">
                     <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
                         {{ course.c }} - {{ course.s }}
                     </div>
                     <div class="p1 sm-col sm-col-3 overflow-hidden nowrap bold">
-                        {{ course.n }}
+                        {{ course.n }} ({{ courseInfo[termId][course.num].cr }})
                     </div>
                     <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
                         {{ course.ins.d.join(', ') }}
@@ -117,23 +121,24 @@ module.exports = {
             courses: {},
             locations: [],
             timeblocks: [],
+            credits: [],
             helper: helper,
             fixedToTop: false,
             filter: {
                 subject: [],
-                ge: '',
-                location: '',
-                timeblock: ''
+                ge: [],
+                unit: [],
+                location: [],
+                timeblock: []
             },
             hideSubject: {},
-            hideGE: {},
-            hideTimeblocks: {},
             hideCourses: {},
             IDs: {
-                subjectID: '',
-                geID: '',
-                locationID: '',
-                timeblockID: '',
+                subject: '',
+                ge: '',
+                unit: '',
+                location: '',
+                timeblock: '',
             },
             listOfGE: {}
         }
@@ -217,6 +222,14 @@ module.exports = {
                 return alertHandle()
             })
         },
+        getCredits: function() {
+            var courseInfo = this.courseInfo[this.termId];
+            return Object.keys(courseInfo).map(function(courseNum) {
+                return courseInfo[courseNum].cr;
+            }).filter(function(value, index, self) {
+                return self.indexOf(value) === index;
+            }).sort(helper.naturalSorter)
+        },
         getTimeblocks: function() {
             var flatCourses = this.$store.getters.flatCourses[this.termId];
             return Object.keys(flatCourses).map(function(courseNum) {
@@ -267,78 +280,51 @@ module.exports = {
             }
             for (var subject in this.courses) {
                 this.courses[subject].forEach(function(course) {
-                    if (self.filter.ge != 'all' && self.filter.ge != '' && courseInfo[course.num].ge.indexOf(self.filter.ge) === -1) {
-                        self.hideGE[course.num] = true
-                    }else{
-                        self.hideGE[course.num] = false
-                    }
-                    if (self.filter.timeblock != 'all' && self.filter.timeblock != '' && course.loct.filter(function(loct) {
-                        return ( (loct.t === false ? 'Cancelled' : loct.t === null ? 'TBA' : helper.tConvert(loct.t.time.start)) == self.filter.timeblock);
-                    }).length === 0) {
-                        self.hideTimeblocks[course.num] = true
-                    }else{
-                        self.hideTimeblocks[course.num] = false
-                    }
-                    if (self.filter.location != 'all' && self.filter.location != '' && course.loct.filter(function(loct) {
-                        return (loct.t === false ? 'Cancelled' : loct.loc === null ? 'TBA' : loct.loc) == self.filter.location;
-                    }).length === 0) {
-                        self.hideCourses[course.num] = true
-                    }else{
+                    if (
+                        (self.filter.ge.length === 0 || helper.intersect(courseInfo[course.num].ge, self.filter.ge).length > 0) &&
+                        (self.filter.unit.length === 0 || self.filter.unit.indexOf(courseInfo[course.num].cr) !== -1) &&
+                        (self.filter.timeblock.length === 0 || course.loct.filter(function(loct) {
+                            return self.filter.timeblock.indexOf((loct.t === false ? 'Cancelled' : loct.t === null ? 'TBA' : helper.tConvert(loct.t.time.start))) !== -1
+                        }).length > 0) &&
+                        (self.filter.location.length === 0 || course.loct.filter(function(loct) {
+                            return self.filter.location.indexOf((loct.t === false ? 'Cancelled' : loct.loc === null ? 'TBA' : loct.loc)) !== -1
+                        }).length > 0)
+                    ) {
                         self.hideCourses[course.num] = false
+                    }else{
+                        self.hideCourses[course.num] = true
                     }
                 })
             }
             for (var subject in this.courses) {
                 if (this.courses[subject].reduce(function(total, course) {
-                    return (self.hideGE[course.num] === true || self.hideTimeblocks[course.num] === true || self.hideCourses[course.num] === true) ? total : total + 1;
+                    return self.hideCourses[course.num] === true ? total : total + 1;
                 }, 0) === 0) {
                     self.hideSubject[subject] = true;
                 }
             }
+            self.alert.success('Class list updated!')
         },
         initSelect2: function() {
             var self = this;
-            this.IDs.subjectID = this.makeid();
-            this.IDs.geID = this.makeid();
-            this.IDs.locationID = this.makeid();
-            this.IDs.timeblockID = this.makeid();
+            Object.keys(this.IDs).forEach(function(id) {
+                self.IDs[id] = self.makeid();
+            })
             this.$nextTick(function() {
-                $('#' + this.IDs.subjectID).select2({
-                    placeholder: 'Subject...',
-                    closeOnSelect: false,
-                    minimumResultsForSearch: Infinity,
-                    templateSelection: function(d) {
-                        return d.id;
-                    }
-                }).on('select2:select', function(evt) {
-                    self.filter.subject.push(evt.params.data.element.value);
-                    self.doFilter();
-                }).on('select2:unselect', function(evt) {
-                    self.filter.subject = self.filter.subject.filter(function(el) {
-                        return el != evt.params.data.element.value;
-                    })
-                    self.doFilter();
-                });
-                $('#' + this.IDs.geID).select2({
-                    placeholder: 'GE...',
-                    minimumResultsForSearch: Infinity
-                }).on('change', function(evt) {
-                    self.filter.ge = evt.target.value
-                    self.doFilter()
-                })
-                $('#' + this.IDs.locationID).select2({
-                    placeholder: 'Location...',
-                    minimumResultsForSearch: Infinity
-                }).on('change', function(evt) {
-                    self.filter.location = evt.target.value
-                    self.doFilter()
-                })
-                $('#' + this.IDs.timeblockID).select2({
-                    placeholder: 'Start time...',
-                    minimumResultsForSearch: Infinity
-                }).on('change', function(evt) {
-                    self.filter.timeblock = evt.target.value
-                    self.doFilter()
+                Object.keys(self.IDs).forEach(function(id) {
+                    $('#' + self.IDs[id]).select2({
+                        placeholder: id + '...',
+                        closeOnSelect: false,
+                        templateSelection: function(d) {
+                            return d.id;
+                        }
+                    }).on('select2:select', function(evt) {
+                        self.filter[id].push(evt.params.data.element.value);
+                    }).on('select2:unselect', function(evt) {
+                        self.filter[id] = self.filter[id].filter(function(el) {
+                            return el != evt.params.data.element.value;
+                        })
+                    });
                 })
                 setTimeout(function() {
                     self.initialized = true;
@@ -353,16 +339,20 @@ module.exports = {
             }
             for (var subject in this.courses) {
                 this.courses[subject].forEach(function(course) {
-                    self.$set(self.hideGE, course.num, false);
-                    self.$set(self.hideTimeblocks, course.num, false);
                     self.$set(self.hideCourses, course.num, false);
                 })
             }
         },
         flip: function() {
+            var self = this;
+            Object.keys(this.IDs).forEach(function(id) {
+                $('#' + self.IDs[id]).select2('close')
+            })
             this.show = !this.show;
-            $('#' + this.IDs.subjectID).select2('close')
-            this.$store.dispatch('blockScroll')
+            this.$nextTick(function() {
+                this.$store.dispatch('blockScroll');
+                if (this.show === false) this.doFilter();
+            })
         }
     },
     mounted: function() {
@@ -375,10 +365,11 @@ module.exports = {
         .spread(function(ge) {
             self.courses = self.$store.getters.sortedCourses[self.termId];
             self.initReactive();
-            self.doFilter();
+            //cself.doFilter();
             self.listOfGE = ge;
             self.timeblocks = self.getTimeblocks();
             self.locations = self.getLocations();
+            self.credits = self.getCredits();
             $script.ready('select2', function() {
                 self.ready = true;
                 self.$nextTick(function() {
@@ -398,7 +389,7 @@ module.exports = {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, .7);
+    background-color: rgba(0, 0, 0, 0.8);
     display: table;
     transition: opacity .3s ease;
 }
