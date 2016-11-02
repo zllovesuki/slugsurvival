@@ -232,7 +232,7 @@ module.exports = {
             }).filter(function(value, index, self) {
                 return self.indexOf(value) === index;
             }).sort(function(a, b) {
-                return moment(a == 'TBA' ? '12:00AM' : a, ['h:ma', 'H:m']) - moment(b == 'TBA' ? '12:00AM' : b, ['h:ma', 'H:m'])
+                return moment((a == 'TBA' || a == 'Cancelled' || a == 'Tentative') ? '12:00AM' : a, ['h:ma', 'H:m']) - moment((b == 'TBA' || b == 'Cancelled' || b == 'Tentative') ? '12:00AM' : b, ['h:ma', 'H:m'])
             });
         },
         getLocations: function() {
