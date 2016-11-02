@@ -20,7 +20,7 @@
             </div>
         </div>
         <div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix h6" v-show="ready">
-            <div class="m0 p2">
+            <div class="m0 p0">
                 <div v-bind:id="'calendar-' + termId"></div>
             </div>
         </div>
