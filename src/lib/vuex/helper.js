@@ -38,7 +38,6 @@ var self = module.exports = {
         id += '__'
         // SSI16_BME__
         var nbr = course.c.split(' ').filter(Boolean)[1];
-        console.log(nbr, parseInt(nbr).toString())
         if (parseInt(nbr).toString().length !== nbr.length) {
             // Probably something like 10A
             id += self.pad(parseInt(nbr), 3, 0) + nbr.slice(-1);
