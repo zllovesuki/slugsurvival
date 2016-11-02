@@ -17,32 +17,25 @@
                         <router-link class="p1 h6 white bold clickable right" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Calender View</router-link>
                     </div>
                 </div>
-                <div class="m0 p2 border-top" v-show="show">
+                <div class="m0 p2 border-top h5" v-show="show">
                     <div class="clearfix">
-                        <span class="inline-block col col-3">
+                        <span class="inline-block col col-4">
                             <select multiple v-bind:id="IDs.subjectID" class="col col-12">
                                 <option :value="code" v-for="(name, code) in subjectList" v-show="typeof courses[code] !== 'undefined'">({{ code }}) {{ name }}</option>
                             </select>
                         </span>
-                        <span class="inline-block col col-3">
+                        <span class="inline-block col col-4">
                             <select v-bind:id="IDs.geID" class="col col-12">
                                 <option></option>
                                 <option value="all">(All Classes)</option>
                                 <option :value="code" v-for="(desc, code) in listOfGE">({{ code }}) {{ desc }}</option>
                             </select>
                         </span>
-                        <span class="inline-block col col-3">
+                        <span class="inline-block col col-4">
                             <select v-bind:id="IDs.timeblockID" class="col col-12">
                                 <option></option>
                                 <option value="all">(All Timeblocks)</option>
                                 <option :value="timeblock" v-for="timeblock in timeblocks">{{ timeblock }}</option>
-                            </select>
-                        </span>
-                        <span class="inline-block col col-3">
-                            <select v-bind:id="IDs.locationID" class="col col-12">
-                                <option></option>
-                                <option value="all">(All Locations)</option>
-                                <option :value="location" v-for="location in locations">{{ location }}</option>
                             </select>
                         </span>
                     </div>
@@ -73,7 +66,7 @@
                         Time and Location
                     </div>
                 </div>
-                <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" track-by="course.num" v-show="hideGE[course.num] !== true && hideCourses[course.num] !== true && hideTimeblocks[course.num] !== true">
+                <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" track-by="course.num" v-show="hideGE[course.num] !== true && hideTimeblocks[course.num] !== true">
                     <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
                         {{ course.c }} - {{ course.s }}
                     </div>
@@ -91,7 +84,7 @@
                                 }else if (el.t === null) {
                                      return 'TBA';
                                 }else{
-                                    return [el.t.day.map(long2short).join(', '), helper.tConvert(el.t.time.start) + '-' + helper.tConvert(el.t.time.end), el.loc === null ? 'TBA' : el.loc].join(' / ')
+                                    return [el.t.day.length === 0 ? 'Tentative' : el.t.day.map(long2short).join(', '), helper.tConvert(el.t.time.start) == 'Tentative' ? 'Tentative' : helper.tConvert(el.t.time.start) + '-' + helper.tConvert(el.t.time.end), el.loc === null ? 'TBA' : el.loc].join(' / ')
                                 }
                             }).join(', ')
                         }}
@@ -111,25 +104,21 @@ module.exports = {
             show: true,
             initialized: false,
             courses: {},
-            locations: [],
             timeblocks: [],
             helper: helper,
             fixedToTop: false,
             filter: {
                 subject: [],
                 ge: '',
-                location: '',
                 timeblock: ''
             },
             hideSubject: {},
             hideGE: {},
-            hideCourses: {},
             hideTimeblocks: {},
             IDs: {
                 subjectID: '',
                 geID: '',
                 timeblockID: '',
-                locationID: ''
             },
             listOfGE: {}
         }
@@ -175,6 +164,7 @@ module.exports = {
         },
         promptAddClass: function(course) {
             var self = this;
+            if (!this.initialized) return;
             var termId = this.termId;
             var code = helper.checkForConflict(this.dateMap, this.$store.getters.eventSource[termId], course);
             var alertHandle = function() {};
@@ -228,25 +218,9 @@ module.exports = {
                 return a.concat(b);
             }).filter(function(value, index, self) {
                 return self.indexOf(value) === index;
-            }).sort(helper.naturalSorter);
-        },
-        getLocations: function() {
-            var flatCourses = this.$store.getters.flatCourses[this.termId];
-            return Object.keys(flatCourses).map(function(courseNum) {
-                return flatCourses[courseNum].loct.map(function(loct) {
-                    if (loct.t === false) {
-                        return 'Cancelled'
-                    }else if (loct.loc === null) {
-                        return 'TBA'
-                    }else {
-                        return loct.loc
-                    }
-                })
-            }).reduce(function(a, b) {
-                return a.concat(b);
-            }).filter(function(value, index, self) {
-                return self.indexOf(value) === index;
-            }).sort(helper.naturalSorter);
+            }).sort(function(a, b) {
+                return moment(a == 'TBA' ? '12:00AM' : a, ['h:ma', 'H:m']) - moment(b == 'TBA' ? '12:00AM' : b, ['h:ma', 'H:m'])
+            });
         },
         doFilter: function() {
             var self = this;
@@ -272,18 +246,11 @@ module.exports = {
                     }else{
                         self.hideTimeblocks[course.num] = false
                     }
-                    if (self.filter.location != 'all' && self.filter.location != '' && course.loct.filter(function(loct) {
-                        return (loct.t === false ? 'Cancelled' : loct.loc === null ? 'TBA' : loct.loc) == self.filter.location;
-                    }).length === 0) {
-                        self.hideCourses[course.num] = true
-                    }else{
-                        self.hideCourses[course.num] = false
-                    }
                 })
             }
             for (var subject in this.courses) {
                 if (this.courses[subject].reduce(function(total, course) {
-                    return (self.hideGE[course.num] === true || self.hideTimeblocks[course.num] === true || self.hideCourses[course.num] === true) ? total : total + 1;
+                    return (self.hideGE[course.num] === true || self.hideTimeblocks[course.num] === true) ? total : total + 1;
                 }, 0) === 0) {
                     self.hideSubject[subject] = true;
                 }
@@ -294,7 +261,6 @@ module.exports = {
             this.IDs.subjectID = this.makeid();
             this.IDs.geID = this.makeid();
             this.IDs.timeblockID = this.makeid();
-            this.IDs.locationID = this.makeid();
             this.$nextTick(function() {
                 $('#' + this.IDs.subjectID).select2({
                     placeholder: 'Subject...',
@@ -326,13 +292,6 @@ module.exports = {
                     self.filter.timeblock = evt.target.value
                     self.doFilter()
                 })
-                $('#' + this.IDs.locationID).select2({
-                    placeholder: 'Location...',
-                    minimumResultsForSearch: Infinity
-                }).on('change', function(evt) {
-                    self.filter.location = evt.target.value
-                    self.doFilter()
-                })
                 setTimeout(function() {
                     self.initialized = true;
                     self.show = false;
@@ -347,7 +306,6 @@ module.exports = {
             for (var subject in this.courses) {
                 this.courses[subject].map(function(course) {
                     self.$set(self.hideGE, course.num, false);
-                    self.$set(self.hideCourses, course.num, false);
                     self.$set(self.hideTimeblocks, course.num, false);
                 })
             }
@@ -365,7 +323,6 @@ module.exports = {
             self.initReactive();
             self.doFilter();
             self.listOfGE = ge;
-            self.locations = self.getLocations();
             self.timeblocks = self.getTimeblocks();
             $script.ready('select2', function() {
                 self.ready = true;
@@ -397,5 +354,8 @@ module.exports = {
 }
 .select2-selection--multiple input[type="search"] {
     height: 1rem;
+}
+.select2-results, .select2-selection__choice {
+    font-size: .75rem; /* h6 */
 }
 </style>

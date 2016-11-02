@@ -71,7 +71,9 @@ var self = module.exports = {
             time[0] = +time[0] % 12 || 12; // Adjust hours
             time[0] = time[0] < 10 ? '0' + time[0] : time[0]
         }
-        return time.join(''); // return adjusted time or original string
+        var string = time.join(''); // return adjusted time or original string
+        if (string === '12:00AM') return 'Tentative';
+        else return string;
     }, // http://stackoverflow.com/questions/13898423/javascript-convert-24-hour-time-of-day-string-to-12-hour-time-with-am-pm-and-no
 
     tConvertToEpoch: function(dateMap, locts) {
