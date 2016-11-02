@@ -298,7 +298,11 @@ module.exports = {
             this.$nextTick(function() {
                 $('#' + this.IDs.subjectID).select2({
                     placeholder: 'Subject...',
-                    minimumResultsForSearch: Infinity
+                    closeOnSelect: false,
+                    minimumResultsForSearch: Infinity,
+                    templateSelection: function(d) {
+                        return d.id;
+                    }
                 }).on('select2:select', function(evt) {
                     self.filter.subject.push(evt.params.data.element.value);
                     self.doFilter();
