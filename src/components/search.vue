@@ -1,6 +1,6 @@
 <template>
     <span>
-        <modal :show="show" v-on:close="closeSearchModal">
+        <modal :show="show" :do-not-modify-class="doNotModifyClass" v-on:close="closeSearchModal">
             <h4 slot="header">
                 <input type="text" class="field block col-12 mb1 search-box" v-model="search.string" placeholder="ECON 197, Design, Mendes, etc...">
             </h4>
@@ -113,6 +113,10 @@ module.exports = {
         callback: {
             type: Function,
             required: true
+        },
+        doNotModifyClass: {
+            type: Boolean,
+            default: false
         }
     },
     data: function() {

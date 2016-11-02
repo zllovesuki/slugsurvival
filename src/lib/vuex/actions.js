@@ -1101,8 +1101,9 @@ var self = module.exports = {
             }, 120 * 1000)
         })
     },
-    blockScroll: function(_) {
-        if (document.body.className == '') {
+    blockScroll: function(_, value) {
+        value = value || false;
+        if (value === true) {
             document.body.className = 'modal-open';
         } else {
             document.body.className = '';

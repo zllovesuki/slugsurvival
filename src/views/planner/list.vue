@@ -21,8 +21,9 @@
                             <span class="m1 btn h5" @click="flip" v-bind:class="{ 'white': !show, 'black': show }">Filter By: </span>
                         </div>
                         <div class="right">
-                            <router-link v-show="!show" class="m1 p1 h6 black bold clickable" v-bind:style="{ backgroundColor: colorMap.blank }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Calender View</router-link>
-                            <div @click="flip" v-show="show" class="m1 p1 h6 black bold clickable" v-bind:style="{ backgroundColor: colorMap.blank }"><i class="fa fa-arrow-down fa-lg"></i></div>
+                            <div class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg"></i></div>
+                            <router-link v-show="!show" class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg"></i></router-link>
+                            <div @click="flip" v-show="show" class="inline-block m1 p1 h6 black bold clickable" v-bind:style="{ backgroundColor: colorMap.blank }"><i class="fa fa-arrow-down fa-lg"></i></div>
                         </div>
                     </div>
                 </div>
@@ -57,6 +58,7 @@
                 </div>
             </transition-group>
         </div>
+        <search :show="searchModal" v-on:close="closeSearchModal" :callback="promptAddClass" :selected-term-id="termId" :do-not-modify-class="true"></search>
         <div class="bg-white rounded border mb2" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="initialized && hideSubject[subject] !== true">
             <div class="m0 p1">
                 <div class="clearfix">
@@ -115,6 +117,7 @@ var helper = require('../../lib/vuex/helper')
 module.exports = {
     data: function() {
         return {
+            searchModal: false,
             ready: false,
             show: true,
             initialized: false,
@@ -164,6 +167,17 @@ module.exports = {
         }
     },
     methods: {
+        showSearchModal: function() {
+            this.$store.dispatch('blockScroll', true);
+            this.searchModal = true;
+            setTimeout(function() {
+                document.getElementsByClassName('search-box')[0].focus();
+            }, 75);
+        },
+        closeSearchModal: function() {
+            if (!this.show) this.$store.dispatch('blockScroll', false);
+            this.searchModal = false;
+        },
         makeid: function() {
             var text = "";
             var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -350,7 +364,9 @@ module.exports = {
             })
             this.show = !this.show;
             this.$nextTick(function() {
-                this.$store.dispatch('blockScroll');
+                if (this.show === false) this.$store.dispatch('blockScroll', false);
+                else this.$store.dispatch('blockScroll', true);
+
                 if (this.show === false) this.doFilter();
             })
         }
