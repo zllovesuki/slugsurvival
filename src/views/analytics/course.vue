@@ -25,13 +25,15 @@
 			</div>
 		</div>
         <search :show="searchModal" v-on:close="searchModal = false" :callback="openAnalytics" :selected-term-id="latestTermCode"></search>
-        <div class="overflow-hidden bg-white rounded mb2" v-show="!ready || !graphDataReady">
-            <div class="m0 p2">
-                <div class="clearfix">
-                    Loading...
+        <transition name="fade" mode="out-in">
+            <div class="overflow-hidden bg-white rounded mb2" v-show="!ready || !graphDataReady">
+                <div class="m0 p2">
+                    <div class="clearfix">
+                        Loading...
+                    </div>
                 </div>
             </div>
-        </div>
+        </transition>
         <div class="overflow-hidden bg-white rounded mb2 clearfix" v-if="ready && graphDataReady && graphData.length > 0">
             <div class="m0 p0">
                 <div class="clearfix">

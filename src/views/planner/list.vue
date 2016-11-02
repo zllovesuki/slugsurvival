@@ -1,12 +1,14 @@
 <template>
     <div>
-        <div class="overflow-hidden bg-white rounded mb2" v-show="!ready">
-            <div class="m0 p1">
-                <div class="clearfix">
-                    Loading...
+        <transition name="fade" mode="out-in">
+            <div class="overflow-hidden bg-white rounded mb2" v-show="!initialized">
+                <div class="m0 p1">
+                    <div class="clearfix">
+                        Loading...
+                    </div>
                 </div>
             </div>
-        </div>
+        </transition>
         <transition name="fade" mode="out-in">
             <div class="bar-mask" @click="show = !show" v-show="ready && show && initialized">
             </div>
@@ -264,7 +266,7 @@ module.exports = {
                 }
             }
             for (var subject in this.courses) {
-                this.courses[subject].map(function(course) {
+                this.courses[subject].forEach(function(course) {
                     if (self.filter.ge != 'all' && self.filter.ge != '' && courseInfo[course.num].ge.indexOf(self.filter.ge) === -1) {
                         self.hideGE[course.num] = true
                     }else{
@@ -350,7 +352,7 @@ module.exports = {
                 self.$set(self.hideSubject, subject, false);
             }
             for (var subject in this.courses) {
-                this.courses[subject].map(function(course) {
+                this.courses[subject].forEach(function(course) {
                     self.$set(self.hideGE, course.num, false);
                     self.$set(self.hideTimeblocks, course.num, false);
                     self.$set(self.hideCourses, course.num, false);
