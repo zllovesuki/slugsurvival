@@ -1,5 +1,10 @@
 <template>
     <div>
+        <div class="fixed top-0 right-0 m2">
+			<a class="btn block muted" @click="showFeedback">
+				<i class="fa fa-warning">&nbsp;</i>
+			</a>
+		</div>
         <section id="container" class="container clearfix">
             <div class="clearfix mt3">
                 <div class="mb2 sm-flex center nowrap">
@@ -65,6 +70,9 @@ module.exports = {
     methods: {
         egg: function() {
             this.$store.getters.alert.okBtn('WTF').alert('<img src="https://img.s3.fmt01.sdapi.net/16360519.gif" alt="" />')
+        },
+        showFeedback: function() {
+            this.$store.getters.alert.okBtn('OK').alert('<a class="btn" href="https://goo.gl/forms/LuDkBkoQodzQLJz92" target="_blank">Found a problem? Click here to report!</a>')
         }
     },
     mounted: function() {
