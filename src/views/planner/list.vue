@@ -13,7 +13,7 @@
             <div class="bar-mask" @click="flip" v-show="ready && show && initialized">
             </div>
         </transition>
-        <div id="filter-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-white': show }" v-if="ready">
+        <div id="top-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-white': show, 'transparent': !initialized }" v-if="ready">
             <transition-group name="list-complete" appear>
                 <div class="m0 p0 rounded" key="title">
                     <div class="clearfix">
@@ -398,8 +398,8 @@ module.exports = {
 </script>
 
 <style>
-.bg-black-transparent {
-    background-color: rgba(0, 0, 0, 0.5);
+.transparent {
+    opacity: 0;
 }
 .bar-mask {
     position: fixed;
@@ -412,10 +412,8 @@ module.exports = {
     display: table;
     transition: opacity .3s ease;
 }
-#filter-bar {
-    width: 100%;
-    max-width: 64em;
-    z-index: 10;
+.select2-selection--multiple {
+    margin: 0.1rem;
 }
 .select2-selection--multiple input[type="search"] {
     height: 1rem;

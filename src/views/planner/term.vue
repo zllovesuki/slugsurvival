@@ -1,26 +1,24 @@
 <template>
     <div>
-        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-show="!lock">
-            <div class="m0 p2" v-show="!ready">
-                Loading...
-            </div>
-            <div class="m0 p2" v-show="ready">
-                <div class="clearfix">
-                    <div class="left">
-                        <div class="sm-flex">
-                            <router-link class="p1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'viewList', params: { termId: termId } }" tag="div"><i class="fa fa-list fa-lg">&nbsp;</i>all classes</router-link>
-                        </div>
-                    </div>
-                    <div class="right">
-                        <div class="sm-flex">
-                            <div class="p1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
+        <transition-group name="list-complete" appear>
+            <div id="top-bar" class="rounded fixed top-0" v-show="!lock" key="actions">
+                <div class="m0 p0 rounded">
+                    <div class="clearfix">
+                        <div class="right rounded bg-black-transparent">
+                            <div class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
+                            <router-link class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'viewList', params: { termId: termId } }" tag="div"><i class="fa fa-list fa-lg"></i></router-link>
                         </div>
                     </div>
                 </div>
             </div>
+        </transition-group>
+        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-show="!lock && !ready">
+            <div class="m0 p2">
+                Loading...
+            </div>
         </div>
-        <div id="calendar-container" class="overflow-hidden bg-white rounded mb2 clearfix h6" v-show="ready">
-            <div class="m0 p0">
+        <div id="calendar-container" class="overflow-hidden bg-white mb2 clearfix h6" v-show="ready">
+            <div class="m0 p1">
                 <div v-bind:id="'calendar-' + termId"></div>
             </div>
         </div>

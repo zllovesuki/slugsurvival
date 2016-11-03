@@ -112,6 +112,15 @@ body.modal-open {
     /* WebKit/Blink Browsers */
 }
 
+.bg-black-transparent {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#top-bar {
+    width: 100%;
+    max-width: 64em;
+    z-index: 10;
+}
 ::-moz-selection {
     background: #ffb7b7;
     /* Gecko Browsers */
