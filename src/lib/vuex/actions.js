@@ -1,6 +1,7 @@
 var helper = require('./helper'),
     storage = require('./plugins/storage'),
-    config = require('../../../config')
+    config = require('../../../config'),
+    compoundSubject = require('compound-subject');
 
 var self = module.exports = {
     setTitle: function(_, title) {
@@ -90,6 +91,7 @@ var self = module.exports = {
                             skipSaving: false
                         });
                     })
+                    _.getters.alert.delay(0).error('Class' + (object.deferredRemoval.length > 1 ? 'es' : '') + ' with course number ' + compoundSubject(object.deferredRemoval).delimitAll().make() + ' ' + (object.deferredRemoval.length > 1 ? 'are' : 'is') +  ' no longer offered.')
                 }
                 if (alert) _.getters.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
             })
@@ -546,7 +548,6 @@ var self = module.exports = {
         }
 
         if (typeof course === 'undefined') {
-            _.getters.alert.delay(0).error('Your class with course number ' + courseNum + ' is no longer offered.')
             return events;
         }
 
