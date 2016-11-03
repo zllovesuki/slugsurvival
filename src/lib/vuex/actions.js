@@ -77,11 +77,20 @@ var self = module.exports = {
             return _.dispatch('parseFromCompact', {
                 termId: termId,
                 array: array
-            }).then(function(events) {
+            }).then(function(object) {
                 _.commit('restoreEventSourceSnapshot', {
                     termId: termId,
-                    events: events
+                    events: object.events
                 });
+                if (object.deferredRemoval.length > 0) {
+                    object.deferredRemoval.forEach(function(courseNum) {
+                        _.commit('removeFromSource', {
+                            termId: termId,
+                            courseNum: courseNum,
+                            skipSaving: false
+                        });
+                    })
+                }
                 if (alert) _.getters.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
             })
         }.bind(this))
@@ -389,7 +398,10 @@ var self = module.exports = {
         _.commit('replaceHash', termId);
     },
     parseFromCompact: function(_, payload) {
-        var events = [];
+        var object = {
+            events: [],
+            deferredRemoval: []
+        };
         var index, split = [], courseNum, course, courseInfo, termId = payload.termId, array = payload.array;
         return Bluebird.mapSeries(array, function(obj) {
             obj = obj + '';
@@ -433,20 +445,22 @@ var self = module.exports = {
                         courseNum: split[0],
                         sectionNum: split[1]
                     }).then(function(eventObj) {
-                        events = events.concat(eventObj);
+                        if (eventObj.length === 0) object.deferredRemoval.push(split[0]);
+                        object.events = object.events.concat(eventObj);
                     })
                 }else{
                     return _.dispatch('getEventObjectsByCourse', {
                         termId: termId,
                         courseNum: split[0]
                     }).then(function(eventObj) {
-                        events = events.concat(eventObj);
+                        if (eventObj.length === 0) object.deferredRemoval.push(split[0]);
+                        object.events = object.events.concat(eventObj);
                     })
                 }
             })
         })
         .then(function() {
-            return events;
+            return object;
         })
     },
     decodeHash: function(_) {
@@ -467,11 +481,13 @@ var self = module.exports = {
                 return _.dispatch('parseFromCompact', {
                     termId: termId,
                     array: array
-                }).then(function(events) {
+                }).then(function(object) {
                     _.commit('restoreEventSourceSnapshot', {
                         termId: termId,
-                        events: events
+                        events: object.events
                     });
+
+                    // Even though it might contain deferredRemoval, since it is bookmark link, we will keep it this way
 
                     var html = '';
                     html += ['<p>', 'Looks like you are accessing the planner via a bookmark link! We have the planner for you!', '</p>'].join('');
@@ -483,12 +499,12 @@ var self = module.exports = {
                     return Bluebird.reject();
                 })
             }else{
-                console.log('fallback to local copy')
+                console.log('fallback to local copy (inner)')
                 return Bluebird.resolve();
             }
         }catch(e) {
             console.log(e);
-            console.log('fallback to local copy')
+            console.log('fallback to local copy (outer)')
             return Bluebird.resolve();
         }
     },
@@ -527,6 +543,11 @@ var self = module.exports = {
             course = payload.courseObj;
             courseNum = course.num;
             courseInfo = _.state.courseInfo[termId][courseNum];
+        }
+
+        if (typeof course === 'undefined') {
+            _.getters.alert.delay(0).error('Your class with course number ' + courseNum + ' is no longer offered.')
+            return events;
         }
 
         var courseObj = function(course, startDay, endDay, t) {

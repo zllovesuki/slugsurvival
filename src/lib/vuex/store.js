@@ -4,6 +4,8 @@ var	Vue = require('vue'),
 
 Vue.use(Vuex);
 
+window._storage = storage;
+
 var store = new Vuex.Store({
     actions: require('./actions'),
     getters: require('./getters'),
