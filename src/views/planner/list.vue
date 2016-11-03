@@ -75,7 +75,7 @@
                             Class
                         </div>
                         <div class="underline p1 sm-col sm-col-3 nowrap bold">
-                            Title (units)
+                            (Units) Title
                         </div>
                         <div class="underline p1 sm-col sm-col-2 nowrap">
                             Instructor(s)
@@ -89,7 +89,7 @@
                             {{ course.c }} - {{ course.s }}
                         </div>
                         <div class="p1 sm-col sm-col-3 overflow-hidden nowrap bold">
-                            {{ course.n }} ({{ courseInfo[termId][course.num].cr }})
+                            ({{ courseInfo[termId][course.num].cr }}) {{ course.n }}
                         </div>
                         <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
                             {{ course.ins.d.join(', ') }}
