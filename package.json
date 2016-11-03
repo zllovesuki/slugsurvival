@@ -1,6 +1,6 @@
 {
   "name": "slugsurvival",
-  "version": "2.12.3",
+  "version": "2.13.0",
   "scripts": {
     "dev": "node node_modules/watchify/bin/cmd.js -vd -p browserify-hmr -e src/main.js -o public/app.js -v",
     "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
