@@ -1,7 +1,7 @@
 <template>
     <div>
         <transition-group name="list-complete" appear>
-            <div id="top-bar" class="rounded fixed top-0" v-show="!lock" key="actions">
+            <div id="top-bar" class="rounded fixed top-0" v-show="ready && !lock" key="actions">
                 <div class="m0 p0 rounded">
                     <div class="clearfix">
                         <div class="right rounded bg-black-transparent">
