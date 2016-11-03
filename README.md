@@ -16,7 +16,8 @@ SlugSurvival's development is not possible without the help and support of (no p
 8. Tiffany K.
 9. Carol J. (my supervisor)
 10. Kate B. (for not killing me when I accidentally DoS the school)
-11. etc (I will update this list...)
+11. Rashimi S.
+12. etc (I will update this list...)
 
 ## Functionalities
 
