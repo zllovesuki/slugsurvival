@@ -1,12 +1,15 @@
 <template>
     <div>
         <transition-group name="list-complete" appear>
-            <div id="top-bar" class="rounded fixed top-0" v-show="ready && !lock" key="actions">
+            <div id="top-bar" class="rounded fixed top-0" v-show="ready" key="actions">
                 <div class="m0 p0 rounded">
                     <div class="clearfix">
-                        <div class="right rounded bg-black-transparent">
+                        <div class="right rounded bg-black-transparent" v-show="!lock">
                             <div class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
                             <router-link class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'viewList', params: { termId: termId } }" tag="div"><i class="fa fa-list fa-lg"></i></router-link>
+                        </div>
+                        <div class="right rounded bg-black-transparent" v-show="lock">
+                            <div class="inline-block m1 h6 white bold clickable" @click="whyReadOnly">Read Only</div>
                         </div>
                     </div>
                 </div>
@@ -397,6 +400,16 @@ module.exports = {
             html += '<a class="btn btn-outline h6 white" style="background-color: ' + this.colorMap.regular + '" onclick="window._vueContext.bookmark()">';
             html += 'get a bookmark link';
             html += '</a></span>';
+
+            this.alert
+            .okBtn('OK')
+            .alert(html)
+        },
+        whyReadOnly: function() {
+            var html = '<p class="h6 muted">Why can\'t I modify the planner?</p>';
+            html += '<p>You are accessing the planner via a bookmark link, therefore you cannot make any changes.</p>';
+            html += '<hr />';
+            html += '<a class="btn" onclick="window.location.href = window.location.href.substr(0, window.location.href.indexOf(\'#\'));">Click here to return to your planner</a>';
 
             this.alert
             .okBtn('OK')
