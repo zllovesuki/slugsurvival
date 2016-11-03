@@ -1,6 +1,6 @@
 module.exports = {
     version: function(state) {
-        return require('../../../package.json').version
+        return require('../../../version.json')
     },
     alert: function(state) {
         return state.alert.delay(3000);

@@ -4,7 +4,7 @@ module.exports = function() {
         config = require('./config.js'),
         fs = require('fs'),
         app = express(),
-        pkg = require('./package.json');
+        version = require('./version.json');
 
     app.enable('trust proxy');
     app.set('trust proxy', 'loopback, linklocal, uniquelocal');
@@ -33,7 +33,7 @@ module.exports = function() {
     html = html.replace('__JS__', js)
 
     app.get('/version', function(req, res, next) {
-        return res.end(pkg.version);
+        return res.end(version);
     });
 
     app.use('/*', function(req, res, next) {

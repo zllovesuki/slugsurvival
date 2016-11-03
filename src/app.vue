@@ -52,7 +52,7 @@
 module.exports = {
     data: function() {
         return {
-            version: require('../package.json').version
+            version: require('../version.json')
         }
     },
     computed: {
