@@ -65,7 +65,7 @@
                     <span class="btn black h4" @click="collapseSubject[subject] = !collapseSubject[subject]">{{ subject }}</span>
                 </div>
                 <div class="clearfix">
-                    <span class="ml1 btn black h5 muted clickable" @click="collapseSubject[subject] = !collapseSubject[subject]">{{ subjectList[subject] }}</span>
+                    <span class="ml1 btn black h5 muted clickable" @click="collapseSubject[subject] = !collapseSubject[subject]">{{ subjectList[subject] }}&nbsp;&nbsp;&nbsp;<i class="right fa fa-lg" v-bind:class="{ 'fa-angle-down': collapseSubject[subject], 'fa-angle-up': !collapseSubject[subject]}"></i></span>
                 </div>
             </div>
             <transition name="fade" mode="out-in">
