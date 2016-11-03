@@ -59,64 +59,68 @@
             </transition-group>
         </div>
         <search :show="searchModal" v-on:close="closeSearchModal" :callback="promptAddClass" :selected-term-id="termId" :do-not-modify-class="true"></search>
-        <div class="bg-white rounded border mb2" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="initialized && hideSubject[subject] !== true">
+        <div class="bg-white rounded border mb3" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="initialized && hideSubject[subject] !== true">
             <div class="m0 p1">
                 <div class="clearfix">
-                    <span class="btn black h4">{{ subject }}</span>
+                    <span class="btn black h4" @click="collapseSubject[subject] = !collapseSubject[subject]">{{ subject }}</span>
                 </div>
                 <div class="clearfix">
-                    <span class="ml1 btn black h5 muted not-clickable">{{ subjectList[subject] }}</span>
+                    <span class="ml1 btn black h5 muted clickable" @click="collapseSubject[subject] = !collapseSubject[subject]">{{ subjectList[subject] }}</span>
                 </div>
             </div>
-            <div class="m0 p0 border-top">
-                <div class="h5 clearfix bg-darken-1">
-                    <div class="p1 sm-col sm-col-2 nowrap">
-                        Class
+            <transition name="fade" mode="out-in">
+                <div class="m0 p0 border-top" v-show="!collapseSubject[subject]">
+                    <div class="italic h5 clearfix" v-bind:class="{ 'bg-darken-1': md.phone() }">
+                        <div class="underline p1 sm-col sm-col-2 nowrap">
+                            Class
+                        </div>
+                        <div class="underline p1 sm-col sm-col-3 nowrap bold">
+                            Title (units)
+                        </div>
+                        <div class="underline p1 sm-col sm-col-2 nowrap">
+                            Instructor(s)
+                        </div>
+                        <div class="underline p1 sm-col sm-col-5 nowrap bold">
+                            Time and Location
+                        </div>
                     </div>
-                    <div class="p1 sm-col sm-col-3 nowrap bold">
-                        Title (units)
-                    </div>
-                    <div class="p1 sm-col sm-col-2 nowrap">
-                        Instructor(s)
-                    </div>
-                    <div class="p1 sm-col sm-col-5 nowrap bold">
-                        Time and Location
+                    <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" track-by="course.num" v-show="hideCourses[course.num] !== true">
+                        <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
+                            {{ course.c }} - {{ course.s }}
+                        </div>
+                        <div class="p1 sm-col sm-col-3 overflow-hidden nowrap bold">
+                            {{ course.n }} ({{ courseInfo[termId][course.num].cr }})
+                        </div>
+                        <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
+                            {{ course.ins.d.join(', ') }}
+                        </div>
+                        <div class="p1 sm-col sm-col-5 overflow-hidden nowrap bold">
+                            {{
+                                course.loct.map(function(el) {
+                                    if (el.t === false) {
+                                        return 'Cancelled';
+                                    }else if (el.t === null) {
+                                         return 'TBA';
+                                    }else{
+                                        return [el.t.day.length === 0 ? 'Tentative' : el.t.day.map(long2short).join(', '), helper.tConvert(el.t.time.start) == 'Tentative' ? 'Tentative' : helper.tConvert(el.t.time.start) + '-' + helper.tConvert(el.t.time.end), el.loc === null ? 'TBA' : el.loc].join(' / ')
+                                    }
+                                }).join(', ')
+                            }}
+                        </div>
                     </div>
                 </div>
-                <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" track-by="course.num" v-show="hideCourses[course.num] !== true">
-                    <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
-                        {{ course.c }} - {{ course.s }}
-                    </div>
-                    <div class="p1 sm-col sm-col-3 overflow-hidden nowrap bold">
-                        {{ course.n }} ({{ courseInfo[termId][course.num].cr }})
-                    </div>
-                    <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
-                        {{ course.ins.d.join(', ') }}
-                    </div>
-                    <div class="p1 sm-col sm-col-5 overflow-hidden nowrap bold">
-                        {{
-                            course.loct.map(function(el) {
-                                if (el.t === false) {
-                                    return 'Cancelled';
-                                }else if (el.t === null) {
-                                     return 'TBA';
-                                }else{
-                                    return [el.t.day.length === 0 ? 'Tentative' : el.t.day.map(long2short).join(', '), helper.tConvert(el.t.time.start) == 'Tentative' ? 'Tentative' : helper.tConvert(el.t.time.start) + '-' + helper.tConvert(el.t.time.end), el.loc === null ? 'TBA' : el.loc].join(' / ')
-                                }
-                            }).join(', ')
-                        }}
-                    </div>
-                </div>
-            </div>
+            </transition>
         </div>
     </div>
 </template>
 <script>
 var debounce = require('lodash.debounce')
 var helper = require('../../lib/vuex/helper')
+var MobileDetect = require('mobile-detect')
 module.exports = {
     data: function() {
         return {
+            md: null,
             searchModal: false,
             ready: false,
             show: true,
@@ -134,6 +138,7 @@ module.exports = {
                 location: [],
                 timeblock: []
             },
+            collapseSubject: {},
             hideSubject: {},
             hideCourses: {},
             IDs: {
@@ -317,7 +322,28 @@ module.exports = {
                     self.hideSubject[subject] = true;
                 }
             }
+            self.autoUncollapse();
             self.alert.success('Class list updated!')
+        },
+        autoUncollapse: function() {
+            var counter = {};
+            var self = this;
+            for (var subject in this.courses) {
+                counter[subject] = Object.keys(this.courses).reduce(function(total, subject) {
+                    return self.hideSubject[subject] === true ? total : total + 1;
+                }, 0)
+                if (counter[subject] === 1) {
+                    self.collapseSubject[subject] = false;
+                }else{
+                    self.collapseSubject[subject] = true;
+                }
+                counter[subject] = this.courses[subject].reduce(function(total, course) {
+                    return self.hideCourses[course.num] === true ? total : total + 1;
+                }, 0)
+                if (counter[subject] > 0 && counter[subject] <= 3) {
+                    self.collapseSubject[subject] = false;
+                }
+            }
         },
         initSelect2: function() {
             var self = this;
@@ -343,12 +369,15 @@ module.exports = {
                 setTimeout(function() {
                     self.initialized = true;
                     self.show = false;
+                    self.autoUncollapse();
+                    self.alert.delay(5000).success('Click on a subject to expand')
                 }, 500)
             })
         },
         initReactive: function() {
             var self = this;
             for (var subject in self.courses) {
+                self.$set(self.collapseSubject, subject, true);
                 self.$set(self.hideSubject, subject, false);
             }
             for (var subject in this.courses) {
@@ -370,6 +399,9 @@ module.exports = {
                 if (this.show === false) this.doFilter();
             })
         }
+    },
+    created: function() {
+        this.md = new MobileDetect(window.navigator.userAgent);
     },
     mounted: function() {
         this.$store.dispatch('setTitle', 'All Classes');

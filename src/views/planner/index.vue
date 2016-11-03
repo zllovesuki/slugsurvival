@@ -15,7 +15,7 @@
             </span>
             <span v-if="route.name === 'viewList'">
                 <span class="btn button-narrow mxn1">
-                    List of Classes for {{ termName }}
+                    All {{ termName }} Classes
                 </span>
             </span>
         </div>
