@@ -192,7 +192,7 @@ module.exports = {
             self.loading.go(30);
             self.sub.sendInflight = true;
             if (self.$store.getters.Tracker !== null) {
-                self.$store.getters.Tracker.trackEvent('sendVerify', 'triggered', 'recipient', self.sub.recipient);
+                self.$store.getters.Tracker.trackEvent('sendVerify', 'recipient', self.sub.recipient);
             }
             return fetch(config.notifyURL + '/verify/' + (self.sub.shouldResend ? 'resend' : 'new'), {
                 method: 'POST',
@@ -271,7 +271,7 @@ module.exports = {
                     return self.alert().error(res.message);
                 }
                 if (self.$store.getters.Tracker !== null) {
-                    self.$store.getters.Tracker.trackEvent('verified', 'true', 'recipient', self.sub.recipient);
+                    self.$store.getters.Tracker.trackEvent('verified', 'recipient', self.sub.recipient);
                 }
                 return self.$store.dispatch('updateWatch', {
                     recipient: self.sub.recipient,
@@ -290,7 +290,7 @@ module.exports = {
                     self.alert.success('Subscribed to changes!');
                     self.$router.push({ name: 'enrollManage'})
                     if (self.$store.getters.Tracker !== null) {
-                        self.$store.getters.Tracker.trackEvent('updateWatch', 'new', 'courses', self.courses.join(','));
+                        self.$store.getters.Tracker.trackEvent('updateWatch', 'new_courses', self.courses.join(','));
                     }
                 })
             })

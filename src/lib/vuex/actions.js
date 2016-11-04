@@ -93,7 +93,7 @@ var self = module.exports = {
                     })
                     _.getters.alert.delay(0).error('Class' + (object.deferredRemoval.length > 1 ? 'es' : '') + ' with course number ' + compoundSubject(object.deferredRemoval).delimitAll().make() + ' ' + (object.deferredRemoval.length > 1 ? 'are' : 'is') +  ' no longer offered.')
                     if (_.getters.Tracker !== null) {
-                        _.getters.Tracker.trackEvent('loadAutosave', 'removal', 'removed', object.deferredRemoval.length)
+                        _.getters.Tracker.trackEvent('loadAutosave', 'removed', object.deferredRemoval.length)
                     }
                 }
                 if (alert) _.getters.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
@@ -812,22 +812,21 @@ var self = module.exports = {
     _showInstructorRMP: function(_, string) {
         _.getters.loading.go(30);
         var split = string.split('+');
-        var termId = split[0], courseNum = split[1];
-        var course = _.getters.flatCourses[termId][courseNum]
+        var firstName = split[0], lastName = split[1]
         var html = '';
         var template = function(key, value) {
             return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
         }
         _.dispatch('fetchThreeStatsByFirstLastName', {
-            firstName: course.ins.f,
-            lastName: course.ins.l
+            firstName: firstName,
+            lastName: lastName
         })
         .then(function(rmp) {
             _.getters.loading.go(70);
             if (rmp !== null) {
                 var obj = rmp.stats.stats.quality;
                 var max = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
-                html += template('Quality', course.ins.f + ' is ' + max)
+                html += template('Quality', firstName + ' is ' + max)
                 html += template('Clarity', rmp.stats.stats.clarity.toFixed(1))
                 html += template('Easy', rmp.stats.stats.easy.toFixed(1))
                 html += template('Overall', rmp.stats.stats.overall.toFixed(1))
@@ -842,23 +841,14 @@ var self = module.exports = {
                     window.open('http://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + rmp.tid);
                 })
                 if (_.getters.Tracker !== null) {
-                    _.getters.Tracker.trackEvent('RateMyProfessors', 'triggered', 'success', rmp.tid)
+                    _.getters.Tracker.trackEvent('RateMyProfessors', 'success',  rmp.tid)
                 }
             }else{
                 _.getters.alert
-                .cancelBtn('Go Back')
-                .okBtn('Google It')
-                .confirm(['<p>', 'Sorry, we don\'t have', course.ins.f + '\'s', 'ratings!', '</p>', '<p>', 'But you should use Google!', '</p>'].join(' '))
-                .then(function(resolved) {
-                    resolved.event.preventDefault();
-                    if (resolved.buttonClicked !== 'ok') return;
-                    if (_.getters.Tracker !== null) {
-                        _.getters.Tracker.trackEvent('RateMyProfessors', 'triggered', 'google', course.ins.d[0])
-                    }
-                    window.open('https://www.google.com/search?q=' + course.ins.d[0] + '+' + 'ucsc' + '+' + 'ratemyprofessors');
-                })
+                .okBtn('Go Back')
+                .alert(['<p>', 'Sorry, we don\'t have', firstName + '\'s', 'ratings!', '</p>'].join(' '))
                 if (_.getters.Tracker !== null) {
-                    _.getters.Tracker.trackEvent('RateMyProfessors', 'triggered', 'empty', course.ins.f + course.ins.l)
+                    _.getters.Tracker.trackEvent('RateMyProfessors', 'empty', firstName + lastName)
                 }
             }
         }.bind(this))
@@ -866,7 +856,7 @@ var self = module.exports = {
             console.log(e);
             _.getters.alert.error('Cannot fetch RMP stats!')
             if (_.getters.Tracker !== null) {
-                _.getters.Tracker.trackEvent('RateMyProfessors', 'triggered', 'failed', course.ins.f + course.ins.l)
+                _.getters.Tracker.trackEvent('RateMyProfessors', 'failed', firstName + lastName)
             }
         }.bind(this))
         .finally(function() {
@@ -958,7 +948,7 @@ var self = module.exports = {
                     resolved.event.preventDefault();
                 })
                 if (_.getters.Tracker !== null) {
-                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'triggered', 'success', termCode + '_' + courseNum)
+                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'success', termCode + '_' + courseNum)
                 }
             }else if (res.message && res.message.indexOf('not tracked') !== -1) {
                 if (typeof monitorStart === 'undefined') {
@@ -967,12 +957,12 @@ var self = module.exports = {
                     _.getters.alert.error('This term is not yet being tracked, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
                 }
                 if (_.getters.Tracker !== null) {
-                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'triggered', 'untracked', termCode + '_' + courseNum)
+                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'untracked', termCode + '_' + courseNum)
                 }
             }else if (!res.ok) {
                 _.getters.alert.error('Cannot fetch real time data!')
                 if (_.getters.Tracker !== null) {
-                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'triggered', 'error', termCode + '_' + courseNum)
+                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'error', termCode + '_' + courseNum)
                 }
             }
             if (res.results && res.results.length === 0) {
@@ -982,7 +972,7 @@ var self = module.exports = {
                     _.getters.alert.error('No data found, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
                 }
                 if (_.getters.Tracker !== null) {
-                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'triggered', 'empty', termCode + '_' + courseNum)
+                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'empty', termCode + '_' + courseNum)
                 }
             }
             _.getters.loading.go(100);
@@ -1047,7 +1037,7 @@ var self = module.exports = {
             html += template('Course Number', course.num + (courseInfo.re === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCoursePreReq\', \'' + termId + '+' + course.num + '\')">Pre-Req</sup>') );
             html += template(course.c, (courseHasSections ? 'has sections': 'has NO sections') + (materialLink === false ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.open(\'' + materialLink  + '\')">Books</sup>'));
             html += template('Course Name', course.n + (courseInfo.desc === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCourseDesc\', \'' + termId + '+' + course.num + '\')">Desc.</sup>'));
-            html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + termId + '+' + course.num + '\')"">RateMyProfessors</sup>') );
+            html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + course.ins.f.replace(/'/g, '\\\'') + '+' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
         }
 
         html += '<hr />';

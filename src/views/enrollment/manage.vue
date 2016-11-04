@@ -157,7 +157,7 @@ module.exports = {
                 self.sub.inFlight = false;
                 self.alert.success('Subscription list updated.');
                 if (self.$store.getters.Tracker !== null) {
-                    self.$store.getters.Tracker.trackEvent('updateWatch', 'updated', 'courses', self.courses.join(','));
+                    self.$store.getters.Tracker.trackEvent('updateWatch', 'update_courses', self.courses.join(','));
                 }
             })
         },
@@ -189,7 +189,7 @@ module.exports = {
                     return self.alert.error(res.message);
                 }
                 if (self.$store.getters.Tracker !== null) {
-                    self.$store.getters.Tracker.trackEvent('unsubscribe', 'triggered', 'recipient', self.sub.recipient);
+                    self.$store.getters.Tracker.trackEvent('unsubscribe', 'recipient', self.sub.recipient);
                 }
                 self.loading.go(100);
                 self.sub.inFlight = false;
