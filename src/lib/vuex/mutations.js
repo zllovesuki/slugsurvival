@@ -2,6 +2,9 @@ var elasticlunr = require('elasticlunr'),
     helper = require('./helper.js');
 
 module.exports = {
+    setTracker: function(state, Tracker) {
+        state.Tracker = Tracker;
+    },
     setTitle: function(state, title) {
         state.title = title;
     },

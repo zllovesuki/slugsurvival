@@ -188,6 +188,8 @@ module.exports = {
             return result;
         }, // http://stackoverflow.com/questions/2878703/split-string-once-in-javascript
         searchCourses: debounce(function() {
+            var Tracker = this.$store.getters.Tracker;
+            var cat = this.selectedTermId + '_Course';
             var val = this.search.string;
             var self = this;
             var geCode = '';
@@ -207,6 +209,7 @@ module.exports = {
                 this.search.results = list.map(function(courseNum) {
                     return self.flatCourses[self.selectedTermId][courseNum];
                 })
+                cat += '_GE';
             }else{
                 var options = {
                     fields: {
@@ -235,7 +238,11 @@ module.exports = {
                     this.search.results = this.search.results.filter(function(course) {
                         return list.indexOf(course.num) !== -1;
                     })
+                    cat += '_GE';
                 }
+            }
+            if (Tracker !== null) {
+                Tracker.trackSiteSearch(val + ';' + geCode, cat, this.search.results.length);
             }
         }, 250),
         closeSearchModal: function() {

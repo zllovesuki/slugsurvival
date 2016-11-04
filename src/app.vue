@@ -80,6 +80,10 @@ module.exports = {
     mounted: function() {
         // global context
         window.App = this;
+        if (typeof Piwik !== 'undefined') {
+            this.$store.commit('setTracker', Piwik.getAsyncTracker())
+            this.$store.getters.Tracker.enableHeartBeatTimer(10);
+        }
     }
 }
 </script>

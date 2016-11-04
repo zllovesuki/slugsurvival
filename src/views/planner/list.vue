@@ -288,6 +288,7 @@ module.exports = {
             }).sort(helper.naturalSorter);
         },
         doFilter: function() {
+            var Tracker = this.$store.getters.Tracker;
             var self = this;
             var courseInfo = self.courseInfo[self.termId];
             for (var subject in this.courses) {
@@ -324,6 +325,13 @@ module.exports = {
             }
             self.autoUncollapse();
             self.alert.success('Class list updated!')
+            if (Tracker !== null) {
+                Tracker.trackSiteSearch(this.filter.subject.join(',') + ';'
+                + this.filter.ge.join(',') + ';'
+                + this.filter.unit.join(',') + ';'
+                + this.filter.timeblock.join(',') + ';'
+                + this.filter.location.join(',') + ';', 'list')
+            }
         },
         autoUncollapse: function() {
             var counter = {};

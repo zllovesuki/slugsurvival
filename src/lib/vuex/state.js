@@ -2,6 +2,9 @@ var alertify = require('alertify.js'),
     Nanobar = require('nanobar');
 
 module.exports = {
+
+    Tracker: null,
+    
     termsList: {},
     flatTermsList: [],
     termDates: {},

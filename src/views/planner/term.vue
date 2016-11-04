@@ -65,6 +65,7 @@ var helper = require('../../lib/vuex/helper')
 module.exports = {
     data: function() {
         return {
+            Tracker: this.$store.getters.Tracker,
             ready: false,
             searchModal: false,
             chooseSectionModal: false,
@@ -343,6 +344,9 @@ module.exports = {
                     canvas.toBlob(function(blob) {
                         self.$store.getters.loading.go(100);
                         saveAs(blob, 'Schedule for ' + self.$store.getters.termName + '.png');
+                        if (self.Tracker !== null) {
+                            self.Tracker.trackEvent('saveCalendarAsImage', 'clicked')
+                        }
                     });
                 })
             })
@@ -353,6 +357,9 @@ module.exports = {
             this.loadICSBundle(function() {
                 self.$store.getters.loading.go(100);
                 self.$store.dispatch('exportICS');
+                if (self.Tracker !== null) {
+                    self.Tracker.trackEvent('saveCalendarAsICS', 'clicked')
+                }
             })
         },
         bookmark: function() {
@@ -370,6 +377,10 @@ module.exports = {
             .then(function(resolved) {
                 window.location.hash = '';
             })
+
+            if (this.Tracker !== null) {
+                this.Tracker.trackEvent('bookmark', 'clicked')
+            }
 
             setTimeout(function() {
                 try {
@@ -403,7 +414,11 @@ module.exports = {
 
             this.alert
             .okBtn('OK')
-            .alert(html)
+            .alert(html);
+
+            if (this.Tracker !== null) {
+                this.Tracker.trackEvent('showShareMenu', 'clicked')
+            }
         },
         whyReadOnly: function() {
             var html = '<p class="h6 muted">Why can\'t I modify the planner?</p>';

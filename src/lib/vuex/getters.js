@@ -1,4 +1,7 @@
 module.exports = {
+    Tracker: function(state) {
+        return state.Tracker;
+    },
     version: function(state) {
         return require('../../../version.json')
     },

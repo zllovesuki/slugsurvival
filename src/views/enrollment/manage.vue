@@ -78,6 +78,7 @@ var config = require('../../../config')
 module.exports = {
     data: function() {
         return {
+            Tracker: this.$store.getters.Tracker,
             ready: false,
             searchModal: false,
             latestTermCode: config.latestTermCode,
@@ -156,6 +157,9 @@ module.exports = {
                 self.loading.go(100);
                 self.sub.inFlight = false;
                 self.alert.success('Subscription list updated.');
+                if (self.Tracker !== null) {
+                    self.Tracker.trackEvent('updateWatch', 'updated', 'courses', self.courses.join(','));
+                }
             })
         },
         unSub: function() {
@@ -184,6 +188,9 @@ module.exports = {
                 self.loading.go(100);
                 if (!res.ok) {
                     return self.alert.error(res.message);
+                }
+                if (self.Tracker !== null) {
+                    self.Tracker.trackEvent('unsubscribe', 'triggered', 'recipient', self.sub.recipient);
                 }
                 self.loading.go(100);
                 self.sub.inFlight = false;

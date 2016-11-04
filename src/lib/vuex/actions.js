@@ -92,6 +92,10 @@ var self = module.exports = {
                         });
                     })
                     _.getters.alert.delay(0).error('Class' + (object.deferredRemoval.length > 1 ? 'es' : '') + ' with course number ' + compoundSubject(object.deferredRemoval).delimitAll().make() + ' ' + (object.deferredRemoval.length > 1 ? 'are' : 'is') +  ' no longer offered.')
+                    var Tracker = _.getters.Tracker;
+                    if (Tracker !== null) {
+                        Tracker.trackEvent('loadAutosave', 'removal', 'removed', object.deferredRemoval.length)
+                    }
                 }
                 if (alert) _.getters.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
             })
