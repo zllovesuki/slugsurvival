@@ -84,9 +84,6 @@ module.exports = {
             this.$store.commit('setTracker', Piwik.getAsyncTracker())
             this.$store.getters.Tracker.enableHeartBeatTimer(10);
         }
-        if (typeof inElectron !== 'undefined') {
-            this.$router.push({ name: 'mainPage' })
-        }
     }
 }
 </script>

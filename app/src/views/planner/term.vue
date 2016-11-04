@@ -384,12 +384,7 @@ module.exports = {
             setTimeout(function() {
                 try {
                     var element = document.getElementsByClassName('bookmark')[0];
-                    if (typeof inElectron !== 'undefined') {
-                        // hard code it to SS
-                        element.value = 'https://slugsurvival.com/planner/' + this.termId + window.location.hash;
-                    }else{
-                        element.value = window.location.href;
-                    }
+                    element.value = window.location.href;
                     element.setSelectionRange(0, element.value.length)
                 }catch(e) {}
             }, 500);
