@@ -96,7 +96,13 @@ var self = module.exports = {
                         _.getters.Tracker.trackEvent('loadAutosave', 'removal', 'removed', object.deferredRemoval.length)
                     }
                 }
-                if (alert) _.getters.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
+                if (alert) {
+                    if (typeof inElectron !== 'undefined') {
+                        _.getters.alert.okBtn('Cool!').alert('<p>We found a planner saved in your application!</p>')
+                    }else{
+                        _.getters.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
+                    }
+                }
             })
         }.bind(this))
     },
@@ -1136,6 +1142,7 @@ var self = module.exports = {
         });
     },
     checkVersion: function(_) {
+        if (typeof inElectron !== 'undefined') return;
         return _.dispatch('compareVersion').then(function(isUpdated) {
             if (!isUpdated) {
                 _.commit('blockCheckVersion')
