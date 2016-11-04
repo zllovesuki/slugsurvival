@@ -1,15 +1,6 @@
 <template>
     <div>
         <div class="overflow-hidden bg-white rounded mb2">
-            <div class="m0 p1">
-                <div class="clearfix">
-                    <router-link :to="{ name: 'importFromTranscript' }" class="btn block h5">
-                        Did you know that SlugSurvival can import your previous classes from my.ucsc.edu?
-                    </router-link>
-                </div>
-            </div>
-        </div>
-        <div class="overflow-hidden bg-white rounded mb2">
             <div class="m0 p0">
                 <div class="clearfix">
                     <div class="left black">

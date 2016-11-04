@@ -1,10 +1,8 @@
 {
   "name": "slugsurvival-electron",
-  "productName": "SlugSurvival",
   "version": "3.0.0",
   "scripts": {
-    "start": "electron main.js",
-    "pack:win": "./node_modules/.bin/electron-packager . $npm_package_productName --app-version=$npm_package_version --version=3.0.0 --out=builds --ignore='^/builds$' --platform=win32 --arch=ia32 --version-string.CompanyName='sdapi.net' --version-string.LegalCopyright='Copyright (C) 2016 sdapi.net' --version-string.FileDescription=$npm_package_productName --version-string.OriginalFilename='SlugSurvival.exe' --version-string.InternalName=$npm_package_productName --version-string.ProductName=$npm_package_productName --version-string.ProductVersion=$npm_package_version --asar=true --overwrite"
+    "start": "electron main.js"
   },
   "repository": {
     "type": "git",
@@ -17,7 +15,6 @@
     "express": "~4.14.0"
   },
   "devDependencies": {
-    "electron-packager": "^8.2.0",
     "electron-prebuilt": "^1.4.5",
     "ucsc": "git+https://github.com/zllovesuki/ucsc.git"
   }

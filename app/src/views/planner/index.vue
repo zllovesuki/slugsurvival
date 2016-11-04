@@ -18,11 +18,6 @@
                     All {{ termName }} Classes
                 </span>
             </span>
-            <span v-if="route.name === 'importFromTranscript'">
-                <span class="btn button-narrow mxn1">
-                    Importing From my.ucsc.edu
-                </span>
-            </span>
         </div>
         <div class="mt2 mb1">
             <transition name="fade" mode="out-in">
