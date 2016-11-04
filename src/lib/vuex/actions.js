@@ -92,9 +92,8 @@ var self = module.exports = {
                         });
                     })
                     _.getters.alert.delay(0).error('Class' + (object.deferredRemoval.length > 1 ? 'es' : '') + ' with course number ' + compoundSubject(object.deferredRemoval).delimitAll().make() + ' ' + (object.deferredRemoval.length > 1 ? 'are' : 'is') +  ' no longer offered.')
-                    var Tracker = _.getters.Tracker;
-                    if (Tracker !== null) {
-                        Tracker.trackEvent('loadAutosave', 'removal', 'removed', object.deferredRemoval.length)
+                    if (_.getters.Tracker !== null) {
+                        _.getters.Tracker.trackEvent('loadAutosave', 'removal', 'removed', object.deferredRemoval.length)
                     }
                 }
                 if (alert) _.getters.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
@@ -841,15 +840,24 @@ var self = module.exports = {
                     if (resolved.buttonClicked !== 'ok') return;
                     window.open('http://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + rmp.tid);
                 })
+                if (_.getters.Tracker !== null) {
+                    _.getters.Tracker.trackEvent('RateMyProfessors', 'triggered', 'success', rmp.tid)
+                }
             }else{
                 _.getters.alert
                 .okBtn('Go Back')
                 .alert(['<p>', 'Sorry, we don\'t have', firstName + '\'s', 'ratings!', '</p>'].join(' '))
+                if (_.getters.Tracker !== null) {
+                    _.getters.Tracker.trackEvent('RateMyProfessors', 'triggered', 'empty', firstName + lastName)
+                }
             }
         }.bind(this))
         .catch(function(e) {
             console.log(e);
             _.getters.alert.error('Cannot fetch RMP stats!')
+            if (_.getters.Tracker !== null) {
+                _.getters.Tracker.trackEvent('RateMyProfessors', 'triggered', 'failed', firstName + lastName)
+            }
         }.bind(this))
         .finally(function() {
             _.getters.loading.go(100);
@@ -939,20 +947,32 @@ var self = module.exports = {
                 .then(function(resolved) {
                     resolved.event.preventDefault();
                 })
+                if (_.getters.Tracker !== null) {
+                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'triggered', 'success', termCode + '_' + courseNum)
+                }
             }else if (res.message && res.message.indexOf('not tracked') !== -1) {
                 if (typeof monitorStart === 'undefined') {
                     _.getters.alert.error('This term is not yet being tracked, please check again later.')
                 }else{
                     _.getters.alert.error('This term is not yet being tracked, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
                 }
+                if (_.getters.Tracker !== null) {
+                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'triggered', 'untracked', termCode + '_' + courseNum)
+                }
             }else if (!res.ok) {
                 _.getters.alert.error('Cannot fetch real time data!')
+                if (_.getters.Tracker !== null) {
+                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'triggered', 'error', termCode + '_' + courseNum)
+                }
             }
             if (res.results && res.results.length === 0) {
                 if (typeof monitorStart === 'undefined') {
                     _.getters.alert.error('No data found.')
                 }else{
                     _.getters.alert.error('No data found, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
+                }
+                if (_.getters.Tracker !== null) {
+                    _.getters.Tracker.trackEvent('realTimeEnrollment', 'triggered', 'empty', termCode + '_' + courseNum)
                 }
             }
             _.getters.loading.go(100);
