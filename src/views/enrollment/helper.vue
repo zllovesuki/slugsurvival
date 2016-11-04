@@ -136,7 +136,6 @@ var config = require('../../../config')
 module.exports = {
     data: function() {
         return {
-            Tracker: this.$store.getters.Tracker,
             ready: false,
             searchModal: false,
             passDropDeadline: false,
@@ -192,8 +191,8 @@ module.exports = {
             var self = this;
             self.loading.go(30);
             self.sub.sendInflight = true;
-            if (self.Tracker !== null) {
-                self.Tracker.trackEvent('sendVerify', 'triggered', 'recipient', self.sub.recipient);
+            if (self.$store.getters.Tracker !== null) {
+                self.$store.getters.Tracker.trackEvent('sendVerify', 'triggered', 'recipient', self.sub.recipient);
             }
             return fetch(config.notifyURL + '/verify/' + (self.sub.shouldResend ? 'resend' : 'new'), {
                 method: 'POST',
@@ -271,8 +270,8 @@ module.exports = {
                     self.loading.go(100);
                     return self.alert().error(res.message);
                 }
-                if (self.Tracker !== null) {
-                    self.Tracker.trackEvent('verified', 'true', 'recipient', self.sub.recipient);
+                if (self.$store.getters.Tracker !== null) {
+                    self.$store.getters.Tracker.trackEvent('verified', 'true', 'recipient', self.sub.recipient);
                 }
                 return self.$store.dispatch('updateWatch', {
                     recipient: self.sub.recipient,
@@ -290,8 +289,8 @@ module.exports = {
                     self.loading.go(100);
                     self.alert.success('Subscribed to changes!');
                     self.$router.push({ name: 'enrollManage'})
-                    if (self.Tracker !== null) {
-                        self.Tracker.trackEvent('updateWatch', 'new', 'courses', self.courses.join(','));
+                    if (self.$store.getters.Tracker !== null) {
+                        self.$store.getters.Tracker.trackEvent('updateWatch', 'new', 'courses', self.courses.join(','));
                     }
                 })
             })
