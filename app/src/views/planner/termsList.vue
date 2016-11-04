@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="overflow-hidden bg-white rounded mb2">
+        <!--<div class="overflow-hidden bg-white rounded mb2">
             <div class="m0 p1">
                 <div class="clearfix">
                     <router-link :to="{ name: 'importFromTranscript' }" class="btn block h5">
@@ -8,7 +8,7 @@
                     </router-link>
                 </div>
             </div>
-        </div>
+        </div>-->
         <div class="overflow-hidden bg-white rounded mb2">
             <div class="m0 p0">
                 <div class="clearfix">
