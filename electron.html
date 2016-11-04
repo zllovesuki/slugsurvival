@@ -42,7 +42,11 @@
             $script(dist + 'bluebird/v3.4.6/bluebird.min.js', 'Bluebird', function() {
                 window.Bluebird = Promise.noConflict();
                 $script([dist + 'fetch/0.11.1/fetch.js', dist + 'moment/2.14.1/moment.min.js'], function () {
-                    $script('./app/public/app.js');
+                    if (process.env.RDB_HOST) {
+                        $script('./app/public/app.js');
+                    }else{
+                        $script('./app/public/prod.js');
+                    }
                 })
             })
         </script>

@@ -71,6 +71,11 @@ var router = new VueRouter({
                     component: require('./views/planner/termsList.vue')
                 },
                 {
+                    path: 'import',
+                    name: 'importFromTranscript',
+                    component: require('./views/planner/import.vue')
+                },
+                {
                     path: ':termId',
                     name: 'term',
                     component: require('./views/planner/term.vue')
