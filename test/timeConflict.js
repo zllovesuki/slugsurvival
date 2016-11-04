@@ -1,4 +1,4 @@
-var actions = require('../src/lib/vuex/actions');
+var actions = require('../app/src/lib/vuex/actions');
 
 var chai = require('chai');
 var expect = chai.expect;
