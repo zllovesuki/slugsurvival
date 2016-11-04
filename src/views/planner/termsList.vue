@@ -138,6 +138,9 @@ module.exports = {
                 _results = _results.concat(results[code]);
             }
             this.search.results = _results;
+            if (this.$store.getters.Tracker !== null) {
+                this.$store.getters.Tracker.trackSiteSearch(this.search.string, 'findHistorical', this.search.results.length)
+            }
         }, 750)
     },
     watch: {
