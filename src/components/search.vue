@@ -5,11 +5,12 @@
                 <input type="text" class="field block col-12 mb1 search-box" v-model="search.string" placeholder="ECON 197, Design, Mendes, etc...">
             </h4>
             <span slot="body">
-                <ul class="list-reset">
-                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="cb(result)" v-for="result in search.results" track-by="result.num">
+                <ul class="list-reset mt1">
+                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="cb(result)" v-for="result in search.results" track-by="result.num" v-show="!search.dirty">
                         {{ result.c }} - {{ result.s }}  - {{ result.n }}
                     </li>
-                    <li v-show="search.string.length > 0 && search.results.length === 0">No results.</li>
+                    <li v-show="search.dirty">...Typing</li>
+                    <li v-show="search.string.length > 0 && search.results.length === 0 && !search.dirty">No results.</li>
                 </ul>
             </span>
             <span slot="footer">
@@ -123,7 +124,8 @@ module.exports = {
         return {
             search: {
                 string: '',
-                results: []
+                results: [],
+                dirty: false
             },
             extraModal: false,
             GEModal: false,
@@ -175,6 +177,7 @@ module.exports = {
                 this.search.results = [];
                 return;
             };
+            this.search.dirty = true;
             this.searchCourses();
         }
     },
@@ -236,11 +239,15 @@ module.exports = {
             if (Tracker !== null) {
                 Tracker.trackSiteSearch(val + ';' + geCode, cat, this.search.results.length);
             }
-        }, 250),
+            this.search.dirty = false;
+        }, 500),
         closeSearchModal: function() {
             this.$emit('close')
         },
         cb: function(param) {
+            if (this.$store.getters.Tracker !== null) {
+                this.$store.getters.Tracker.trackEvent('searchCb', 'clicked', params.c)
+            }
             this.callback(param)
         },
         showGE: function() {
