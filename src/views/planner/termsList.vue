@@ -8,11 +8,6 @@
                             click a quarter to open a planner
                         </span>
                     </div>
-                    <!--<div class="right">
-                        <span class="btn h6">
-                            last updated
-                        </span>
-                    </div>-->
                 </div>
             </div>
             <template v-for="(term, index) in flatTermsList" track-by="term.code">
