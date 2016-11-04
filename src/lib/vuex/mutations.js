@@ -108,7 +108,7 @@ module.exports = {
                 obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNum]));
 
                 _obj.b = obj.num;
-                _obj.c = obj.c;
+                _obj.c = obj.c.split(/(\d+)/).map(function(el) { return el.replace(/\s+/g, ''); }).join(' ')
                 _obj.n = obj.n;
                 _obj.f = obj.ins.f;
                 _obj.la = obj.ins.l;

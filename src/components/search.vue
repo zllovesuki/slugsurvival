@@ -179,14 +179,6 @@ module.exports = {
         }
     },
     methods: {
-        splitOnce: function(str, delim) {
-            var components = str.split(delim)
-            var result = [components.shift()];
-            if (components.length) {
-                result.push(components.join(' '));
-            }
-            return result;
-        }, // http://stackoverflow.com/questions/2878703/split-string-once-in-javascript
         searchCourses: debounce(function() {
             var Tracker = this.$store.getters.Tracker;
             var cat = this.selectedTermId + '_Course';
@@ -230,7 +222,7 @@ module.exports = {
                         }
                     }
                 };
-                val = self.splitOnce(val, /(\d+)/).map(function(el) { return el.replace(/\s+/g, ''); }).join(' ')
+                val = val.split(/(\d+)/).map(function(el) { return el.replace(/\s+/g, ''); }).join(' ')
                 this.search.results = this.indexSearch[this.selectedTermId].search(val, options).map(function(result) {
                     return self.flatCourses[self.selectedTermId][result.ref]
                 })
