@@ -252,7 +252,6 @@ var self = module.exports = {
     },
 
     iOS: function() {
-        return true;
         var userAgent = window.navigator.userAgent;
         if (userAgent.match(/iPad/i) || userAgent.match(/iPhone/i)) {
             return true;
