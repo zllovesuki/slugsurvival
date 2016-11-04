@@ -31,9 +31,6 @@ module.exports = {
         return {
             enabled: typeof inElectron !== 'undefined'
         }
-    },
-    mounted: function() {
-        this.$store.dispatch('setTitle', 'Import')
     }
 }
 </script>
