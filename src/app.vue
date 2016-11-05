@@ -59,11 +59,8 @@ module.exports = {
         }
     },
     computed: {
-        route: function() {
-            return this.$store.getters.route;
-        },
         shouldAddMargin: function() {
-            return ['viewList', 'term'].indexOf(this.route.name) !== -1
+            return this.$store.getters.shouldAddMargin;
         },
         color: function() {
             return this.$store.getters.color;

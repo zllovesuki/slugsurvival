@@ -21,7 +21,7 @@
                             <span class="m1 btn h5" @click="flip" v-bind:class="{ 'white': !show, 'black': show }">Filter By: </span>
                         </div>
                         <div class="right rounded">
-                            <div class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg"></i></div>
+                            <div v-show="!show" class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
                             <router-link v-show="!show" class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg"></i></router-link>
                             <div @click="flip" v-show="show" class="inline-block m1 p1 h6 black bold clickable" v-bind:style="{ backgroundColor: colorMap.blank }"><i class="fa fa-arrow-up fa-lg"></i></div>
                         </div>
@@ -374,6 +374,7 @@ module.exports = {
                     });
                 })
                 setTimeout(function() {
+                    self.$store.commit('shouldAddMargin', true);
                     self.initialized = true;
                     self.show = false;
                     self.autoUncollapse();

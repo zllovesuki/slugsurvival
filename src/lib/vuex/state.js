@@ -4,7 +4,7 @@ var alertify = require('alertify.js'),
 module.exports = {
 
     Tracker: null,
-    
+
     termsList: {},
     flatTermsList: [],
     termDates: {},
@@ -58,6 +58,7 @@ module.exports = {
     },
 
     blockCheckVersion: false,
+    shouldAddMargin: false,
 
     loading: new Nanobar(),
     alert: alertify.reset().closeLogOnClick(true).logPosition("bottom right").maxLogItems(1)

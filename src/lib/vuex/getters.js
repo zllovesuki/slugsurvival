@@ -64,5 +64,8 @@ module.exports = {
     },
     blockScroll: function(state) {
         return state.blockScroll;
+    },
+    shouldAddMargin: function(state) {
+        return state.shouldAddMargin
     }
 }

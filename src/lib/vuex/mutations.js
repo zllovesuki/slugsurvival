@@ -180,5 +180,8 @@ module.exports = {
     },
     blockCheckVersion: function(state) {
         state.blockCheckVersion = true;
+    },
+    shouldAddMargin: function(state, to) {
+        state.shouldAddMargin = (to || false);
     }
 }

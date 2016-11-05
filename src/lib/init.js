@@ -5,6 +5,7 @@ module.exports = function(_, router) {
     _.dispatch('checkVersion')
 
     router.beforeEach(function(to, from, next) {
+        _.commit('shouldAddMargin', false);
         _.dispatch('ensureDataLoaded').then(next);
     })
 }
