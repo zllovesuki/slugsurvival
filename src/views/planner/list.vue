@@ -18,12 +18,12 @@
                 <div class="m0 p0 rounded" key="title">
                     <div class="clearfix">
                         <div class="left rounded">
-                            <span class="m1 btn h5" @click="flip" v-bind:class="{ 'white': !show, 'black': show }">Filter By: </span>
+                            <div class="inline-block m1 p1 h6 bold clickable btn-outline" @click="flip" v-bind:class="{ 'white': !show, 'black': show }"><i class="fa fa-filter fa-lg">&nbsp;</i>Filter...</div>
                         </div>
                         <div class="right rounded">
-                            <div v-show="!show" class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
-                            <router-link v-show="!show" class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg"></i></router-link>
-                            <div @click="flip" v-show="show" class="inline-block m1 p1 h6 black bold clickable" v-bind:style="{ backgroundColor: colorMap.blank }"><i class="fa fa-arrow-up fa-lg"></i></div>
+                            <div v-show="!show" class="inline-block m1 p1 h6 white bold clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
+                            <router-link v-show="!show" class="inline-block m1 p1 h6 white bold clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg"></i></router-link>
+                            <div @click="flip" v-show="show" class="inline-block m1 p1 h6 black bold clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.blank }"><i class="fa fa-arrow-up fa-lg"></i></div>
                         </div>
                     </div>
                 </div>
@@ -344,12 +344,6 @@ module.exports = {
                 }else{
                     self.collapseSubject[subject] = true;
                 }
-                counter[subject] = this.courses[subject].reduce(function(total, course) {
-                    return self.hideCourses[course.num] === true ? total : total + 1;
-                }, 0)
-                if (counter[subject] > 0 && counter[subject] <= 3) {
-                    self.collapseSubject[subject] = false;
-                }
             }
         },
         initSelect2: function() {
@@ -377,7 +371,6 @@ module.exports = {
                     self.$store.commit('shouldAddMargin', true);
                     self.initialized = true;
                     self.show = false;
-                    self.autoUncollapse();
                     self.alert.delay(5000).success('Click on a subject to expand')
                 }, 500)
             })

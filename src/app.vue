@@ -123,7 +123,7 @@ body.modal-open {
 }
 
 .bg-black-transparent {
-    background-color: rgba(0, 0, 0, 0.3);
+    background-color: rgba(0, 0, 0, 0.4);
 }
 
 #top-bar {
