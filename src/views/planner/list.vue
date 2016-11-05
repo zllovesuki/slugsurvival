@@ -117,6 +117,7 @@
 var debounce = require('lodash.debounce')
 var helper = require('../../lib/vuex/helper')
 var MobileDetect = require('mobile-detect')
+var elasticlunr = require('elasticlunr')
 module.exports = {
     data: function() {
         return {
@@ -352,27 +353,36 @@ module.exports = {
                 self.IDs[id] = self.makeid();
             })
             this.$nextTick(function() {
-                Object.keys(self.IDs).forEach(function(id) {
-                    $('#' + self.IDs[id]).select2({
-                        placeholder: id + '...',
-                        closeOnSelect: false,
-                        templateSelection: function(d) {
-                            return d.id;
-                        }
-                    }).on('select2:select', function(evt) {
-                        self.filter[id].push(evt.params.data.element.value);
-                    }).on('select2:unselect', function(evt) {
-                        self.filter[id] = self.filter[id].filter(function(el) {
-                            return el != evt.params.data.element.value;
-                        })
-                    });
-                })
-                setTimeout(function() {
-                    self.$store.commit('shouldAddMargin', true);
-                    self.initialized = true;
-                    self.show = false;
-                    self.alert.delay(5000).success('Click on a subject to expand')
-                }, 500)
+                $.fn.select2.amd.require(['select2/selection/search'], function (Search) {
+                    Search.prototype.searchRemoveChoice = function (decorated, item) {
+                        this.trigger('unselect', {
+                            data: item
+                        });
+                        this.$search.val('');
+                        this.handleSearch();
+                    }; // https://github.com/select2/select2/issues/3354#issuecomment-162858442
+                    Object.keys(self.IDs).forEach(function(id) {
+                        $('#' + self.IDs[id]).select2({
+                            placeholder: id + '...',
+                            closeOnSelect: false,
+                            templateSelection: function(d) {
+                                return d.id;
+                            }
+                        }).on('select2:select', function(evt) {
+                            self.filter[id].push(evt.params.data.element.value);
+                        }).on('select2:unselect', function(evt) {
+                            self.filter[id] = self.filter[id].filter(function(el) {
+                                return el != evt.params.data.element.value;
+                            })
+                        });
+                    })
+                    setTimeout(function() {
+                        self.$store.commit('shouldAddMargin', true);
+                        self.initialized = true;
+                        self.show = false;
+                        self.alert.delay(5000).success('Click on a subject to expand')
+                    }, 500)
+                });
             })
         },
         initReactive: function() {
