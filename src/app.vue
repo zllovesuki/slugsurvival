@@ -5,7 +5,7 @@
 				<i class="fa fa-warning">&nbsp;</i>
 			</a>
 		</div>
-        <section id="container" class="container clearfix">
+        <section id="container" class="container clearfix" v-bind:class="{ 'mt3': shouldAddMargin }">
             <div class="clearfix mt3">
                 <div class="mb2 sm-flex center nowrap">
                     <div class="flex-auto block">
@@ -56,6 +56,12 @@ module.exports = {
         }
     },
     computed: {
+        route: function() {
+            return this.$store.getters.route;
+        },
+        shouldAddMargin: function() {
+            return ['viewList', 'term'].indexOf(this.route.name) !== -1
+        },
         color: function() {
             return this.$store.getters.color;
         },

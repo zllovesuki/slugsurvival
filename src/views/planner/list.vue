@@ -13,14 +13,14 @@
             <div class="bar-mask" @click="flip" v-show="ready && show && initialized">
             </div>
         </transition>
-        <div id="top-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-white': show, 'transparent': !initialized }" v-if="ready">
+        <div id="top-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-white': show, 'bg-black-transparent': !show }" v-if="ready">
             <transition-group name="list-complete" appear>
                 <div class="m0 p0 rounded" key="title">
                     <div class="clearfix">
-                        <div class="left rounded" v-bind:class="{ 'bg-black-transparent': !show }">
+                        <div class="left rounded">
                             <span class="m1 btn h5" @click="flip" v-bind:class="{ 'white': !show, 'black': show }">Filter By: </span>
                         </div>
-                        <div class="right rounded" v-bind:class="{ 'bg-black-transparent': !show }">
+                        <div class="right rounded">
                             <div class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg"></i></div>
                             <router-link v-show="!show" class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'term', params: { termId: termId } }" tag="div"><i class="fa fa-calendar fa-lg"></i></router-link>
                             <div @click="flip" v-show="show" class="inline-block m1 p1 h6 black bold clickable" v-bind:style="{ backgroundColor: colorMap.blank }"><i class="fa fa-arrow-up fa-lg"></i></div>
@@ -437,9 +437,6 @@ module.exports = {
 </script>
 
 <style>
-.transparent {
-    opacity: 0;
-}
 .bar-mask {
     position: fixed;
     z-index: 9;
