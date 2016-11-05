@@ -445,7 +445,6 @@ module.exports = {
                 return self.$store.dispatch('decodeHash')
                 .then(function() {
                     // no valid was decoded
-                    self.$store.commit('shouldAddMargin', true);
                     return self.$store.dispatch('loadAutosave', {
                         termId: self.termId
                     })
@@ -470,6 +469,7 @@ module.exports = {
                 self.ready = false;
                 self.$store.getters.alert.error('Cannot load course data!')
             }).finally(function() {
+                if (!self.lock && self.ready) self.$store.commit('shouldAddMargin', true);
                 self.$store.getters.loading.go(100);
             })
         })
