@@ -5,8 +5,8 @@
                 <div class="m0 p0 rounded">
                     <div class="clearfix">
                         <div class="right rounded" v-show="!lock">
-                            <div class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
-                            <router-link class="inline-block m1 p1 h6 white bold clickable" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'viewList', params: { termId: termId } }" tag="div"><i class="fa fa-list fa-lg"></i></router-link>
+                            <div class="inline-block m1 p1 h6 white bold clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.searchAnything }" v-on:click.prevent.stop="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
+                            <router-link class="inline-block m1 p1 h6 white bold clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'viewList', params: { termId: termId } }" tag="div"><i class="fa fa-list fa-lg"></i></router-link>
                         </div>
                         <div class="right rounded bg-black-transparent" v-show="lock">
                             <div class="inline-block m1 h6 white bold clickable" @click="whyReadOnly">Read Only</div>

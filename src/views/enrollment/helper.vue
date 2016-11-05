@@ -1,24 +1,5 @@
 <template>
     <div>
-        <!--<div class="overflow-hidden bg-white rounded mb2">
-			<div class="m0 p1">
-				<div class="clearfix">
-					<span class="btn black h5">Check Openings in Real Time: </span>
-				</div>
-				<div class="clearfix">
-					<span class="ml1 btn black h6 muted not-clickable">
-                        You can check the openings in real time when you search for classes in the planner.
-                    </span>
-				</div>
-			</div>
-			<div class="m0 p1 border-top">
-				<div class="clearfix">
-                    <div class="sm-flex">
-                        <router-link class="p1 m2 h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'termsList' }" tag="div"><i class="fa fa-calendar fa-lg">&nbsp;</i>Take me to the Interactive Planner</router-link>
-                    </div>
-				</div>
-			</div>
-		</div>-->
         <transition-group name="fade" mode="out-in">
     		<div class="overflow-hidden bg-white rounded mb2" v-if="ready" key="notify">
     			<div class="m0 p1">
@@ -38,8 +19,8 @@
                     <div class="m0 p1">
                         <div class="clearfix">
                             <div class="sm-flex">
-                                <div class="p1 flex m1 h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
-                                <div class="p1 flex m1 h6 btn black clickable" v-bind:style="{ backgroundColor: colorMap.blank }" @click="importPlanner"><i class="fa fa-cart-arrow-down fa-lg">&nbsp;</i>or, Import from Local Planner</div>
+                                <div class="p1 flex m1 h6 white bold clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
+                                <div class="p1 flex m1 h6 black bold clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.blank }" @click="importPlanner"><i class="fa fa-cart-arrow-down fa-lg">&nbsp;</i>or, Import from Local Planner</div>
                             </div>
                         </div>
                     </div>
@@ -70,9 +51,8 @@
                     <div class="m0 p1">
         				<div class="clearfix">
                             <div class="sm-flex">
-                                <div class="p1 flex m1 h6 btn black clickable" v-bind:style="{ backgroundColor: colorMap.blank }" @click="showSub"><i class="fa fa-phone-square fa-lg">&nbsp;</i>Via SMS</div>
-                                <div class="p1 flex m1 h6 btn black clickable" v-bind:style="{ backgroundColor: colorMap.blank }" @click="showSub"><i class="fa fa-envelope fa-lg">&nbsp;</i>Via Email</div>
-                                <!--<div class="p1 flex-auto m1 h6 white clickable" v-bind:style="{ backgroundColor: colorMap.regular }" @click="$store.dispatch('comingSoon')"><i class="fa fa-arrow-down fa-lg">&nbsp;</i>Via Push Notifications</div>-->
+                                <div class="p1 flex m1 h6 bold black clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.blank }" @click="showSub"><i class="fa fa-phone-square fa-lg">&nbsp;</i>Via SMS</div>
+                                <div class="p1 flex m1 h6 bold black clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.blank }" @click="showSub"><i class="fa fa-envelope fa-lg">&nbsp;</i>Via Email</div>
                             </div>
         				</div>
                     </div>
@@ -100,7 +80,7 @@
             <div class="m0 p1 border-top">
                 <div class="clearfix">
                     <div class="sm-flex ml1">
-                        <router-link class="p1 m1 h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'enrollManage' }" target="_blank" tag="div"><i class="fa fa-pencil fa-lg">&nbsp;</i> Manage subscription</router-link>
+                        <router-link class="p1 m1 h6 btn white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'enrollManage' }" target="_blank" tag="div"><i class="fa fa-pencil fa-lg">&nbsp;</i> Manage subscription</router-link>
                     </div>
 				</div>
 			</div>
