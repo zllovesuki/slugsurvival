@@ -812,21 +812,22 @@ var self = module.exports = {
     _showInstructorRMP: function(_, string) {
         _.getters.loading.go(30);
         var split = string.split('+');
-        var firstName = split[0], lastName = split[1]
+        var termId = split[0], courseNum = split[1];
+        var course = _.getters.flatCourses[termId][courseNum]
         var html = '';
         var template = function(key, value) {
             return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
         }
         _.dispatch('fetchThreeStatsByFirstLastName', {
-            firstName: firstName,
-            lastName: lastName
+            firstName: course.ins.f,
+            lastName: course.ins.l
         })
         .then(function(rmp) {
             _.getters.loading.go(70);
             if (rmp !== null) {
                 var obj = rmp.stats.stats.quality;
                 var max = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
-                html += template('Quality', firstName + ' is ' + max)
+                html += template('Quality', course.ins.f + ' is ' + max)
                 html += template('Clarity', rmp.stats.stats.clarity.toFixed(1))
                 html += template('Easy', rmp.stats.stats.easy.toFixed(1))
                 html += template('Overall', rmp.stats.stats.overall.toFixed(1))
@@ -845,10 +846,19 @@ var self = module.exports = {
                 }
             }else{
                 _.getters.alert
-                .okBtn('Go Back')
-                .alert(['<p>', 'Sorry, we don\'t have', firstName + '\'s', 'ratings!', '</p>'].join(' '))
+                .cancelBtn('Go Back')
+                .okBtn('Google It')
+                .confirm(['<p>', 'Sorry, we don\'t have', course.ins.f + '\'s', 'ratings!', '</p>', '<p>', 'But you should use Google!', '</p>'].join(' '))
+                .then(function(resolved) {
+                    resolved.event.preventDefault();
+                    if (resolved.buttonClicked !== 'ok') return;
+                    if (_.getters.Tracker !== null) {
+                        _.getters.Tracker.trackEvent('RateMyProfessors', 'google', course.ins.d[0])
+                    }
+                    window.open('https://www.google.com/search?q=' + course.ins.d[0] + '+' + 'ucsc' + '+' + 'ratemyprofessors');
+                })
                 if (_.getters.Tracker !== null) {
-                    _.getters.Tracker.trackEvent('RateMyProfessors', 'empty', firstName + lastName)
+                    _.getters.Tracker.trackEvent('RateMyProfessors', 'empty', course.ins.f + course.ins.l)
                 }
             }
         }.bind(this))
@@ -856,7 +866,7 @@ var self = module.exports = {
             console.log(e);
             _.getters.alert.error('Cannot fetch RMP stats!')
             if (_.getters.Tracker !== null) {
-                _.getters.Tracker.trackEvent('RateMyProfessors', 'failed', firstName + lastName)
+                _.getters.Tracker.trackEvent('RateMyProfessors', 'failed', course.ins.f + course.ins.l)
             }
         }.bind(this))
         .finally(function() {
@@ -1037,7 +1047,7 @@ var self = module.exports = {
             html += template('Course Number', course.num + (courseInfo.re === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCoursePreReq\', \'' + termId + '+' + course.num + '\')">Pre-Req</sup>') );
             html += template(course.c, (courseHasSections ? 'has sections': 'has NO sections') + (materialLink === false ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.open(\'' + materialLink  + '\')">Books</sup>'));
             html += template('Course Name', course.n + (courseInfo.desc === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCourseDesc\', \'' + termId + '+' + course.num + '\')">Desc.</sup>'));
-            html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + course.ins.f.replace(/'/g, '\\\'') + '+' + course.ins.l.replace(/'/g, '\\\'') + '\')">RateMyProfessors</sup>') );
+            html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + termId + '+' + course.num + '\')">RateMyProfessors</sup>') );
         }
 
         html += '<hr />';
