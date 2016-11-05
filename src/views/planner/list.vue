@@ -36,7 +36,7 @@
                         </span>
                         <span class="sm-col sm-col-2">
                             <select multiple v-bind:id="IDs.ge" class="m1" style="width: 100%">
-                                <option :value="code" v-for="(desc, code) in listOfGE">({{ code }}) {{ desc }}</option>
+                                <option :value="code" v-for="(desc, code) in listOfGE" v-if="availableGE.indexOf(code) !== -1">({{ code }}) {{ desc }}</option>
                             </select>
                         </span>
                         <span class="sm-col sm-col-2">
@@ -149,6 +149,7 @@ module.exports = {
                 location: '',
                 timeblock: '',
             },
+            availableGE: [],
             listOfGE: {}
         }
     },
@@ -424,7 +425,11 @@ module.exports = {
         .spread(function(ge) {
             self.courses = self.$store.getters.sortedCourses[self.termId];
             self.initReactive();
-            //cself.doFilter();
+            self.availableGE = [].concat.apply([], Object.keys(self.courseInfo[self.termId]).map(function(courseNum) {
+                return self.courseInfo[self.termId][courseNum].ge;
+            })).filter(function(value, index, self) {
+                return self.indexOf(value) === index;
+            });
             self.listOfGE = ge;
             self.timeblocks = self.getTimeblocks();
             self.locations = self.getLocations();
