@@ -5,9 +5,12 @@
 				<i class="fa fa-warning">&nbsp;</i>
 			</a>
 		</div>
-        <section id="container" class="container clearfix" v-bind:class="{ 'mt3': shouldAddMargin }">
+        <transition name="fade" mode="out-in">
+            <div class="mt3" v-show="shouldAddMargin"></div>
+        </transition>
+        <section id="container" class="container clearfix">
             <div class="clearfix mt3">
-                <div class="mb2 sm-flex center nowrap">
+                <div class="mb1 sm-flex center nowrap">
                     <div class="flex-auto block">
                         <router-link class="inline h2 clickable" :to="{ name: 'mainPage' }" tag="span">SlugSurvival | <small class="muted" >{{ title }}</small></router-link>
                     </div>
@@ -123,7 +126,7 @@ body.modal-open {
 }
 
 .bg-black-transparent {
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
 #top-bar {
