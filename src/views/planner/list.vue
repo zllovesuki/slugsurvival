@@ -58,7 +58,7 @@
                 </div>
             </transition-group>
         </div>
-        <search :show="searchModal" v-on:close="closeSearchModal" :callback="promptAddClass" :selected-term-id="termId" :do-not-modify-class="true"></search>
+        <search :show="searchModal" v-on:close="closeSearchModal" :show-extra="true" :callback="promptAddClass" :selected-term-id="termId" :do-not-modify-class="true"></search>
         <div class="bg-white rounded border mb3" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="initialized && hideSubject[subject] !== true">
             <div class="m0 p1">
                 <div class="clearfix">
