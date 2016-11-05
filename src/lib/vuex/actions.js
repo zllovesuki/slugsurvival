@@ -846,9 +846,9 @@ var self = module.exports = {
                 }
             }else{
                 _.getters.alert
-                .cancelBtn('Go Back')
+                .cancelBtn('Nevermind')
                 .okBtn('Google It')
-                .confirm(['<p>', 'Sorry, we don\'t have', course.ins.f + '\'s', 'ratings!', '</p>', '<p>', 'But you should use Google!', '</p>'].join(' '))
+                .confirm(['<p>', 'Oops, it\'s not there! Sometimes RateMyProfessors has a different name for the professors.', '</p>', '<hr />', '<p>', 'How about you try Google?', '</p>'].join(' '))
                 .then(function(resolved) {
                     resolved.event.preventDefault();
                     if (resolved.buttonClicked !== 'ok') return;
