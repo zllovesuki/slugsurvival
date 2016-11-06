@@ -26,6 +26,10 @@ module.exports = {
             state.termDates[term.code] = term.date;
         })
     },
+    saveMajorMinor: function(state, payload) {
+        var mm = payload.mm;
+        state.majorMinor = mm;
+    },
     saveTermCourses: function(state, payload) {
         var obj, termId = payload.termId, courses = payload.coursesData, skipSaving = payload.skipSaving;
         if (typeof state.flatCourses[termId] === 'undefined') {

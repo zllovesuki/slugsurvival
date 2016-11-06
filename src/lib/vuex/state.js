@@ -18,6 +18,8 @@ module.exports = {
     flatSubjectList: [],
     subjectList: {},
 
+    majorMinor: {},
+
     instructorNameToTidMapping: {},
     instructorStats: {},
 

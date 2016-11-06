@@ -100,7 +100,7 @@ var self = module.exports = {
             })
         }.bind(this))
     },
-    loadTermsAndRMPFromLocal: function(_) {
+    loadTermsRMPAndMajorMinorFromLocal: function(_) {
         var online;
         var self = this;
         var loadOnlineTimestamp = function() {
@@ -108,12 +108,14 @@ var self = module.exports = {
             return Bluebird.all([
                 fetch(config.dbURL + '/timestamp/terms.json?' + timestamp),
                 fetch(config.dbURL + '/timestamp/rmp.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/subjects.json?' + timestamp)
-            ]).spread(function(termsRes, rmpRes, subjectsRes){
+                fetch(config.dbURL + '/timestamp/subjects.json?' + timestamp),
+                fetch(config.dbURL + '/timestamp/major-minor.json?' + timestamp)
+            ]).spread(function(termsRes, rmpRes, subjectsRes, mmRes){
                 return Bluebird.all([
                     termsRes.json(),
                     rmpRes.json(),
-                    subjectsRes.json()
+                    subjectsRes.json(),
+                    mmRes.json()
                 ])
             })
         }
@@ -121,19 +123,22 @@ var self = module.exports = {
             return Bluebird.all([
                 storage.getItem('termsListTimestamp'),
                 storage.getItem('rmpTimestamp'),
-                storage.getItem('subjectsTimestamp')
+                storage.getItem('subjectsTimestamp'),
+                storage.getItem('mmTimestamp')
             ])
         }
         var loadFromStorage = function(invalid) {
             return Bluebird.all([
                 !invalid.termsList ? storage.getItem('termsList') : null,
                 !invalid.rmp ? storage.getItem('rmp') : null,
-                !invalid.subjects ? storage.getItem('subjects') : null
-            ]).spread(function(termsList, rmp, subjects) {
+                !invalid.subjects ? storage.getItem('subjects') : null,
+                !invalid.mm ? storage.getItem('majorMinor') : null
+            ]).spread(function(termsList, rmp, subjects, mm) {
                 return _.dispatch('saveTermsAndRMP', {
                     termsList: termsList,
                     rmp: rmp,
                     subjects: subjects,
+                    mm: mm,
                     skipSaving: true
                 })
             })
@@ -152,6 +157,7 @@ var self = module.exports = {
                     yes: false,
                     termsList: false,
                     rmp: false,
+                    mm: false,
                     subjects: false
                 }
                 if (typeof online !== 'undefined') {
@@ -171,18 +177,25 @@ var self = module.exports = {
                         invalid.subjects = true;
                         console.log('subjects timestamp differs');
                     }
+                    if (online[3] !== offline[3]) {
+                        invalid.yes = true;
+                        invalid.mm = true;
+                        console.log('major minor timestamp differs');
+                    }
                 }else{
                     // possibly no connectivity
                     if (offline[0] === null
                         || offline[1] === null
-                        || offline[2] === null) {
+                        || offline[2] === null
+                        || offline[3] === null) {
                         // We don't have a local copy
                         console.log(('no local copies to fallback'));
                         invalid = {
                             yes: true,
                             termsList: true,
                             rmp: true,
-                            subjects: true
+                            subjects: true,
+                            mm: true
                         }
                         return Bluebird.reject(invalid)
                     }
@@ -197,26 +210,29 @@ var self = module.exports = {
             })
         })
     },
-    loadTermsAndRMPFromOnline: function(_, invalid) {
+    loadTermsRMPAndMajorMinorFromOnline: function(_, invalid) {
         var self = this;
         var timestamp = Date.now() / 1000;
         return Bluebird.all([
             invalid.termsList ? fetch(config.dbURL + '/terms.json?' + timestamp) : null,
             invalid.rmp ? fetch(config.dbURL + '/rmp.json?' + timestamp) : null,
-            invalid.subjects ? fetch(config.dbURL + '/subjects.json?' + timestamp) : null
+            invalid.subjects ? fetch(config.dbURL + '/subjects.json?' + timestamp) : null,
+            invalid.mm ? fetch(config.dbURL + '/major-minor.json?' + timestamp) : null
         ])
-        .spread(function(termsRes, rmpRes, subjectsRes){
+        .spread(function(termsRes, rmpRes, subjectsRes, mmRes){
             return Bluebird.all([
                 invalid.termsList ? termsRes.json() : null,
                 invalid.rmp ? rmpRes.json() : null,
-                invalid.subjects ? subjectsRes.json() : null
+                invalid.subjects ? subjectsRes.json() : null,
+                invalid.mm ? mmRes.json() : null
             ])
         })
-        .spread(function(termsList, rmp, subjects) {
+        .spread(function(termsList, rmp, subjects, mm) {
             return _.dispatch('saveTermsAndRMP', {
                 termsList: termsList,
                 rmp: rmp,
                 subjects: subjects,
+                mm: mm,
                 skipSaving: false
             })
         })
@@ -225,15 +241,16 @@ var self = module.exports = {
         if (payload.termsList !== null) _.commit('saveTermsList', payload);
         if (payload.rmp !== null) _.commit('saveInstructorNameToTidMapping', payload);
         if (payload.subjects !== null) _.commit('saveSubjects', payload);
+        if (payload.mm !== null) _.commit('saveMajorMinor', payload);
     },
     fetchTermsListAndRMP: function(_) {
         if (_.state.flatTermsList.length !== 0) {
             return Bluebird.resolve();
         }
-        return _.dispatch('loadTermsAndRMPFromLocal')
+        return _.dispatch('loadTermsRMPAndMajorMinorFromLocal')
         .catch(function(invalid) {
             if (invalid.yes) {
-                return _.dispatch('loadTermsAndRMPFromOnline', invalid)
+                return _.dispatch('loadTermsRMPAndMajorMinorFromOnline', invalid)
             }
         })
     },

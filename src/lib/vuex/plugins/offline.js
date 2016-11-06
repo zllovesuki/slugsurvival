@@ -107,6 +107,24 @@ module.exports = function(storage) {
                     ])
                 })
 
+                case 'saveMajorMinor':
+
+                var mm = mutation.payload.mm;
+                var skipSaving = mutation.payload.skipSaving || false;
+
+                if (skipSaving) return;
+
+                return fetch(config.dbURL + '/timestamp/major-minor.json?' + timestamp)
+                .then(function(res) {
+                    return res.json();
+                })
+                .then(function(onlineTimestamp) {
+                    return Bluebird.all([
+                        storage.setItem('mmTimestamp', onlineTimestamp),
+                        storage.setItem('majorMinor', mm)
+                    ])
+                })
+
                 break;
 
                 case 'buildIndexedSearch':
