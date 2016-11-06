@@ -98,6 +98,23 @@ var router = new VueRouter({
                     component: require('./views/enrollment/manage.vue')
                 }
             ]
+        },
+        {
+            path: '/requirement',
+            name: 'requirement',
+            component: require('./views/req/index.vue'),
+            children: [
+                {
+                    path: '',
+                    name: 'reqMenu',
+                    component: require('./views/req/menu.vue')
+                },
+                {
+                    path: 'volunteer',
+                    name: 'reqVolunteer',
+                    component: require('./views/req/volunteer.vue')
+                }
+            ]
         }
     ]
 })
