@@ -13,13 +13,13 @@
             </div>
             <div class="m0 p2 border-top">
                 <div class="clearfix">
-                    <div class="md-flex mb1">
+                    <div class="md-flex">
                         <router-link class="p2 flex-auto m1 h5 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'enrollManage' }" target="_blank" tag="div"><i class="fa fa-book fa-2x">&nbsp;</i>Interactive Academic Planner</router-link>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="overflow-hidden bg-white rounded mb2">
+        <!-- <div class="overflow-hidden bg-white rounded mb2 muted">
             <div class="m0 p1">
                 <div class="clearfix">
                     <span class="btn black h4">Help Wanted: </span>
@@ -32,12 +32,12 @@
             </div>
             <div class="m0 p2 border-top">
                 <div class="clearfix">
-                    <div class="md-flex mb1">
-                        <router-link class="p2 flex-auto m1 h5 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'reqVolunteer' }" target="_blank" tag="div"><i class="fa fa-pencil-square-o fa-2x">&nbsp;</i>Fill Out Major Requirements for SlugSurvival</router-link>
+                    <div class="md-flex">
+                        <router-link class="p2 flex-auto m1 h5 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'reqVolunteer' }" target="_blank" tag="div"><i class="fa fa-pencil-square-o fa-2x">&nbsp;</i>Fill Out Requirements for Majors/Minor</router-link>
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 </template>
 
@@ -52,7 +52,7 @@ module.exports = {
         }
     },
     mounted: function() {
-        this.$store.dispatch('setTitle', 'Requirements')
+        this.$store.dispatch('setTitle', 'Major/Minor')
     }
 }
 </script>

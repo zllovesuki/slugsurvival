@@ -113,6 +113,11 @@ var router = new VueRouter({
                     path: 'volunteer',
                     name: 'reqVolunteer',
                     component: require('./views/req/volunteer.vue')
+                },
+                {
+                    path: 'volunteer/:type?/:name?',
+                    name: 'reqVolunteerForm',
+                    component: require('./views/req/volunteer.vue')
                 }
             ]
         }

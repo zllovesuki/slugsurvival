@@ -50,6 +50,9 @@ module.exports = {
     subjectList: function(state) {
         return state.subjectList;
     },
+    majorMinor: function(state) {
+        return state.majorMinor;
+    },
     eventSource: function(state) {
         return state.events
     },

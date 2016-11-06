@@ -5,10 +5,15 @@
             <chevron-right></chevron-right>
             <span v-if="route.name === 'reqMenu'">
                 <span class="btn button-narrow mxn1">
-                    Navigation
+                    Major/Minor Stuff
                 </span>
             </span>
             <span v-if="route.name === 'reqVolunteer'">
+                <span class="btn button-narrow mxn1">
+                    Crowdsourcing
+                </span>
+            </span>
+            <span v-if="route.name === 'reqVolunteerForm'">
                 <span class="btn button-narrow mxn1">
                     Fill Them Out
                 </span>
