@@ -42,34 +42,6 @@ var self = module.exports = {
             return stats;
         })
     },
-    fetchHistoricData: function(_) {
-        if (typeof _.state.historicData.spring !== 'undefined') {
-            return Bluebird.resolve();
-        }
-        var timestamp = Date.now() / 1000;
-        return Bluebird.all([
-            fetch(config.dbURL + '/offered/spring.json?' + timestamp),
-            fetch(config.dbURL + '/offered/summer.json?' + timestamp),
-            fetch(config.dbURL + '/offered/fall.json?' + timestamp),
-            fetch(config.dbURL + '/offered/winter.json?' + timestamp)
-        ])
-        .spread(function(springRes, summerRes, fallRes, winterRes){
-            return Bluebird.all([
-                springRes.json(),
-                summerRes.json(),
-                fallRes.json(),
-                winterRes.json()
-            ])
-        })
-        .spread(function(spring, summer, fall, winter){
-            _.commit('saveHistoricData', {
-                spring: spring,
-                summer: summer,
-                fall: fall,
-                winter: winter
-            });
-        })
-    },
     loadAutosave: function(_, payload) {
         termId = payload.termId;
         alert = (typeof payload.alert === 'undefined' ? true : false);
@@ -1146,7 +1118,7 @@ var self = module.exports = {
         return deadline.getTime() < today.getTime();
     },
     compareVersion: function(_) {
-        return new Promise(function(resolve) {
+        return new Bluebird(function(resolve) {
             fetch('/version')
             .then(function(res) {
                 if (res.status != 200) return _.getters.version; // fake it until you make it
@@ -1181,5 +1153,128 @@ var self = module.exports = {
         } else {
             document.body.className = '';
         }
+    },
+    loadHistoricDataFromLocal: function(_) {
+        var online;
+        var self = this;
+        var timestamp = Date.now() / 1000;
+        var loadOnlineTimestamp = function() {
+            return Bluebird.all([
+                fetch(config.dbURL + '/timestamp/terms.json?' + timestamp)
+            ]).spread(function(res) {
+                return Bluebird.all([
+                    res.json()
+                ])
+            })
+        }
+        var loadOfflineTimestamp = function() {
+            return Promise.all([
+                storage.getItem('historicDataTimestamp')
+            ])
+        }
+        var loadFromStorage = function(invalid) {
+            return Bluebird.all([
+                !invalid.historicData ? storage.getItem('historicData') : null
+            ]).spread(function(historicData) {
+                return _.dispatch('saveHistoricData', {
+                    historicData: historicData,
+                    skipSaving: true
+                })
+            })
+        }
+        return loadOnlineTimestamp()
+        .then(function(timestamp) {
+            online = timestamp;
+            console.log('fetched online timestamp')
+        })
+        .catch(function(e) {
+            console.log('fail to fetch online timestamp, checking local copy');
+        })
+        .finally(function() {
+            return loadOfflineTimestamp().then(function(offline) {
+                var invalid = {
+                    yes: false,
+                    historicData: false
+                }
+                if (typeof online !== 'undefined') {
+                    // loadOnlineTimestamp() success
+                    if (online[0] !== offline[0]) {
+                        invalid.yes = true;
+                        invalid.historicData = true;
+                        console.log('historic data timestamp differs');
+                    }
+                }else{
+                    // possibly no connectivity
+                    if (offline[0] === null) {
+                        // We don't have a local copy
+                        console.log(('no local copies to fallback'));
+                        invalid = {
+                            yes: true,
+                            historicData: true
+                        }
+                        return Bluebird.reject(invalid)
+                    }
+                }
+
+                if (invalid.yes) console.log('some or all local copies are outdated')
+                else console.log('local copies valid')
+
+                return loadFromStorage(invalid).then(function() {
+                    return Bluebird.reject(invalid)
+                })
+            })
+        })
+    },
+    loadHistoricDataFromOnline: function(_) {
+        var timestamp = Date.now() / 1000;
+        return Bluebird.all([
+            fetch(config.dbURL + '/offered/spring.json?' + timestamp),
+            fetch(config.dbURL + '/offered/summer.json?' + timestamp),
+            fetch(config.dbURL + '/offered/fall.json?' + timestamp),
+            fetch(config.dbURL + '/offered/winter.json?' + timestamp)
+        ])
+        .spread(function(springRes, summerRes, fallRes, winterRes){
+            return Bluebird.all([
+                springRes.json(),
+                summerRes.json(),
+                fallRes.json(),
+                winterRes.json()
+            ])
+        })
+        .spread(function(spring, summer, fall, winter){
+            _.dispatch('saveHistoricData', {
+                historicData: {
+                    spring: spring,
+                    summer: summer,
+                    fall: fall,
+                    winter: winter
+                },
+                skipSaving: false
+            });
+        })
+    },
+    fetchHistoricData: function(_) {
+        if (typeof _.state.historicData.spring !== 'undefined') {
+            return Bluebird.resolve();
+        }
+        return _.dispatch('loadHistoricDataFromLocal')
+        .catch(function(invalid) {
+            if (invalid.yes) {
+                return _.dispatch('loadHistoricDataFromOnline')
+            }
+        })
+    },
+    saveHistoricData: function(_, payload) {
+        if (payload.historicData !== null) _.commit('saveHistoricData', payload)
+    },
+    loadLocalAcademicPlanner: function(_) {
+        return storage.getItem('academicPlanner').then(function(table) {
+            if (table !== null) {
+                _.state.academicPlanner = table;
+                return true;
+            }else{
+                return false;
+            }
+        })
     }
 }

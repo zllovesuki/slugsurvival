@@ -18,6 +18,8 @@ module.exports = function(storage) {
                 }else{
                     storage.removeItem(termId);
                 }
+            }else if (mutation.type === 'saveAcademicPlanner') {
+                storage.setItem('academicPlanner', mutation.payload)
             }
         })
     }

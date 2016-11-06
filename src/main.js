@@ -100,15 +100,21 @@ var router = new VueRouter({
             ]
         },
         {
-            path: '/requirement',
-            name: 'requirement',
-            component: require('./views/req/index.vue'),
+            path: '/advisory',
+            name: 'advisory',
+            component: require('./views/advisory/index.vue'),
             children: [
                 {
                     path: '',
-                    name: 'reqMenu',
-                    component: require('./views/req/menu.vue')
+                    name: 'advMenu',
+                    component: require('./views/advisory/menu.vue')
                 },
+                {
+                    path: 'planner',
+                    name: 'advPlanner',
+                    component: require('./views/advisory/planner.vue')
+                }
+                /*,
                 {
                     path: 'volunteer',
                     name: 'reqVolunteer',
@@ -118,7 +124,7 @@ var router = new VueRouter({
                     path: 'volunteer/:type?/:name?',
                     name: 'reqVolunteerForm',
                     component: require('./views/req/volunteer.vue')
-                }
+                }*/
             ]
         }
     ]

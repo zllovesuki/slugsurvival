@@ -10,6 +10,10 @@ module.exports = {
     termDates: {},
     termName: '',
 
+    numOfYears: 0,
+
+    academicPlanner: {},
+
     flatCourses: {},
     sortedCourses: {},
 

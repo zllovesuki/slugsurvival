@@ -1,14 +1,19 @@
 <template>
     <div>
         <div class="ml1 mt1 mb1">
-            <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'reqMenu' }" tag="span">R</router-link>
+            <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'advMenu' }" tag="span">R</router-link>
             <chevron-right></chevron-right>
-            <span v-if="route.name === 'reqMenu'">
+            <span v-if="route.name === 'advMenu'">
                 <span class="btn button-narrow mxn1">
-                    Major/Minor Stuff
+                    Academic Advisory
                 </span>
             </span>
-            <span v-if="route.name === 'reqVolunteer'">
+            <span v-if="route.name === 'advPlanner'">
+                <span class="btn button-narrow mxn1">
+                    Career Planner
+                </span>
+            </span>
+            <!--<span v-if="route.name === 'reqVolunteer'">
                 <span class="btn button-narrow mxn1">
                     Crowdsourcing
                 </span>
@@ -17,7 +22,7 @@
                 <span class="btn button-narrow mxn1">
                     Fill Them Out
                 </span>
-            </span>
+            </span>-->
         </div>
         <div class="mt2 mb1">
             <transition name="fade" mode="out-in">

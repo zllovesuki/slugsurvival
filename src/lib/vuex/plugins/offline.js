@@ -127,6 +127,26 @@ module.exports = function(storage) {
 
                 break;
 
+                case 'saveHistoricData':
+
+                var historicData = mutation.payload.historicData;
+                var skipSaving = mutation.payload.skipSaving || false;
+
+                if (skipSaving) return;
+
+                return fetch(config.dbURL + '/timestamp/terms.json?' + timestamp)
+                .then(function(res) {
+                    return res.json();
+                })
+                .then(function(onlineTimestamp) {
+                    return Bluebird.all([
+                        storage.setItem('historicDataTimestamp', onlineTimestamp),
+                        storage.setItem('historicData', historicData)
+                    ])
+                })
+
+                break;
+
                 case 'buildIndexedSearch':
 
                 var index = mutation.payload.index;
