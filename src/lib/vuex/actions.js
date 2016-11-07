@@ -1268,9 +1268,9 @@ var self = module.exports = {
         if (payload.historicData !== null) _.commit('saveHistoricData', payload)
     },
     loadLocalAcademicPlanner: function(_) {
-        return storage.getItem('academicPlanner').then(function(table) {
-            if (table !== null) {
-                _.state.academicPlanner = table;
+        return storage.getItem('academicPlanner').then(function(object) {
+            if (object !== null) {
+                _.state.academicPlanner = object;
                 return true;
             }else{
                 return false;

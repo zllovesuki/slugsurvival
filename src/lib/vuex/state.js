@@ -12,7 +12,7 @@ module.exports = {
 
     numOfYears: 0,
 
-    academicPlanner: {},
+    academicPlanner: null,
 
     flatCourses: {},
     sortedCourses: {},

@@ -9,6 +9,9 @@
                     <span class="ml1 btn black h6 muted not-clickable block">
                         Classes are shown based on the their statistical frequencies, not a guarantee that the school will offer these classes in the quarter.
                     </span>
+                    <span class="ml1 btn black h6 muted not-clickable block">
+                        We also recommend that you use this planner on a larger screen.
+                    </span>
                 </div>
             </div>
             <div class="m0 p1">
@@ -50,9 +53,9 @@
                 <div class="clearfix border-top" v-for="(matrix, year) in table">
                     <div class="inline-block col col-2">
                         <div class="p1 col col-12 parent-cell">
-                            <div class="child-cell" @click="editingYear = true">
+                            <div class="child-cell h6" @click="focusEdit">
                                 <span v-if="year == 1 && editingYear === true">
-                                    <input class="inline-block field" size="4" v-model.lazy="plannerYear" v-on:blur="editingYear = false" /> - {{ parseInt(plannerYear) + parseInt(year) }}
+                                    <input id="editingYear" class="inline-block field" size="4" v-model.lazy="plannerYear" v-on:blur="finishEdit" /> - {{ parseInt(plannerYear) + parseInt(year) }}
                                 </span>
                                 {{ (year > 1 || (year == 1 && editingYear === false)) ? !(plannerYear > 0) ?
                                     '...' :
@@ -185,6 +188,11 @@ module.exports = {
                         return el != value;
                     });
                     self.savePlaner();
+                },
+                render: {
+                    item: function(item, escape) {
+                        return '<div class="h6">' + escape(item.value) + '</div>';
+                    }
                 }
             })
         },
@@ -339,7 +347,10 @@ module.exports = {
         },
         // MA End
         savePlaner: function() {
-            this.$store.commit('saveAcademicPlanner', this.table)
+            this.$store.commit('saveAcademicPlanner', {
+                plannerYear: this.plannerYear,
+                table: this.table
+            })
         },
         initSelectize: function() {
             var self = this;
@@ -348,6 +359,16 @@ module.exports = {
                     self.Selectize(year, quarter);
                 })
             })
+        },
+        focusEdit: function() {
+            this.editingYear = true
+            this.$nextTick(function() {
+                $('#editingYear').focus()
+            })
+        },
+        finishEdit: function() {
+            this.editingYear = false;
+            this.savePlaner();
         }
     },
     mounted: function() {
@@ -365,8 +386,14 @@ module.exports = {
                 return self.$store.dispatch('loadLocalAcademicPlanner');
             })
             .then(function() {
-                if (Object.keys(self.academicPlanner).length > 0) {
-                    self.table = self.academicPlanner;
+                if (self.academicPlanner !== null) {
+                    if (typeof self.academicPlanner.plannerYear !== 'undefined') {
+                        self.plannerYear = self.academicPlanner.plannerYear;
+                        self.table = self.academicPlanner.table;
+                    }else{
+                        // backward compatibility
+                        self.table = self.academicPlanner
+                    }
                 }
                 if (Object.keys(self.table).length > 0) {
                     shouldInitSelectize = true;

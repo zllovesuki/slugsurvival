@@ -19,12 +19,15 @@ module.exports = function(storage) {
                     storage.removeItem(termId);
                 }
             }else if (mutation.type === 'saveAcademicPlanner') {
-                if (Object.keys(mutation.payload).reduce(function(yearTotal, year) {
-                    return Object.keys(mutation.payload[year]).reduce(function(quarterTotal, quarter) {
-                        return mutation.payload[year][quarter].length > 0 ? quarterTotal + 1 : quarterTotal;
+                if (Object.keys(mutation.payload.table).reduce(function(yearTotal, year) {
+                    return Object.keys(mutation.payload.table[year]).reduce(function(quarterTotal, quarter) {
+                        return mutation.payload.table[year][quarter].length > 0 ? quarterTotal + 1 : quarterTotal;
                     }, 0) > 0 ? yearTotal + 1 : yearTotal;
                 }, 0) > 0) {
-                    storage.setItem('academicPlanner', mutation.payload)
+                    storage.setItem('academicPlanner', {
+                        plannerYear: mutation.payload.plannerYear,
+                        table: mutation.payload.table
+                    })
                 }else{
                     storage.removeItem('academicPlanner')
                 }
