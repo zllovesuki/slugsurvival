@@ -276,7 +276,7 @@ module.exports = {
             var self = this;
             var historicData = this.$store.getters.historicData;
 
-            // multipler = (2 / (windowCounter + 1) );
+            // multipler = (2 / (period + 1) );
             // instead of using variable k, alpha, multipler, whatever, we will discount more on less recent years.
             self.windowAlpha = 1 / self.windowSize;
 
@@ -285,8 +285,7 @@ module.exports = {
             var years = [];
 
             var Window = [];
-            var windowCounter = 0;
-            var frequencies = [];
+            var period = 0;
             var frequency = 0;
 
             var threshold = {};
@@ -313,17 +312,12 @@ module.exports = {
                     normalized = this.normalizeYears(allYears, historicData[quarter][code]);
                     // Warning, inefficient code ahead.
                     years = Object.keys(normalized).sort(function(a, b) { return b-a; });
-                    for (;; windowCounter++) {
-                        // this is moving average
-                        Window = years.slice( windowCounter, windowCounter + this.windowSize );
-                        if (Window.length < this.windowSize) break;
-                    }
 
                     threshold[code][quarter] = ((1 / self.windowSize) * self.windowAlpha).toPrecision(2)
 
-                    for (var period = 0; period < windowCounter; period++) {
-                        Window = years.slice( period * this.windowSize, (period + 1) * this.windowSize );
-                        if (Window.length === 0) break;
+                    for (;; period++) {
+                        Window = years.slice( period, period + this.windowSize );
+                        if (Window.length < this.windowSize) break;
 
                         frequency = Window.reduce(function(total, year) {
                             return normalized[year] > 0 ? total + normalized[year] : total;
@@ -334,9 +328,7 @@ module.exports = {
 
                     result[code][quarter] = (self.windowAlpha * sum).toPrecision(2)
 
-                    windowCounter = 0;
-                    frequencies = [];
-                    //multipler = 0;
+                    period = 0;
                     sum = 0;
                 }
             }
@@ -347,15 +339,15 @@ module.exports = {
                 summer: []
             };
             Object.keys(result).forEach(function(code) {
-                //console.log(code);
+                console.log(code);
                 Object.keys(result[code]).forEach(function(quarter) {
-                    //console.log(quarter, result[code][quarter], threshold[code][quarter], (result[code][quarter] > 0 && result[code][quarter] >= threshold[code][quarter]))
+                    console.log(quarter, result[code][quarter], threshold[code][quarter], (result[code][quarter] > 0 && result[code][quarter] >= threshold[code][quarter]))
                     if (result[code][quarter] > 0 && result[code][quarter] >= threshold[code][quarter]) {
                         self.historicData[quarter].push(code);
                     }
                 })
-                //console.log('---')
-                //console.log('')
+                console.log('---')
+                console.log('')
             })
             result = null;
             threshold = null;
