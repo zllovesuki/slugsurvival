@@ -50,8 +50,15 @@
                 <div class="clearfix border-top" v-for="(matrix, year) in table">
                     <div class="inline-block col col-2">
                         <div class="p1 col col-12 parent-cell">
-                            <div class="child-cell">
-                                {{ year }}
+                            <div class="child-cell" @click="editingYear = true">
+                                <span v-if="year == 1 && editingYear === true">
+                                    <input class="inline-block field" size="4" v-model.lazy="plannerYear" v-on:blur="editingYear = false" /> - {{ parseInt(plannerYear) + parseInt(year) }}
+                                </span>
+                                {{ (year > 1 || (year == 1 && editingYear === false)) ? !(plannerYear > 0) ?
+                                    '...' :
+                                    (parseInt(plannerYear) + parseInt(year) - 1) + ' - ' + (parseInt(plannerYear) + parseInt(year))
+                                    : ''
+                                }}
                             </div>
                         </div>
                     </div>
@@ -113,7 +120,9 @@ module.exports = {
             historicData: {},
             selectizeRef: {},
             modifyingTable: false,
-            loadingMessage: ''
+            loadingMessage: '',
+            plannerYear: '2016',
+            editingYear: false
         }
     },
     computed: {
@@ -365,6 +374,7 @@ module.exports = {
                 }else{
                     //self.addYearAndFull('yes')
                     self.addYear('skipSave');
+                    self.editingYear = true;
                 }
                 self.$nextTick(function() {
                     self.historicDataLoaded = true;
