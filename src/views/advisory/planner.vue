@@ -129,14 +129,8 @@
         <div class="overflow-hidden bg-white rounded mb2" key="loading" v-show="!historicDataLoaded">
             <div class="m0 p2">
                 <div class="clearfix">
-                    {{ loadingMessage }}
+                    Loading data and GUI...
                 </div>
-            </div>
-        </div>
-        <div class="overflow-hidden bg-white rounded mb2 h5" key="feature">
-            <div class="m0 p1">
-                <p>Very soon, you will be able to select classes based on your major/minor, <strike>and be able to export this so you can bring the printed version to declare your major.</strike></p>
-                <p>Stay tuned.</p>
             </div>
         </div>
     </transition-group>
@@ -156,7 +150,6 @@ module.exports = {
             historicData: {},
             selectizeRef: {},
             modifyingTable: false,
-            loadingMessage: '',
             plannerYear: '2016',
             editingYear: false,
             pdfFormData: {}
@@ -574,17 +567,8 @@ module.exports = {
         var shouldInitSelectize = false;
         this.$store.dispatch('setTitle', 'Planner')
         $script.ready('selectize', function() {
-            self.loadingMessage = 'Loading historical data...'
             self.$store.dispatch('fetchHistoricData').then(function() {
-                self.loadingMessage = 'Calculating available courses...'
-            })
-            .then(function() {
                 self.windowFrequency()
-            })
-            .then(function() {
-                self.loadingMessage = 'Loading GUI...'
-            })
-            .then(function() {
                 return self.$store.dispatch('decodeHashPlanner')
                 .then(function() {
                     // no valid was decoded
