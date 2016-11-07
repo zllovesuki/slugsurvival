@@ -149,6 +149,9 @@ module.exports = {
                 self.savePlaner();
             })
         },
+        unselect2: function(year, quarter, index) {
+            $('#' + year + '-' + quarter + '-' + index).select2('destroy')
+        },
         addCourse: function(year, quarter) {
             var self = this;
             var largest = Object.keys(this.table[year][quarter]).length === 0 ? 0 : Object.keys(this.table[year][quarter]).reduce(function(x,y){
@@ -161,11 +164,18 @@ module.exports = {
             })
         },
         delYear: function() {
+            var self = this;
             var largest = Object.keys(this.table).length === 0 ? -1 : Object.keys(this.table).reduce(function(x,y){
                 return (x > y) ? x : y;
             });
             if (largest === -1) return -1;
-            this.$delete(this.table, parseInt(largest))
+            Object.keys(self.table[largest]).forEach(function(quarter) {
+                Object.keys(self.table[largest][quarter]).forEach(function(index) {
+                    self.unselect2(largest, quarter, index);
+                })
+                self.$delete(self.table[largest], quarter);
+            })
+            this.$delete(this.table, parseInt(largest));
             this.savePlaner();
             return largest;
         },
@@ -175,7 +185,7 @@ module.exports = {
                 return (x > y) ? x : y;
             });
             var index = parseInt(largest);
-            $('#' + year + '-' + quarter + '-' + index).select2('destroy')
+            this.unselect2(year, quarter, index);
             this.$nextTick(function() {
                 this.$delete(this.table[year][quarter], index);
                 this.savePlaner();
