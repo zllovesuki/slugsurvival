@@ -468,7 +468,7 @@ module.exports = {
                 }else{
                     //self.addYearAndFull('yes')
                     self.addYear('skipSave');
-                    self.editingYear = true;
+                    //self.editingYear = true;
                 }
                 self.$nextTick(function() {
                     self.historicDataLoaded = true;
