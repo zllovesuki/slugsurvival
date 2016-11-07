@@ -194,6 +194,7 @@ module.exports = {
             this.selectizeRef[year + '-' + quarter] = $('#' + year + '-' + quarter).selectize({
                 placeholder: 'select...',
                 dropdownParent: "body",
+                hideSelected: true,
                 onItemAdd: function(value, $item) {
                     self.table[year][quarter].push(value);
                     self.savePlaner();
