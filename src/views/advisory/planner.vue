@@ -47,7 +47,7 @@
                     </div>
                     <div class="inline-block col col-10">
                         <div class="col col-12 h4 bold">
-                            <div class="inline-block col col-3" v-for="quarter in quarters" style="text-transform: capitalize;">
+                            <div class="inline-block col col-3 border-right" v-for="quarter in quarters" style="text-transform: capitalize;">
                                 {{ quarter }}
                             </div>
                         </div>
@@ -340,15 +340,15 @@ module.exports = {
                 summer: []
             };
             Object.keys(result).forEach(function(code) {
-                console.log(code);
+                //console.log(code);
                 Object.keys(result[code]).forEach(function(quarter) {
-                    console.log(quarter, result[code][quarter], threshold[code][quarter], (result[code][quarter] > 0 && result[code][quarter] >= threshold[code][quarter]))
+                    //console.log(quarter, result[code][quarter], threshold[code][quarter], (result[code][quarter] > 0 && result[code][quarter] >= threshold[code][quarter]))
                     if (result[code][quarter] > 0 && result[code][quarter] >= threshold[code][quarter]) {
                         self.historicData[quarter].push(code);
                     }
                 })
-                console.log('---')
-                console.log('')
+                //console.log('---')
+                //console.log('')
             })
             result = null;
             threshold = null;
