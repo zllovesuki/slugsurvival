@@ -433,6 +433,12 @@ module.exports = {
                 })
             })
         })
+    },
+    beforeDestroy: function() {
+        var self = this;
+        Object.keys(self.IDs).forEach(function(id) {
+            $('#' + self.IDs[id]).selectize()[0].selectize.destroy()
+        })
     }
 }
 </script>
