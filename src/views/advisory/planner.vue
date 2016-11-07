@@ -577,10 +577,14 @@ module.exports = {
             self.loadingMessage = 'Loading historical data...'
             self.$store.dispatch('fetchHistoricData').then(function() {
                 self.loadingMessage = 'Calculating available courses...'
+            })
+            .then(function() {
                 self.windowFrequency()
             })
             .then(function() {
                 self.loadingMessage = 'Loading GUI...'
+            })
+            .then(function() {
                 return self.$store.dispatch('decodeHashPlanner')
                 .then(function() {
                     // no valid was decoded
@@ -636,9 +640,9 @@ module.exports = {
     transform-style: preserve-3d;
 }
 .child-cell {
-    position: absolute;;
+    position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, 50%);
+    transform: translate(-50%, 10%);
 }
 </style>
