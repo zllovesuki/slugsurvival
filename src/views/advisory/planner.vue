@@ -87,7 +87,7 @@
         <div class="overflow-hidden bg-white rounded mb2" key="loading" v-show="!historicDataLoaded">
             <div class="m0 p2">
                 <div class="clearfix">
-                    Calculating available courses...
+                    {{ loadingMessage }}
                 </div>
             </div>
         </div>
@@ -112,7 +112,8 @@ module.exports = {
             windowAlpha: 0,
             historicData: {},
             selectizeRef: {},
-            modifyingTable: false
+            modifyingTable: false,
+            loadingMessage: ''
         }
     },
     computed: {
@@ -324,6 +325,8 @@ module.exports = {
                 //console.log('---')
                 //console.log('')
             })
+            result = null;
+            threshold = null;
         },
         // MA End
         savePlaner: function() {
@@ -343,12 +346,16 @@ module.exports = {
         var shouldInitSelectize = false;
         this.$store.dispatch('setTitle', 'Planner')
         $script.ready('selectize', function() {
+            self.loadingMessage = 'Loading historical data...'
             self.$store.dispatch('fetchHistoricData').then(function() {
+                self.loadingMessage = 'Calculating available courses...'
+                self.windowFrequency()
+            })
+            .then(function() {
+                self.loadingMessage = 'Loading GUI...'
                 return self.$store.dispatch('loadLocalAcademicPlanner');
             })
             .then(function() {
-                //self.recalculate('yes');
-                self.windowFrequency()
                 if (Object.keys(self.academicPlanner).length > 0) {
                     self.table = self.academicPlanner;
                 }

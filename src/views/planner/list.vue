@@ -13,7 +13,7 @@
             <div class="bar-mask" @click="flip" v-show="ready && show && initialized">
             </div>
         </transition>
-        <div id="top-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-white': show, 'bg-black-transparent': !show }" v-if="ready">
+        <div id="top-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-white': show, 'bg-black-transparent': !show }" v-show="initialized">
             <transition-group name="list-complete" appear>
                 <div class="m0 p0 rounded" key="title">
                     <div class="clearfix">
