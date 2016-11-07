@@ -15,7 +15,7 @@
                 <div class="clearfix center">
                     <div class="inline-block col col-2">
                         <div class="col col-6">
-                            <div @click="addYearAndFull"
+                            <div @click="addYear"
                             class="h5 black clickable"
                             v-bind:style="{ backgroundColor: colorMap.blank }">
                                 <i class="fa fa-plus-square-o fa-lg"></i>
@@ -44,16 +44,14 @@
                         </div>
                     </div>
                     <div class="inline-block col col-10">
-                        <div class="inline-block col col-3" v-for="quarter in quarters">
-                            <template v-for="(item, index) in table[year][quarter]">
-                                <div class="p1 col col-12">
-                                    <select style="width: 100%" v-model="table[year][quarter][index]" v-bind:id="year + '-' + quarter + '-' + index">
-                                        <!--<option :value="code" v-for="code in Object.keys(historicData[quarter])">{{ code }} ({{ (historicData[quarter][code] * 100).toPrecision(4) }}%)</option>-->
-                                        <option :value="code" v-for="code in historicData[quarter]" track-by="code">{{ code }}</option>
-                                    </select>
-                                </div>
-                            </template>
-                            <div class="p1 col col-12 center">
+                        <div class="inline-block col col-3" v-for="(courses, quarter) in table[year]">
+                            <div class="p1 col col-12">
+                                <select multiple style="width: 100%" v-model="table[year][quarter]" v-bind:id="year + '-' + quarter">
+                                    <!--<option :value="code" v-for="code in Object.keys(historicData[quarter])">{{ code }} ({{ (historicData[quarter][code] * 100).toPrecision(4) }}%)</option>-->
+                                    <option :value="code" v-for="code in historicData[quarter]" track-by="code">{{ code }}</option>
+                                </select>
+                            </div>
+                            <!--<div class="p1 col col-12 center">
                                 <div class="col col-6">
                                     <div @click="addCourse(year, quarter)"
                                     class="h5 black clickable"
@@ -68,7 +66,7 @@
                                         <i class="fa fa-minus-square-o fa-lg"></i>
                                     </div>
                                 </div>
-                            </div>
+                            </div>-->
                         </div>
                     </div>
                 </div>
@@ -124,44 +122,44 @@ module.exports = {
         }
     },
     methods: {
-        addYear: function() {
+        addYear: function(string) {
+            var self = this;
             var largest = Object.keys(this.table).length === 0 ? 0 : Object.keys(this.table).reduce(function(x,y){
                 return (x > y) ? x : y;
             });
             this.$set(this.table, parseInt(largest) + 1, {
-                fall: {},
-                winter: {},
-                spring: {},
-                summer: {}
+                fall: [],
+                winter: [],
+                spring: [],
+                summer: []
             } )
+            this.$nextTick(function() {
+                self.quarters.forEach(function(quarter) {
+                    self.initSelectize(parseInt(largest) + 1, quarter)
+                })
+                if (string !== 'skipSave') this.savePlaner();
+            })
             return parseInt(largest) + 1;
         },
-        select2: function(year, quarter, index) {
+        Selectize: function(year, quarter) {
             var self = this;
-            $('#' + year + '-' + quarter + '-' + index).select2({
-                allowClear: true,
-                placeholder: 'select...'
-            }).on('select2:select', function(evt) {
-                self.table[year][quarter][index] = evt.params.data.element.value;
-                self.savePlaner();
-            }).on('select2:unselect', function(evt) {
-                self.table[year][quarter][index] = undefined;
-                self.savePlaner();
+            $('#' + year + '-' + quarter).selectize({
+                placeholder: 'select...',
+                dropdownParent: "body",
+                onItemAdd: function(value, $item) {
+                    self.table[year][quarter].push(value);
+                    self.savePlaner();
+                },
+                onItemRemove: function(value) {
+                    self.table[year][quarter] = self.table[year][quarter].filter(function(el) {
+                        return el != value;
+                    });
+                    self.savePlaner();
+                }
             })
         },
-        unselect2: function(year, quarter, index) {
-            $('#' + year + '-' + quarter + '-' + index).select2('destroy')
-        },
-        addCourse: function(year, quarter) {
-            var self = this;
-            var largest = Object.keys(this.table[year][quarter]).length === 0 ? 0 : Object.keys(this.table[year][quarter]).reduce(function(x,y){
-                return (x > y) ? x : y;
-            });
-            var index = parseInt(largest) + 1;
-            this.$set(this.table[year][quarter], index, undefined)
-            this.$nextTick(function() {
-                self.select2(year, quarter, index);
-            })
+        unSelectize: function(year, quarter) {
+            $('#' + year + '-' + quarter).selectize.destroy()
         },
         delYear: function() {
             var self = this;
@@ -171,33 +169,13 @@ module.exports = {
             if (largest === -1) return -1;
             Object.keys(self.table[largest]).forEach(function(quarter) {
                 Object.keys(self.table[largest][quarter]).forEach(function(index) {
-                    self.unselect2(largest, quarter, index);
+                    self.unSelectize(largest, quarter, index);
                 })
                 self.$delete(self.table[largest], quarter);
             })
             this.$delete(this.table, parseInt(largest));
             this.savePlaner();
             return largest;
-        },
-        delCourse: function(year, quarter) {
-            var self = this;
-            var largest = Object.keys(this.table[year][quarter]).length === 0 ? 0 : Object.keys(this.table[year][quarter]).reduce(function(x,y){
-                return (x > y) ? x : y;
-            });
-            var index = parseInt(largest);
-            this.unselect2(year, quarter, index);
-            this.$nextTick(function() {
-                this.$delete(this.table[year][quarter], index);
-                this.savePlaner();
-            });
-        },
-        addYearAndFull: function(blockSave) {
-            var self = this;
-            var year = this.addYear();
-            this.quarters.forEach(function(quarter) {
-                self.addCourse(year, quarter)
-            })
-            if (blockSave !== 'yes') self.savePlaner();
         },
         /*
             As Eric pointed out, a simple frequency is not suitable, as some courses are no longer affered,
@@ -331,41 +309,23 @@ module.exports = {
             })
         },
         // MA End
-        /*recalculate: function(blockSave) {
-            var returnData = {};
-            var historicData = this.$store.getters.historicData;
-            var keys = [];
-            for (var quarter in historicData){
-                returnData[quarter] = {};
-                for (var code in historicData[quarter]) {
-                    keys = Object.keys(historicData[quarter][code]);
-                    if (keys.length / this.numOfYears > this.historicThreshold) returnData[quarter][code] = keys.length / this.numOfYears;
-                }
-            }
-            this.historicData = returnData;
-            this.$nextTick(function() {
-                if (blockSave !== 'yes') this.savePlaner();
-            })
-        },*/
         savePlaner: function() {
             this.$store.commit('saveAcademicPlanner', this.table)
         },
-        initSelect2: function() {
+        initSelectize: function() {
             var self = this;
             Object.keys(self.table).forEach(function(year) {
                 Object.keys(self.table[year]).forEach(function(quarter) {
-                    Object.keys(self.table[year][quarter]).forEach(function(index) {
-                        self.select2(year, quarter, index);
-                    })
+                    self.Selectize(year, quarter);
                 })
             })
         }
     },
     mounted: function() {
         var self = this;
-        var shouldInitSelect2 = false;
+        var shouldInitSelectize = false;
         this.$store.dispatch('setTitle', 'Planner')
-        $script.ready('select2', function() {
+        $script.ready('selectize', function() {
             self.$store.dispatch('fetchHistoricData').then(function() {
                 return self.$store.dispatch('loadLocalAcademicPlanner');
             })
@@ -376,15 +336,16 @@ module.exports = {
                     self.table = self.academicPlanner;
                 }
                 if (Object.keys(self.table).length > 0) {
-                    shouldInitSelect2 = true;
+                    shouldInitSelectize = true;
                     self.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
                 }else{
-                    self.addYearAndFull('yes')
+                    //self.addYearAndFull('yes')
+                    self.addYear('skipSave');
                 }
                 self.$nextTick(function() {
                     self.historicDataLoaded = true;
                     self.$nextTick(function() {
-                        if (shouldInitSelect2) self.initSelect2()
+                        if (shouldInitSelectize) self.initSelectize()
                     })
                 })
             })
@@ -392,12 +353,3 @@ module.exports = {
     }
 }
 </script>
-
-<style>
-.select2-selection--single input[type="search"] {
-    height: 1rem;
-}
-.select2-results, .select2-selection__choice {
-    font-size: .75rem; /* h6 */
-}
-</style>
