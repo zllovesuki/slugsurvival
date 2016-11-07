@@ -47,7 +47,7 @@
                     </div>
                     <div class="inline-block col col-10">
                         <div class="col col-12 h4 bold">
-                            <div class="inline-block col col-3 border-right" v-for="quarter in quarters" style="text-transform: capitalize;">
+                            <div class="inline-block col col-3" v-bind:class="{ 'italic': quarter == 'fall', 'underline': quarter == 'fall' }" v-for="quarter in quarters" style="text-transform: capitalize;">
                                 {{ quarter }}
                             </div>
                         </div>
@@ -60,16 +60,19 @@
                                 <span v-if="year == 1 && editingYear === true">
                                     <input id="editingYear" class="inline-block field" size="4" v-model.lazy="plannerYear" v-on:blur="finishEdit" /> - {{ parseInt(plannerYear) + parseInt(year) }}
                                 </span>
-                                {{ (year > 1 || (year == 1 && editingYear === false)) ? !(plannerYear > 0) ?
-                                    '...' :
-                                    (parseInt(plannerYear) + parseInt(year) - 1) + ' - ' + (parseInt(plannerYear) + parseInt(year))
-                                    : ''
-                                }}
+                                <span v-show="year > 1 || (year == 1 && editingYear === false)">
+                                    <span class="italic underline">
+                                        {{ parseInt(plannerYear) + parseInt(year) - 1}}
+                                    </span> -
+                                    <span>
+                                        {{ parseInt(plannerYear) + parseInt(year) }}
+                                    </span>
+                                </span>
                             </div>
                         </div>
                     </div>
                     <div class="inline-block col col-10">
-                        <div class="inline-block col col-3" v-for="(courses, quarter) in table[year]">
+                        <div class="inline-block col col-3" v-for="(courses, quarter) in matrix">
                             <div class="p1 col col-12">
                                 <select multiple style="width: 100%" v-model="table[year][quarter]" v-bind:id="year + '-' + quarter">
                                     <!--<option :value="code" v-for="code in Object.keys(historicData[quarter])">{{ code }} ({{ (historicData[quarter][code] * 100).toPrecision(4) }}%)</option>-->
@@ -216,23 +219,31 @@ module.exports = {
             this.selectizeRef[year + '-' + quarter][0].selectize.destroy()
         },
         delYear: function() {
-            this.modifyingTable = true;
             var self = this;
-            this.$nextTick(function() {
-                // add some delay so it doesn't lag the user
-                setTimeout(function() {
-                    var largest = Object.keys(self.table).length === 0 ? -1 : Object.keys(self.table).reduce(function(x,y){
-                        return (x > y) ? x : y;
-                    });
-                    if (largest === -1) return -1;
-                    Object.keys(self.table[largest]).forEach(function(quarter) {
-                        self.unSelectize(largest, quarter);
-                        self.$delete(self.table[largest], quarter);
-                    })
-                    self.$delete(self.table, parseInt(largest));
-                    self.modifyingTable = false;
-                    self.savePlaner();
-                }, 500)
+            self.alert
+            .okBtn('Yes')
+            .cancelBtn('No')
+            .confirm('Are you sure to remove one year?')
+            .then(function(resolved) {
+                resolved.event.preventDefault();
+                if (resolved.buttonClicked !== 'ok') return;
+                self.modifyingTable = true;
+                self.$nextTick(function() {
+                    // add some delay so it doesn't lag the user
+                    setTimeout(function() {
+                        var largest = Object.keys(self.table).length === 0 ? -1 : Object.keys(self.table).reduce(function(x,y){
+                            return (x > y) ? x : y;
+                        });
+                        if (largest === -1) return -1;
+                        Object.keys(self.table[largest]).forEach(function(quarter) {
+                            self.unSelectize(largest, quarter);
+                            self.$delete(self.table[largest], quarter);
+                        })
+                        self.$delete(self.table, parseInt(largest));
+                        self.modifyingTable = false;
+                        self.savePlaner();
+                    }, 500)
+                })
             })
         },
         // MA Start
