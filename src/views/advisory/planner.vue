@@ -6,17 +6,8 @@
                     <span class="btn black h5">Interactive Academic Planner: </span>
                 </div>
                 <div class="clearfix">
-                    <span class="ml1 btn black h6 not-clickable block">
-                        Classes are shown based on the their frequency. Change the threshold: &nbsp;
-                        <select v-model="historicThreshold">
-                            <option value="0.9">0.9</option>
-                            <option value="0.8">0.8</option>
-                            <option value="0.7">0.7</option>
-                            <option value="0.6">0.6</option>
-                        </select>
-                    </span>
                     <span class="ml1 btn black h6 muted not-clickable block">
-                        A higher threshold means <i>higher confidence</i>, which gives you more accurate results.
+                        Classes are shown based on the their statistical frequencies, not a guarantee that the school will offer these classes in the quarter.
                     </span>
                 </div>
             </div>
@@ -57,7 +48,8 @@
                             <template v-for="(item, index) in table[year][quarter]">
                                 <div class="p1 col col-12">
                                     <select style="width: 100%" v-model="table[year][quarter][index]" v-bind:id="year + '-' + quarter + '-' + index">
-                                        <option :value="code" v-for="code in Object.keys(historicData[quarter])">{{ code }} ({{ (historicData[quarter][code] * 100).toPrecision(4) }}%)</option>
+                                        <!--<option :value="code" v-for="code in Object.keys(historicData[quarter])">{{ code }} ({{ (historicData[quarter][code] * 100).toPrecision(4) }}%)</option>-->
+                                        <option :value="code" v-for="code in historicData[quarter]" track-by="code">{{ code }}</option>
                                     </select>
                                 </div>
                             </template>
@@ -99,13 +91,15 @@
 </template>
 
 <script>
+var helper = require('../../lib/vuex/helper')
 module.exports = {
     data: function() {
         return {
             quarters: ['fall', 'winter', 'spring', 'summer'],
             table: {},
             historicDataLoaded: false,
-            historicThreshold: "0.8",
+            windowSize: 4,
+            windowAlpha: 0,
             historicData: {}
         }
     },
@@ -129,11 +123,6 @@ module.exports = {
             return this.$store.getters.academicPlanner;
         }
     },
-    watch: {
-        'historicThreshold': function() {
-            this.recalculate();
-        }
-    },
     methods: {
         addYear: function() {
             var largest = Object.keys(this.table).length === 0 ? 0 : Object.keys(this.table).reduce(function(x,y){
@@ -151,10 +140,7 @@ module.exports = {
             var self = this;
             $('#' + year + '-' + quarter + '-' + index).select2({
                 allowClear: true,
-                placeholder: 'select...',
-                templateSelection: function(d) {
-                    return d.id;
-                }
+                placeholder: 'select...'
             }).on('select2:select', function(evt) {
                 self.table[year][quarter][index] = evt.params.data.element.value;
                 self.savePlaner();
@@ -203,7 +189,139 @@ module.exports = {
             })
             if (blockSave !== 'yes') self.savePlaner();
         },
-        recalculate: function(blockSave) {
+        /*
+            As Eric pointed out, a simple frequency is not suitable, as some courses are no longer affered,
+            and most importantly, more classes are offered recently. He suggested that I should use
+            *Neural Network*, I was like, do we HAVE TO go there?
+            Thus, I think that a moving window of frequency makes sense in here
+            (Expoential Moving Average, it's the name for that)
+        */
+        // MA Start
+        getYears: function() {
+            var terms = this.$store.getters.flatTermsList;
+            var tmp;
+            var years = {};
+            terms.forEach(function(term) {
+                tmp = '20' + helper.pad((term.code % 2000).toString().slice(0, -1), 2, 0);
+                if (typeof years[tmp] === 'undefined') {
+                    years[tmp] = null;
+                }
+            })
+            return Object.keys(years)
+        },
+        normalizeYears: function(allYears, quarterYears) {
+            /*
+                we will normalize the years, for example, allYears contains all the years (2004-2017) in an array
+                and quarter years is an object of where the value is the number of classes offered in that quarter year
+                the normalized obj will have either 1(true) or 0(false) to signify if it was offered or not
+            */
+            var normalized = {};
+            var qYears = Object.keys(quarterYears);
+            for (var i = 0, length = allYears.length; i < length; i++) {
+                if (typeof normalized[allYears[i]] === 'undefined') normalized[allYears[i]] = 0;
+                if (qYears.indexOf(allYears[i]) !== -1) normalized[allYears[i]] += quarterYears[allYears[i]];
+            }
+            var normalizedLargest = Object.keys(normalized).reduce(function(x,y){
+                return (x > y) ? x : y;
+            });
+            var quarterYearLargest = qYears.reduce(function(x,y){
+                return (x > y) ? x : y;
+            });
+            if (normalizedLargest != quarterYearLargest) {
+                // account for quarter mismatch, where winter is jump to 2017, and skewing the results for other quarters
+                // though it could introduce errors. we will see when we test this
+                delete normalized[normalizedLargest];
+            }
+            return normalized;
+        },
+        windowFrequency: function() {
+            var self = this;
+            var historicData = this.$store.getters.historicData;
+
+            // multipler = (2 / (windowCounter + 1) );
+            // instead of using variable k, alpha, multipler, whatever, we will discount more on less recent years.
+            self.windowAlpha = 1 / self.windowSize;
+
+            var allYears = this.getYears();
+            var normalized = {};
+            var years = [];
+
+            var Window = [];
+            var windowCounter = 0;
+            var frequencies = [];
+            var frequency = 0;
+
+            var threshold = {};
+            var sum = 0;
+
+            var result = {};
+
+            for (var quarter in historicData){
+                for (var code in historicData[quarter]) {
+                    if (typeof result[code] === 'undefined') {
+                        result[code] = {
+                            spring: 0,
+                            summer: 0,
+                            fall: 0,
+                            winter: 0
+                        }
+                        threshold[code] = {
+                            spring: 0,
+                            summer: 0,
+                            fall: 0,
+                            winter: 0
+                        }
+                    }
+                    normalized = this.normalizeYears(allYears, historicData[quarter][code]);
+                    // Warning, inefficient code ahead.
+                    years = Object.keys(normalized).sort(function(a, b) { return b-a; });
+                    for (;; windowCounter++) {
+                        // this is moving average
+                        Window = years.slice( windowCounter, windowCounter + this.windowSize );
+                        if (Window.length < this.windowSize) break;
+                    }
+
+                    threshold[code][quarter] = ((1 / self.windowSize) * self.windowAlpha).toPrecision(2)
+
+                    for (var period = 0; period < windowCounter; period++) {
+                        Window = years.slice( period * this.windowSize, (period + 1) * this.windowSize );
+                        if (Window.length === 0) break;
+
+                        frequency = Window.reduce(function(total, year) {
+                            return normalized[year] > 0 ? total + normalized[year] : total;
+                        }, 0) / this.windowSize;
+
+                        sum += frequency * Math.pow(1 - self.windowAlpha, period);
+                    }
+
+                    result[code][quarter] = (self.windowAlpha * sum).toPrecision(2)
+
+                    windowCounter = 0;
+                    frequencies = [];
+                    //multipler = 0;
+                    sum = 0;
+                }
+            }
+            this.historicData = {
+                fall: [],
+                winter: [],
+                spring: [],
+                summer: []
+            };
+            Object.keys(result).forEach(function(code) {
+                //console.log(code);
+                Object.keys(result[code]).forEach(function(quarter) {
+                    //console.log(quarter, result[code][quarter], threshold[code][quarter], (result[code][quarter] > 0 && result[code][quarter] >= threshold[code][quarter]))
+                    if (result[code][quarter] > 0 && result[code][quarter] >= threshold[code][quarter]) {
+                        self.historicData[quarter].push(code);
+                    }
+                })
+                //console.log('---')
+                //console.log('')
+            })
+        },
+        // MA End
+        /*recalculate: function(blockSave) {
             var returnData = {};
             var historicData = this.$store.getters.historicData;
             var keys = [];
@@ -218,7 +336,7 @@ module.exports = {
             this.$nextTick(function() {
                 if (blockSave !== 'yes') this.savePlaner();
             })
-        },
+        },*/
         savePlaner: function() {
             this.$store.commit('saveAcademicPlanner', this.table)
         },
@@ -242,7 +360,8 @@ module.exports = {
                 return self.$store.dispatch('loadLocalAcademicPlanner');
             })
             .then(function() {
-                self.recalculate('yes');
+                //self.recalculate('yes');
+                self.windowFrequency()
                 if (Object.keys(self.academicPlanner).length > 0) {
                     self.table = self.academicPlanner;
                 }
