@@ -16,16 +16,26 @@
                     <div class="inline-block col col-2">
                         <div class="col col-6">
                             <div @click="addYear"
+                            v-show="!modifyingTable"
                             class="h5 black clickable"
                             v-bind:style="{ backgroundColor: colorMap.blank }">
                                 <i class="fa fa-plus-square-o fa-lg"></i>
                             </div>
+                            <div v-show="modifyingTable"
+                            class="h5 black non-clickable">
+                                <i class="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
+                            </div>
                         </div>
                         <div class="col col-6" v-show="Object.keys(table).length > 1">
                             <div @click="delYear"
+                            v-show="!modifyingTable"
                             class="h5 black clickable"
                             v-bind:style="{ backgroundColor: colorMap.blank }">
                                 <i class="fa fa-minus-square-o fa-lg"></i>
+                            </div>
+                            <div v-show="modifyingTable"
+                            class="h5 black non-clickable">
+                                <i class="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
                             </div>
                         </div>
                     </div>
@@ -39,8 +49,10 @@
                 </div>
                 <div class="clearfix border-top" v-for="(matrix, year) in table">
                     <div class="inline-block col col-2">
-                        <div style="width: 100%; height: 100%; text-align: center; vertical-align: middle;">
-                            {{ year }}
+                        <div class="p1 col col-12 parent-cell">
+                            <div class="child-cell">
+                                {{ year }}
+                            </div>
                         </div>
                     </div>
                     <div class="inline-block col col-10">
@@ -73,9 +85,9 @@
             </div>
         </div>
         <div class="overflow-hidden bg-white rounded mb2" key="loading" v-show="!historicDataLoaded">
-            <div class="m0 p1">
+            <div class="m0 p2">
                 <div class="clearfix">
-                    Loading...
+                    Calculating available courses...
                 </div>
             </div>
         </div>
@@ -98,7 +110,9 @@ module.exports = {
             historicDataLoaded: false,
             windowSize: 4,
             windowAlpha: 0,
-            historicData: {}
+            historicData: {},
+            selectizeRef: {},
+            modifyingTable: false
         }
     },
     computed: {
@@ -123,27 +137,33 @@ module.exports = {
     },
     methods: {
         addYear: function(string) {
+            this.modifyingTable = true;
             var self = this;
-            var largest = Object.keys(this.table).length === 0 ? 0 : Object.keys(this.table).reduce(function(x,y){
-                return (x > y) ? x : y;
-            });
-            this.$set(this.table, parseInt(largest) + 1, {
-                fall: [],
-                winter: [],
-                spring: [],
-                summer: []
-            } )
             this.$nextTick(function() {
-                self.quarters.forEach(function(quarter) {
-                    self.initSelectize(parseInt(largest) + 1, quarter)
-                })
-                if (string !== 'skipSave') this.savePlaner();
+                // add some delay so it doesn't lag the user
+                setTimeout(function() {
+                    var largest = Object.keys(self.table).length === 0 ? 0 : Object.keys(self.table).reduce(function(x,y){
+                        return (x > y) ? x : y;
+                    });
+                    self.$set(self.table, parseInt(largest) + 1, {
+                        fall: [],
+                        winter: [],
+                        spring: [],
+                        summer: []
+                    } )
+                    self.$nextTick(function() {
+                        self.quarters.forEach(function(quarter) {
+                            self.Selectize(parseInt(largest) + 1, quarter)
+                        })
+                        self.modifyingTable = false;
+                        if (string !== 'skipSave') self.savePlaner();
+                    })
+                }, 500)
             })
-            return parseInt(largest) + 1;
         },
         Selectize: function(year, quarter) {
             var self = this;
-            $('#' + year + '-' + quarter).selectize({
+            this.selectizeRef[year + '-' + quarter] = $('#' + year + '-' + quarter).selectize({
                 placeholder: 'select...',
                 dropdownParent: "body",
                 onItemAdd: function(value, $item) {
@@ -159,31 +179,28 @@ module.exports = {
             })
         },
         unSelectize: function(year, quarter) {
-            $('#' + year + '-' + quarter).selectize.destroy()
+            this.selectizeRef[year + '-' + quarter][0].selectize.destroy()
         },
         delYear: function() {
+            this.modifyingTable = true;
             var self = this;
-            var largest = Object.keys(this.table).length === 0 ? -1 : Object.keys(this.table).reduce(function(x,y){
-                return (x > y) ? x : y;
-            });
-            if (largest === -1) return -1;
-            Object.keys(self.table[largest]).forEach(function(quarter) {
-                Object.keys(self.table[largest][quarter]).forEach(function(index) {
-                    self.unSelectize(largest, quarter, index);
-                })
-                self.$delete(self.table[largest], quarter);
+            this.$nextTick(function() {
+                // add some delay so it doesn't lag the user
+                setTimeout(function() {
+                    var largest = Object.keys(self.table).length === 0 ? -1 : Object.keys(self.table).reduce(function(x,y){
+                        return (x > y) ? x : y;
+                    });
+                    if (largest === -1) return -1;
+                    Object.keys(self.table[largest]).forEach(function(quarter) {
+                        self.unSelectize(largest, quarter);
+                        self.$delete(self.table[largest], quarter);
+                    })
+                    self.$delete(self.table, parseInt(largest));
+                    self.modifyingTable = false;
+                    self.savePlaner();
+                }, 500)
             })
-            this.$delete(this.table, parseInt(largest));
-            this.savePlaner();
-            return largest;
         },
-        /*
-            As Eric pointed out, a simple frequency is not suitable, as some courses are no longer affered,
-            and most importantly, more classes are offered recently. He suggested that I should use
-            *Neural Network*, I was like, do we HAVE TO go there?
-            Thus, I think that a moving window of frequency makes sense in here
-            (Expoential Moving Average, it's the name for that)
-        */
         // MA Start
         getYears: function() {
             var terms = this.$store.getters.flatTermsList;
@@ -350,6 +367,28 @@ module.exports = {
                 })
             })
         })
+    },
+    beforeDestroy: function() {
+        // garbage collection
+        var self = this;
+        Object.keys(self.table).forEach(function(year) {
+            Object.keys(self.table[year]).forEach(function(quarter) {
+                self.unSelectize(year, quarter);
+            })
+        })
     }
 }
 </script>
+
+<style>
+.parent-cell {
+    position: relative;
+    transform-style: preserve-3d;
+}
+.child-cell {
+    position: absolute;;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 50%);
+}
+</style>
