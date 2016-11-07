@@ -20,18 +20,24 @@ module.exports = function(storage) {
                 }
             }else if (mutation.type === 'saveAcademicPlanner') {
                 if (mutation.payload.skipSaving === true) return;
-                if (Object.keys(mutation.payload.table).reduce(function(yearTotal, year) {
-                    return Object.keys(mutation.payload.table[year]).reduce(function(quarterTotal, quarter) {
+                return Bluebird.reduce(Object.keys(mutation.payload.table), function(yearTotal, year) {
+                    return Bluebird.reduce(Object.keys(mutation.payload.table[year]), function(quarterTotal, quarter) {
                         return mutation.payload.table[year][quarter].length > 0 ? quarterTotal + 1 : quarterTotal;
-                    }, 0) > 0 ? yearTotal + 1 : yearTotal;
-                }, 0) > 0) {
-                    storage.setItem('academicPlanner', {
-                        plannerYear: mutation.payload.plannerYear,
-                        table: mutation.payload.table
+                    }, 0)
+                    .then(function(qTotal) {
+                        return qTotal > 0 ? yearTotal + 1 : yearTotal;
                     })
-                }else{
-                    storage.removeItem('academicPlanner')
-                }
+                }, 0)
+                .then(function(total) {
+                    if (total > 0) {
+                        storage.setItem('academicPlanner', {
+                            plannerYear: mutation.payload.plannerYear,
+                            table: mutation.payload.table
+                        })
+                    }else{
+                        storage.removeItem('academicPlanner')
+                    }
+                })
             }
         })
     }

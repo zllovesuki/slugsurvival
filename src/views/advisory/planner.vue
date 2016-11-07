@@ -202,11 +202,13 @@ module.exports = {
                         summer: []
                     } )
                     self.$nextTick(function() {
-                        self.quarters.forEach(function(quarter) {
-                            self.Selectize(parseInt(largest) + 1, quarter)
+                        return Bluebird.map(self.quarters, function(quarter) {
+                            return self.Selectize(parseInt(largest) + 1, quarter)
+                        }, { concurrency: 4 })
+                        .then(function() {
+                            self.modifyingTable = false;
+                            if (string !== 'skipSave') self.savePlanner();
                         })
-                        self.modifyingTable = false;
-                        if (string !== 'skipSave') self.savePlanner();
                     })
                 }, 500)
             })
@@ -236,11 +238,11 @@ module.exports = {
         },
         disableSelectize: function() {
             var self = this;
-            Object.keys(self.table).forEach(function(year) {
-                Object.keys(self.table[year]).forEach(function(quarter) {
-                    self.selectizeRef[year + '-' + quarter][0].selectize.disable()
-                })
-            })
+            return Bluebird.map(Object.keys(self.table), function(year) {
+                return Bluebird.map(Object.keys(self.table[year]), function(quarter) {
+                    return self.selectizeRef[year + '-' + quarter][0].selectize.disable()
+                }, { concurrency: 4 })
+            }, { concurrency: 2 })
         },
         unSelectize: function(year, quarter) {
             this.selectizeRef[year + '-' + quarter][0].selectize.destroy()
@@ -262,13 +264,15 @@ module.exports = {
                             return (x > y) ? x : y;
                         });
                         if (largest === -1) return -1;
-                        Object.keys(self.table[largest]).forEach(function(quarter) {
+                        return Bluebird.map(Object.keys(self.table[largest]), function(quarter) {
                             self.unSelectize(largest, quarter);
                             self.$delete(self.table[largest], quarter);
                         })
-                        self.$delete(self.table, parseInt(largest));
-                        self.modifyingTable = false;
-                        self.savePlanner();
+                        .then(function() {
+                            self.$delete(self.table, parseInt(largest));
+                            self.modifyingTable = false;
+                            self.savePlanner();
+                        })
                     }, 500)
                 })
             })
@@ -395,26 +399,30 @@ module.exports = {
         savePlanner: function() {
             var self = this;
             if (self.lock) return;
-            Object.keys(self.table).forEach(function(year) {
-                Object.keys(self.table[year]).forEach(function(quarter) {
+            return Bluebird.map(Object.keys(self.table), function(year) {
+                return Bluebird.map(Object.keys(self.table[year]), function(quarter) {
                     self.table[year][quarter] = self.table[year][quarter].filter(function(v, i, s) {
                         return s.indexOf(v) === i;
-                    });
+                    })
                 })
             })
-            this.$store.commit('saveAcademicPlanner', {
-                plannerYear: this.plannerYear,
-                table: this.table
-            })
+            .then(function() {
+                return self.$store.commit('saveAcademicPlanner', {
+                    plannerYear: self.plannerYear,
+                    table: self.table
+                })
+            });
         },
         initSelectize: function() {
             var self = this;
-            Object.keys(self.table).forEach(function(year) {
-                Object.keys(self.table[year]).forEach(function(quarter) {
-                    self.Selectize(year, quarter);
-                })
+            return Bluebird.map(Object.keys(self.table), function(year) {
+                return Bluebird.map(Object.keys(self.table[year]), function(quarter) {
+                    return self.Selectize(year, quarter);
+                }, { concurrency: 4 })
+            }, { concurrency: 2 })
+            .then(function() {
+                if (self.lock) self.disableSelectize();
             })
-            if (self.lock) self.disableSelectize();
         },
         focusEdit: function() {
             if (this.lock) return;
@@ -435,7 +443,7 @@ module.exports = {
                 spring: 1,
                 summer: 0
             };
-            Object.keys(self.table).forEach(function(year) {
+            return Bluebird.map(Object.keys(self.table), function(year) {
                 if (year == '1') {
                     self.$set(self.pdfFormData, '20', self.plannerYear.slice(-2))
                     self.$set(self.pdfFormData, '20_' + (1 + parseInt(year)), (parseInt(self.plannerYear.slice(-2)) + 1))
@@ -443,7 +451,7 @@ module.exports = {
                     self.$set(self.pdfFormData, '20_' + (2 * parseInt(year) - 1),  (parseInt(self.plannerYear.slice(-2)) + parseInt(year - 1)))
                     self.$set(self.pdfFormData, '20_' + (2 * parseInt(year)), (parseInt(self.plannerYear.slice(-2)) +  parseInt(year)))
                 }
-                Object.keys(self.table[year]).forEach(function(quarter) {
+                return Bluebird.map(Object.keys(self.table[year]), function(quarter) {
                     for (var i = 0, length = self.table[year][quarter].length; i < length; i++) {
                         if (year == '1' && quarter == 'fall') {
                             self.$set(self.pdfFormData, i + 1, self.table[year][quarter][i]);
@@ -453,10 +461,15 @@ module.exports = {
                     }
                 })
             })
-            self.$nextTick(function() {
-                $('#fillPDF').submit();
-                Object.keys(self.pdfFormData).forEach(function(key) {
-                    self.$delete(self.pdfFormData, key);
+            .then(function() {
+                if (self.$store.getters.Tracker !== null) {
+                    self.$store.getters.Tracker.trackEvent('fillPDF', 'clicked')
+                }
+                self.$nextTick(function() {
+                    $('#fillPDF').submit();
+                    return Bluebird.map(Object.keys(self.pdfFormData), function(key) {
+                        self.$delete(self.pdfFormData, key);
+                    })
                 })
             })
         },
@@ -500,7 +513,7 @@ module.exports = {
             html += ['<p>', '<i>', 'Now you can bookmark this page!', '</i>', '</p>'].join('');
             html += ['<p>', 'Your planner will show up when you visit this URL on another device.', '</p>'].join('');
             html += ['<p>', '(That means you can share this URL to your friends!)', '</p>'].join('');
-            html += ['<p class="pt1 px2 mt1">', '<input type="text" class="field block bookmark" onmouseover="this.setSelectionRange(0, this.value.length)">', '</p>'].join('');
+            html += ['<p class="pt1 px2 mt1">', '<input type="text" class="field block bookmark-planner" onmouseover="this.setSelectionRange(0, this.value.length)">', '</p>'].join('');
 
             this.alert
             .okBtn('I\'m Done!')
@@ -510,12 +523,12 @@ module.exports = {
             })
 
             if (this.$store.getters.Tracker !== null) {
-                this.$store.getters.Tracker.trackEvent('bookmark', 'clicked')
+                this.$store.getters.Tracker.trackEvent('bookmarkPlanner', 'clicked')
             }
 
             setTimeout(function() {
                 try {
-                    var element = document.getElementsByClassName('bookmark')[0];
+                    var element = document.getElementsByClassName('bookmark-planner')[0];
                     element.value = window.location.href;
                     element.setSelectionRange(0, element.value.length)
                 }catch(e) {}
@@ -608,11 +621,11 @@ module.exports = {
     beforeDestroy: function() {
         // garbage collection
         var self = this;
-        Object.keys(self.table).forEach(function(year) {
-            Object.keys(self.table[year]).forEach(function(quarter) {
-                self.unSelectize(year, quarter);
-            })
-        })
+        return Bluebird.map(Object.keys(self.table), function(year) {
+            return Bluebird.map(Object.keys(self.table[year]), function(quarter) {
+                return self.unSelectize(year, quarter);
+            }, { concurrency: 4 })
+        }, { concurrency: 2 })
     }
 }
 </script>
