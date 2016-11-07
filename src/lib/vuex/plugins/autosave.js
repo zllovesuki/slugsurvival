@@ -19,6 +19,7 @@ module.exports = function(storage) {
                     storage.removeItem(termId);
                 }
             }else if (mutation.type === 'saveAcademicPlanner') {
+                if (mutation.payload.skipSaving === true) return;
                 if (Object.keys(mutation.payload.table).reduce(function(yearTotal, year) {
                     return Object.keys(mutation.payload.table[year]).reduce(function(quarterTotal, quarter) {
                         return mutation.payload.table[year][quarter].length > 0 ? quarterTotal + 1 : quarterTotal;

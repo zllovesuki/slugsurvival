@@ -186,6 +186,12 @@ module.exports = {
 
         window.location.hash = '#' + LZString.compressToEncodedURIComponent(JSON.stringify(array));
     },
+    replaceHashPlanner: function(state, termId) {
+        window.location.hash = '#' + LZString.compressToEncodedURIComponent(JSON.stringify({
+            plannerYear: state.academicPlanner.plannerYear,
+            table: state.academicPlanner.table
+        }));
+    },
     blockCheckVersion: function(state) {
         state.blockCheckVersion = true;
     },

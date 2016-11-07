@@ -391,6 +391,9 @@ var self = module.exports = {
         var termId = _.getters.termId;
         _.commit('replaceHash', termId);
     },
+    dispatchReplaceHashPlanner: function(_) {
+        _.commit('replaceHashPlanner');
+    },
     parseFromCompact: function(_, payload) {
         var object = {
             events: [],
@@ -1266,6 +1269,34 @@ var self = module.exports = {
     },
     saveHistoricData: function(_, payload) {
         if (payload.historicData !== null) _.commit('saveHistoricData', payload)
+    },
+    decodeHashPlanner: function(_) {
+        try {
+            console.log('trying to restore planner from hash')
+            var hash = window.location.hash.substring(1);
+            var string = LZString.decompressFromEncodedURIComponent(hash);
+            var planner = JSON.parse(string);
+            if (typeof planner.table !== 'undefined') {
+                console.log('valid hash found')
+                planner.skipSaving = true;
+                _.commit('saveAcademicPlanner', planner)
+                var html = '';
+                html += ['<p>', 'Looks like you are accessing the planner via a bookmark link! We have the planner for you!', '</p>'].join('');
+                html += ['<p>', 'However, you will <b>not</b> be able to make changes if you are viewing the planner via a bookmark link.', '</p>'].join('');
+
+                _.getters.alert
+                .okBtn('OK')
+                .alert(html);
+                return Bluebird.reject();
+            }else{
+                console.log('fallback to local copy (inner)')
+                return Bluebird.resolve();
+            }
+        }catch(e) {
+            console.log(e);
+            console.log('fallback to local copy (outer)')
+            return Bluebird.resolve();
+        }
     },
     loadLocalAcademicPlanner: function(_) {
         return storage.getItem('academicPlanner').then(function(object) {
