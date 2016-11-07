@@ -417,8 +417,8 @@ module.exports = {
                     self.$set(self.pdfFormData, '20', self.plannerYear.slice(-2))
                     self.$set(self.pdfFormData, '20_' + (1 + parseInt(year)), (parseInt(self.plannerYear.slice(-2)) + 1))
                 }else{
-                    self.$set(self.pdfFormData, '20_' + (2 * parseInt(year) - 1),  (parseInt(self.plannerYear.slice(-2)) + (2 * parseInt(year) - 1)))
-                    self.$set(self.pdfFormData, '20_' + (2 * parseInt(year)), (parseInt(self.plannerYear.slice(-2)) + (2 * parseInt(year))))
+                    self.$set(self.pdfFormData, '20_' + (2 * parseInt(year) - 1),  (parseInt(self.plannerYear.slice(-2)) + parseInt(year - 1)))
+                    self.$set(self.pdfFormData, '20_' + (2 * parseInt(year)), (parseInt(self.plannerYear.slice(-2)) +  parseInt(year)))
                 }
                 Object.keys(self.table[year]).forEach(function(quarter) {
                     for (var i = 0, length = self.table[year][quarter].length; i < length; i++) {
