@@ -1,0 +1,547 @@
+---
+FieldType: Text
+FieldName: Name
+FieldNameAlt: Name
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: Student ID
+FieldNameAlt: Student ID
+FieldFlags: 25165824
+FieldJustification: Left
+FieldMaxLength: 7
+---
+FieldType: Text
+FieldName: Phone
+FieldNameAlt: Phone
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: Email
+FieldNameAlt: Email
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: College
+FieldNameAlt: College
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: MajorsMinors
+FieldNameAlt: Major(s)/Minor(s
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Button
+FieldName: Required in declaration of major process
+FieldNameAlt: Required in declaration of major process
+FieldFlags: 0
+FieldJustification: Left
+FieldStateOption: Off
+FieldStateOption: On
+---
+FieldType: Button
+FieldName: For students own use no signature required
+FieldNameAlt: For students&#8217; own use (no signature required
+FieldFlags: 0
+FieldJustification: Left
+FieldStateOption: Off
+FieldStateOption: On
+---
+FieldType: Button
+FieldName: General Academic Planning
+FieldNameAlt: General Academic Planning
+FieldFlags: 0
+FieldJustification: Left
+FieldStateOption: Off
+FieldStateOption: On
+---
+FieldType: Text
+FieldName: Readmission for
+FieldNameAlt: Readmission for
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: term
+FieldNameAlt: term
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Button
+FieldName: Other
+FieldNameAlt: Other
+FieldFlags: 0
+FieldJustification: Left
+FieldStateOption: Off
+FieldStateOption: On
+---
+FieldType: Text
+FieldName: 20
+FieldNameAlt: 20
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 20_2
+FieldNameAlt: 20
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_2
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_2
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_2
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_3
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_3
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_3
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_4
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_4
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_4
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 20_3
+FieldNameAlt: 20
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 20_4
+FieldNameAlt: 20
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_5
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_5
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_5
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_6
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_6
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_6
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_7
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_7
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_7
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_8
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_8
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_8
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 20_5
+FieldNameAlt: 20
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 20_6
+FieldNameAlt: 20
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_9
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_9
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_9
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_10
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_10
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_10
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_11
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_11
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_11
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_12
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_12
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_12
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 20_7
+FieldNameAlt: 20
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 20_8
+FieldNameAlt: 20
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_13
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_13
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_13
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_14
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_14
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_14
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_15
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_15
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_15
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_16
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_16
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_16
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_17
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_18
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_19
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 3_20
+FieldNameAlt: [3]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 20_9
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 20_10
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_17
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_17
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_18
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_18
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_19
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_19
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 1_20
+FieldNameAlt: [1]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: 2_20
+FieldNameAlt: [2]
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: Other Text
+FieldNameAlt: Other Text
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: Month
+FieldNameAlt: Month
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: Day
+FieldNameAlt: Day
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: Year
+FieldNameAlt: Year
+FieldFlags: 0
+FieldJustification: Left
+---
+FieldType: Button
+FieldName: Clear Form
+FieldNameAlt: Clear Form
+FieldFlags: 65536
+FieldJustification: Left
+---
+FieldType: Button
+FieldName: Print
+FieldNameAlt: Print Major Declaration
+FieldFlags: 65536
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: Notes1
+FieldFlags: 4096
+FieldJustification: Left
+---
+FieldType: Text
+FieldName: Notes2
+FieldFlags: 4096
+FieldJustification: Left

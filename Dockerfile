@@ -1,6 +1,6 @@
 FROM mhart/alpine-node:latest
 
-RUN apk add --no-cache git
+RUN apk add --no-cache git pdftk
 
 RUN npm install pm2 -g
 

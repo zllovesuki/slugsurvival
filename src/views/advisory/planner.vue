@@ -3,7 +3,7 @@
         <div class="overflow-hidden bg-white mb2 clearfix h5" key="planner" v-show="historicDataLoaded">
             <div class="m0 p1 mb1">
                 <div class="clearfix">
-                    <span class="btn black h5">Interactive Academic Planner: </span>
+                    <span class="btn black h5">Interactive Academic Planner: <a @click="share">string</a> <a @click="fillPDF">fill</a></span>
                 </div>
                 <div class="clearfix">
                     <span class="ml1 btn black h6 muted not-clickable block">
@@ -13,6 +13,9 @@
                         We also recommend that you use this planner on a larger screen.
                     </span>
                 </div>
+                <form class="hide" action="/fillAcademicPlannerPDF" target="_blank" method="post" id="fillPDF">
+                    <input type="hidden" :name="name" :value="value" v-for="(value, name) in pdfFormData"/>
+                </form>
             </div>
             <div class="m0 p1">
                 <div class="clearfix center">
@@ -94,6 +97,17 @@
                 </div>
             </div>
         </div>
+        <div class="overflow-hidden bg-white rounded mb2 clearfix" key="export" v-show="historicDataLoaded">
+            <div class="m0 p2">
+                <div class="clearfix">
+                    <div class="right">
+                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.TBA }" @click="fillPDF">
+                            Export to PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="overflow-hidden bg-white rounded mb2" key="loading" v-show="!historicDataLoaded">
             <div class="m0 p2">
                 <div class="clearfix">
@@ -103,7 +117,7 @@
         </div>
         <div class="overflow-hidden bg-white rounded mb2 h5" key="feature">
             <div class="m0 p1">
-                <p>Very soon, you will be able to select classes based on your major/minor, and be able to export this so you can bring the printed version to declare your major.</p>
+                <p>Very soon, you will be able to select classes based on your major/minor, <strike>and be able to export this so you can bring the printed version to declare your major.</strike></p>
                 <p>Stay tuned.</p>
             </div>
         </div>
@@ -125,7 +139,8 @@ module.exports = {
             modifyingTable: false,
             loadingMessage: '',
             plannerYear: '2016',
-            editingYear: false
+            editingYear: false,
+            pdfFormData: {}
         }
     },
     computed: {
@@ -347,6 +362,14 @@ module.exports = {
         },
         // MA End
         savePlaner: function() {
+            var self = this;
+            Object.keys(self.table).forEach(function(year) {
+                Object.keys(self.table[year]).forEach(function(quarter) {
+                    self.table[year][quarter] = self.table[year][quarter].filter(function(v, i, s) {
+                        return s.indexOf(v) === i;
+                    });
+                })
+            })
             this.$store.commit('saveAcademicPlanner', {
                 plannerYear: this.plannerYear,
                 table: this.table
@@ -369,6 +392,50 @@ module.exports = {
         finishEdit: function() {
             this.editingYear = false;
             this.savePlaner();
+        },
+        share: function() {
+            var json = JSON.stringify({
+                y: this.plannerYear,
+                t: this.table
+            });
+            console.log(json)
+            console.log(json.length);
+            var compress = LZString.compressToEncodedURIComponent(json);
+            console.log(compress)
+            console.log(compress.length)
+        },
+        fillPDF: function() {
+            var self = this;
+            var offset = {
+                fall: 3,
+                winter: 2,
+                spring: 1,
+                summer: 0
+            };
+            Object.keys(self.table).forEach(function(year) {
+                if (year == '1') {
+                    self.$set(self.pdfFormData, '20', self.plannerYear.slice(-2))
+                    self.$set(self.pdfFormData, '20_' + (1 + parseInt(year)), (parseInt(self.plannerYear.slice(-2)) + 1))
+                }else{
+                    self.$set(self.pdfFormData, '20_' + (2 * parseInt(year) - 1),  (parseInt(self.plannerYear.slice(-2)) + (2 * parseInt(year) - 1)))
+                    self.$set(self.pdfFormData, '20_' + (2 * parseInt(year)), (parseInt(self.plannerYear.slice(-2)) + (2 * parseInt(year))))
+                }
+                Object.keys(self.table[year]).forEach(function(quarter) {
+                    for (var i = 0, length = self.table[year][quarter].length; i < length; i++) {
+                        if (year == '1' && quarter == 'fall') {
+                            self.$set(self.pdfFormData, i + 1, self.table[year][quarter][i]);
+                        }else{
+                            self.$set(self.pdfFormData, (i + 1) + '_' + ((year * 4) - offset[quarter]), self.table[year][quarter][i]);
+                        }
+                    }
+                })
+            })
+            self.$nextTick(function() {
+                $('#fillPDF').submit();
+                Object.keys(self.pdfFormData).forEach(function(key) {
+                    self.$delete(self.pdfFormData, key);
+                })
+            })
         }
     },
     mounted: function() {
