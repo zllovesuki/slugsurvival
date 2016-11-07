@@ -348,42 +348,37 @@ module.exports = {
                 }
             }
         },
-        initSelect2: function() {
+        initSelectize: function() {
             var self = this;
             Object.keys(this.IDs).forEach(function(id) {
                 self.IDs[id] = self.makeid();
             })
             this.$nextTick(function() {
-                $.fn.select2.amd.require(['select2/selection/search'], function (Search) {
-                    Search.prototype.searchRemoveChoice = function (decorated, item) {
-                        this.trigger('unselect', {
-                            data: item
-                        });
-                        this.$search.val('');
-                        this.handleSearch();
-                    }; // https://github.com/select2/select2/issues/3354#issuecomment-162858442
-                    Object.keys(self.IDs).forEach(function(id) {
-                        $('#' + self.IDs[id]).select2({
-                            placeholder: id + '...',
-                            closeOnSelect: false,
-                            templateSelection: function(d) {
-                                return d.id;
-                            }
-                        }).on('select2:select', function(evt) {
-                            self.filter[id].push(evt.params.data.element.value);
-                        }).on('select2:unselect', function(evt) {
+                Object.keys(self.IDs).forEach(function(id) {
+                    $('#' + self.IDs[id]).selectize({
+                        placeholder: id + '...',
+                        dropdownParent: "body",
+                        onItemAdd: function(value, $item) {
+                            self.filter[id].push(value);
+                        },
+                        onItemRemove: function(value) {
                             self.filter[id] = self.filter[id].filter(function(el) {
-                                return el != evt.params.data.element.value;
+                                return el != value;
                             })
-                        });
+                        },
+                        render: {
+                            item: function(item, escape) {
+                                return '<div>' + escape(item.value) + '</div>';
+                            }
+                        }
                     })
-                    setTimeout(function() {
-                        self.$store.commit('shouldAddMargin', true);
-                        self.initialized = true;
-                        self.show = false;
-                        self.alert.delay(5000).success('Click on a subject to expand')
-                    }, 500)
-                });
+                })
+                setTimeout(function() {
+                    self.$store.commit('shouldAddMargin', true);
+                    self.initialized = true;
+                    self.show = false;
+                    self.alert.delay(5000).success('Click on a subject to expand')
+                }, 500)
             })
         },
         initReactive: function() {
@@ -400,9 +395,6 @@ module.exports = {
         },
         flip: function() {
             var self = this;
-            Object.keys(this.IDs).forEach(function(id) {
-                $('#' + self.IDs[id]).select2('close')
-            })
             this.show = !this.show;
             this.$nextTick(function() {
                 if (this.show === false) this.$store.dispatch('blockScroll', false);
@@ -434,10 +426,10 @@ module.exports = {
             self.timeblocks = self.getTimeblocks();
             self.locations = self.getLocations();
             self.credits = self.getCredits();
-            $script.ready('select2', function() {
+            $script.ready('selectize', function() {
                 self.ready = true;
                 self.$nextTick(function() {
-                    self.initSelect2();
+                    self.initSelectize();
                 })
             })
         })
@@ -456,14 +448,5 @@ module.exports = {
     background-color: rgba(0, 0, 0, 0.5);
     display: table;
     transition: opacity .3s ease;
-}
-.select2-selection--multiple {
-    margin: 0.1rem;
-}
-.select2-selection--multiple input[type="search"] {
-    height: 1rem;
-}
-.select2-results, .select2-selection__choice {
-    font-size: .75rem; /* h6 */
 }
 </style>
