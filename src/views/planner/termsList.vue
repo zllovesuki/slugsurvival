@@ -50,7 +50,10 @@
             <div class="m0 p2 border-top" v-bind:class="{ 'hide': hideHistoric }">
                 <div class="clearfix">
                     <input type="text" class="field block mb2 search-box" v-model="search.string" placeholder="EE 177, ECON 117B, ..." onmouseover="this.focus()">
-                    <div class="overflow-scroll" v-show="search.results.length > 0">
+                    <div v-show="search.dirty">
+                        ...Typing
+                    </div>
+                    <div class="overflow-scroll" v-show="search.results.length > 0 && !search.dirty">
                         <table class="table-light">
                             <thead class="bg-darken-1 h6">
                                 <th>Course</th>
@@ -67,9 +70,6 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
-                    <div v-show="search.dirty">
-                        ...Typing
                     </div>
                     <div v-show="search.string.length > 0 && search.results.length === 0 && !search.dirty">
                         No results.
