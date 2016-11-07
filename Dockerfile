@@ -1,6 +1,7 @@
 FROM mhart/alpine-node:latest
 
-RUN apk add --no-cache git pdftk
+RUN apk add --no-cache git libgcj --repository http://dl-cdn.alpinelinux.org/alpine/edge/main/ \
+    && apk add --no-cache pdftk --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
 
 RUN npm install pm2 -g
 
