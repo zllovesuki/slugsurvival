@@ -87,8 +87,7 @@
                         <div class="inline-block col col-3" v-for="(courses, quarter) in matrix">
                             <div class="p1 col col-12">
                                 <select multiple style="width: 100%" v-model="table[year][quarter]" v-bind:id="year + '-' + quarter">
-                                    <!--<option :value="code" v-for="code in Object.keys(historicData[quarter])">{{ code }} ({{ (historicData[quarter][code] * 100).toPrecision(4) }}%)</option>-->
-                                    <option :value="code" v-for="code in historicData[quarter]" track-by="code">{{ code }}</option>
+                                    <option :value="code" v-for="code in historicFrequency[quarter]" track-by="code">{{ code }}</option>
                                 </select>
                             </div>
                             <!--<div class="p1 col col-12 center">
@@ -145,9 +144,6 @@ module.exports = {
             quarters: ['fall', 'winter', 'spring', 'summer'],
             table: {},
             historicDataLoaded: false,
-            windowSize: 4,
-            windowAlpha: 0,
-            historicData: {},
             selectizeRef: {},
             modifyingTable: false,
             plannerYear: '2016',
@@ -176,6 +172,9 @@ module.exports = {
         },
         academicPlanner: function() {
             return this.$store.getters.academicPlanner;
+        },
+        historicFrequency: function() {
+            return this.$store.getters.historicFrequency;
         }
     },
     methods: {
@@ -270,125 +269,6 @@ module.exports = {
                 })
             })
         },
-        // MA Start
-        getYears: function() {
-            var terms = this.$store.getters.flatTermsList;
-            var tmp;
-            var years = {};
-            terms.forEach(function(term) {
-                tmp = '20' + helper.pad((term.code % 2000).toString().slice(0, -1), 2, 0);
-                if (typeof years[tmp] === 'undefined') {
-                    years[tmp] = null;
-                }
-            })
-            return Object.keys(years)
-        },
-        normalizeYears: function(allYears, quarterYears) {
-            /*
-                we will normalize the years, for example, allYears contains all the years (2004-2017) in an array
-                and quarter years is an object of where the value is the number of classes offered in that quarter year
-                the normalized obj will have either 1(true) or 0(false) to signify if it was offered or not
-            */
-            var normalized = {};
-            var qYears = Object.keys(quarterYears);
-            for (var i = 0, length = allYears.length; i < length; i++) {
-                if (typeof normalized[allYears[i]] === 'undefined') normalized[allYears[i]] = 0;
-                if (qYears.indexOf(allYears[i]) !== -1) normalized[allYears[i]] += quarterYears[allYears[i]];
-            }
-            var normalizedLargest = Object.keys(normalized).reduce(function(x,y){
-                return (x > y) ? x : y;
-            });
-            var quarterYearLargest = qYears.reduce(function(x,y){
-                return (x > y) ? x : y;
-            });
-            if (normalizedLargest != quarterYearLargest) {
-                // account for quarter mismatch, where winter is jump to 2017, and skewing the results for other quarters
-                // though it could introduce errors. we will see when we test this
-                delete normalized[normalizedLargest];
-            }
-            return normalized;
-        },
-        windowFrequency: function() {
-            var self = this;
-            var historicData = this.$store.getters.historicData;
-
-            // multipler = (2 / (period + 1) );
-            // instead of using variable k, alpha, multipler, whatever, we will discount more on less recent years.
-            self.windowAlpha = 1 / self.windowSize;
-
-            var allYears = this.getYears();
-            var normalized = {};
-            var years = [];
-
-            var Window = [];
-            var period = 0;
-            var frequency = 0;
-
-            var threshold = {};
-            var sum = 0;
-
-            var result = {};
-
-            for (var quarter in historicData){
-                for (var code in historicData[quarter]) {
-                    if (typeof result[code] === 'undefined') {
-                        result[code] = {
-                            spring: 0,
-                            summer: 0,
-                            fall: 0,
-                            winter: 0
-                        }
-                        threshold[code] = {
-                            spring: 0,
-                            summer: 0,
-                            fall: 0,
-                            winter: 0
-                        }
-                    }
-                    normalized = this.normalizeYears(allYears, historicData[quarter][code]);
-                    // Warning, inefficient code ahead.
-                    years = Object.keys(normalized).sort(function(a, b) { return b-a; });
-
-                    threshold[code][quarter] = ((1 / self.windowSize) * self.windowAlpha).toPrecision(2)
-
-                    for (;; period++) {
-                        Window = years.slice( period, period + this.windowSize );
-                        if (Window.length < this.windowSize) break;
-
-                        frequency = Window.reduce(function(total, year) {
-                            return normalized[year] > 0 ? total + normalized[year] : total;
-                        }, 0) / this.windowSize;
-
-                        sum += frequency * Math.pow(1 - self.windowAlpha, period);
-                    }
-
-                    result[code][quarter] = (self.windowAlpha * sum).toPrecision(2)
-
-                    period = 0;
-                    sum = 0;
-                }
-            }
-            this.historicData = {
-                fall: [],
-                winter: [],
-                spring: [],
-                summer: []
-            };
-            Object.keys(result).forEach(function(code) {
-                //console.log(code);
-                Object.keys(result[code]).forEach(function(quarter) {
-                    //console.log(quarter, result[code][quarter], threshold[code][quarter], (result[code][quarter] > 0 && result[code][quarter] >= threshold[code][quarter]))
-                    if (result[code][quarter] > 0 && result[code][quarter] >= threshold[code][quarter]) {
-                        self.historicData[quarter].push(code);
-                    }
-                })
-                //console.log('---')
-                //console.log('')
-            })
-            result = null;
-            threshold = null;
-        },
-        // MA End
         savePlanner: function() {
             var self = this;
             if (self.lock) return;
@@ -550,7 +430,6 @@ module.exports = {
         var shouldInitSelectize = false;
         this.$store.dispatch('setTitle', 'Planner')
         this.$store.dispatch('fetchHistoricData').then(function() {
-            self.windowFrequency()
             return self.$store.dispatch('decodeHashPlanner')
             .then(function() {
                 // no valid was decoded

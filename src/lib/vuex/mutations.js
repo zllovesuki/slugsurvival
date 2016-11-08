@@ -89,6 +89,9 @@ module.exports = {
     saveHistoricData: function(state, payload) {
         state.historicData = payload.historicData;
     },
+    saveHistoricFrequency: function(state, frequency) {
+        state.historicFrequency = frequency;
+    },
     buildIndexedSearch: function(state, termId) {
         console.log('building index on the fly')
 

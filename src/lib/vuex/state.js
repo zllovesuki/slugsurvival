@@ -29,6 +29,8 @@ module.exports = {
 
     historicData: {},
 
+    historicFrequency: {},
+
     search: {},
 
     title: 'Index',

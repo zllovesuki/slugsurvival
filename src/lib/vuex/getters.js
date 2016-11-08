@@ -38,6 +38,9 @@ module.exports = {
     historicData: function(state) {
         return state.historicData;
     },
+    historicFrequency: function(state) {
+        return state.historicFrequency;
+    },
     indexSearch: function(state) {
         return state.search;
     },

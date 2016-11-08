@@ -1239,7 +1239,7 @@ var self = module.exports = {
             ])
         })
         .spread(function(spring, summer, fall, winter){
-            _.dispatch('saveHistoricData', {
+            return _.dispatch('saveHistoricData', {
                 historicData: {
                     spring: spring,
                     summer: summer,
@@ -1248,6 +1248,14 @@ var self = module.exports = {
                 },
                 skipSaving: false
             });
+        })
+        .then(function() {
+            return true;
+        })
+        .catch(function(e) {
+            console.log('loadHistoricDataFromOnline rejection')
+            console.log(e);
+            return false;
         })
     },
     fetchHistoricData: function(_) {
@@ -1258,11 +1266,19 @@ var self = module.exports = {
         .catch(function(invalid) {
             if (invalid.yes) {
                 return _.dispatch('loadHistoricDataFromOnline')
+            }else{
+                return true;
             }
+        })
+        .then(function(success) {
+            if (success) _.dispatch('buildHistoricFrequency')
         })
     },
     saveHistoricData: function(_, payload) {
         if (payload.historicData !== null) _.commit('saveHistoricData', payload)
+    },
+    buildHistoricFrequency: function(_) {
+        _.commit('saveHistoricFrequency', helper.windowFrequency(_.getters.flatTermsList, _.getters.historicData, 4));
     },
     decodeHashPlanner: function(_) {
         try {
