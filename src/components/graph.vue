@@ -57,7 +57,7 @@ module.exports = {
             x: [],
             y: [],
             yaxis: 'y2',
-            mode: '',
+            mode: 'markers',
             line: {
                 color: 'gray'
             }
@@ -66,7 +66,7 @@ module.exports = {
             name: 'Available',
             x: [],
             y: [],
-            mode: 'lines+markers',
+            mode: 'lines',
             line: {
                 color: 'green'
             }
@@ -75,7 +75,7 @@ module.exports = {
             name: 'Enrolled',
             x: [],
             y: [],
-            mode: 'lines+markers',
+            mode: 'lines',
             line: {
                 color: 'blue'
             }
@@ -84,19 +84,22 @@ module.exports = {
             name: 'Capacity',
             x: [],
             y: [],
-            mode: 'lines+markers',
+            mode: 'lines',
             line: {
                 color: 'red'
             }
         }
-        // a simple for loop is the best for performance
-        // http://stackoverflow.com/questions/8864430/compare-javascript-array-of-objects-to-get-min-max
-        var earliestDate = Number.POSITIVE_INFINITY;
-        for (var i = self.graphData.length - 1; i >= 0; i--) {
-            if (self.graphData[i].date < earliestDate) earliestDate = self.graphData[i].date;
-        }
+        // Remove the earliest outliers
+        var outliers = self.graphData.sort(function(a, b) {
+            return a.date - b.date;
+        }).reduce(function(results, data, i, arr) {
+            if (arr[i + 1] && arr[i + 1].date - arr[i].date > 86400) {
+                results.push(arr[i].date)
+            }
+            return results
+        }, [])
         for (var i = 0, length = self.graphData.length; i < length; i++) {
-            if (earliestDate === self.graphData[i].date) continue;
+            if (outliers.length > 0 && outliers[0] >= self.graphData[i].date) continue;
             if (typeof self.graphData[i].seats.avail !== 'undefined') {
                 avail.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
                 avail.y.push(self.graphData[i].seats.avail)
