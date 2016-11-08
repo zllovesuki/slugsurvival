@@ -91,13 +91,7 @@ module.exports = {
     },
     buildIndexedSearch: function(state, termId) {
         console.log('building index on the fly')
-        /*
 
-        Apparently, according to http://stackoverflow.com/questions/29552139/website-repeatedly-reloads-then-crashes-on-iphone-4-ios-8-0-2-ios-8-1-2
-        iOS crashes on loading the index JSON from lunr.js. However, building the index on the fly does not crash browser
-        Thus, the workaround for iOS devices is to build the index from scratch
-
-        */
         var obj, _obj = {};
         state.search[termId] = lunr(function() {
             this.field('c', { boost: 5 })
@@ -122,10 +116,6 @@ module.exports = {
             _obj = {};
         }
     },
-    /*pushToEventSource: function(state, termId, obj) {
-        if (typeof state.events[termId] === 'undefined') state.events[termId] = [];
-        state.events[termId].push(obj);
-    },*/
     mergeEventSource: function(state, payload) {
         var termId = payload.termId, events = payload.events, skipSaving = payload.skipSaving;
         if (typeof state.events[termId] === 'undefined') state.events[termId] = [];

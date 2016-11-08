@@ -117,7 +117,6 @@
 var debounce = require('lodash.debounce')
 var helper = require('../../lib/vuex/helper')
 var MobileDetect = require('mobile-detect')
-var elasticlunr = require('elasticlunr')
 module.exports = {
     data: function() {
         return {
