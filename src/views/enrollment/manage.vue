@@ -138,7 +138,7 @@ module.exports = {
                 .then(function(resolved) {
                     resolved.event.preventDefault();
                     if (resolved.buttonClicked !== 'ok') return;
-                    self.success(course.c + ' added to the list!');
+                    self.alert.success(course.c + ' added to the list!');
                     self.courses.push(course);
                 });
             })
