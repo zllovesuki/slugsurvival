@@ -50,7 +50,10 @@
             <div class="m0 p2 border-top" v-bind:class="{ 'hide': hideHistoric }">
                 <div class="clearfix">
                     <input type="text" class="field block mb2 search-box" v-model="search.string" placeholder="EE 177, ECON 117B, ..." onmouseover="this.focus()">
-                    <div class="overflow-scroll" v-show="search.results.length > 0">
+                    <div v-show="search.dirty">
+                        ...Typing
+                    </div>
+                    <div class="overflow-scroll" v-show="search.results.length > 0 && !search.dirty">
                         <table class="table-light">
                             <thead class="bg-darken-1 h6">
                                 <th>Course</th>
@@ -68,7 +71,7 @@
                             </tbody>
                         </table>
                     </div>
-                    <div v-show="search.string.length > 0 && search.results.length === 0">
+                    <div v-show="search.string.length > 0 && search.results.length === 0 && !search.dirty">
                         No results.
                     </div>
                 </div>
@@ -89,13 +92,16 @@ module.exports = {
             hidePrior: true,
             saved: [],
             search: {
-                years: ['2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016'],
                 string: '',
-                results: []
+                results: [],
+                dirty: false
             }
         }
     },
     computed: {
+        numOfYears: function() {
+            return this.$store.getters.numOfYears
+        },
         historicData: function() {
             return this.$store.getters.historicData;
         },
@@ -121,7 +127,7 @@ module.exports = {
                         results.push({
                             code: code,
                             qtr: quarter,
-                            fre: keys.length + '/' + this.search.years.length,
+                            fre: keys.length + '/' + this.numOfYears,
                             occur: keys.join(', ')
                         })
                     }
@@ -133,6 +139,7 @@ module.exports = {
                 _results = _results.concat(results[code]);
             }
             this.search.results = _results;
+            this.search.dirty = false;
             if (this.$store.getters.Tracker !== null) {
                 this.$store.getters.Tracker.trackSiteSearch(this.search.string, 'findHistorical', this.search.results.length)
             }
@@ -144,6 +151,7 @@ module.exports = {
                 this.search.results = [];
                 return;
             }
+            this.search.dirty = true;
             this.findHistorical();
         }
     },

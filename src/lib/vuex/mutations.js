@@ -21,10 +21,21 @@ module.exports = {
     saveTermsList: function(state, payload) {
         var terms = payload.termsList, skipSaving = payload.skipSaving
         state.flatTermsList = terms;
+        var tmp;
+        var years = {};
         terms.forEach(function(term) {
             state.termsList[term.code] = term.name;
             state.termDates[term.code] = term.date;
+            tmp = '20' + helper.pad((term.code % 2000).toString().slice(0, -1), 2, 0);
+            if (typeof years[tmp] === 'undefined') {
+                years[tmp] = null;
+            }
         })
+        state.numOfYears = Object.keys(years).length;
+    },
+    saveMajorMinor: function(state, payload) {
+        var mm = payload.mm;
+        state.majorMinor = mm;
     },
     saveTermCourses: function(state, payload) {
         var obj, termId = payload.termId, courses = payload.coursesData, skipSaving = payload.skipSaving;
@@ -76,10 +87,7 @@ module.exports = {
         state.courseInfo[termId][courseNum] = courseInfo;
     },
     saveHistoricData: function(state, payload) {
-        state.historicData.spring = payload.spring;
-        state.historicData.summer = payload.summer;
-        state.historicData.fall = payload.fall;
-        state.historicData.winter = payload.winter;
+        state.historicData = payload.historicData;
     },
     buildIndexedSearch: function(state, payload) {
         // termId, json, workaround, skipSaving
@@ -178,10 +186,19 @@ module.exports = {
 
         window.location.hash = '#' + LZString.compressToEncodedURIComponent(JSON.stringify(array));
     },
+    replaceHashPlanner: function(state, termId) {
+        window.location.hash = '#' + LZString.compressToEncodedURIComponent(JSON.stringify({
+            plannerYear: state.academicPlanner.plannerYear,
+            table: state.academicPlanner.table
+        }));
+    },
     blockCheckVersion: function(state) {
         state.blockCheckVersion = true;
     },
     shouldAddMargin: function(state, to) {
         state.shouldAddMargin = (to || false);
+    },
+    saveAcademicPlanner: function(state, table) {
+        state.academicPlanner = table;
     }
 }

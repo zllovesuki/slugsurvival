@@ -4,10 +4,10 @@
     		<div class="overflow-hidden bg-white rounded mb2" v-if="ready" key="notify">
     			<div class="m0 p1">
     				<div class="clearfix">
-    					<span class="btn black h5">Notify Me When My Class Changes: </span>
+    					<span class="btn black h4">Notify Me When My Class Changes: </span>
     				</div>
     				<div class="clearfix">
-    					<span class="ml1 btn black h6 muted not-clickable">
+    					<span class="ml1 btn black h5 muted not-clickable">
                             SlugSurvival will notify you when your desired classes have significant changes (eg. Open -> Closed, 25% seats remaining, cancelled, etc).
                         </span>
     				</div>
@@ -18,7 +18,7 @@
                     </div>
                     <div class="m0 p1">
                         <div class="clearfix">
-                            <div class="sm-flex">
+                            <div class="md-flex">
                                 <div class="p1 flex m1 h6 white bold clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.searchAnything }" @click="showSearchModal"><i class="fa fa-search fa-lg">&nbsp;</i>search anything</div>
                                 <div class="p1 flex m1 h6 black bold clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.blank }" @click="importPlanner"><i class="fa fa-cart-arrow-down fa-lg">&nbsp;</i>or, Import from Local Planner</div>
                             </div>
@@ -50,7 +50,7 @@
                     </div>
                     <div class="m0 p1">
         				<div class="clearfix">
-                            <div class="sm-flex">
+                            <div class="md-flex">
                                 <div class="p1 flex m1 h6 bold black clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.blank }" @click="showSub"><i class="fa fa-phone-square fa-lg">&nbsp;</i>Via SMS</div>
                                 <div class="p1 flex m1 h6 bold black clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.blank }" @click="showSub"><i class="fa fa-envelope fa-lg">&nbsp;</i>Via Email</div>
                             </div>
@@ -69,10 +69,10 @@
         <div class="overflow-hidden bg-white rounded mb2">
             <div class="m0 p1">
                 <div class="clearfix">
-					<span class="btn black h5">Manage My Subscription: </span>
+					<span class="btn black h4">Manage My Subscription: </span>
 				</div>
 				<div class="clearfix">
-					<span class="ml1 btn black h6 muted not-clickable">
+					<span class="ml1 btn black h5 muted not-clickable">
                         You can edit the list of classes being notified, or unsubscribe notification altogether.
                     </span>
 				</div>

@@ -10,6 +10,10 @@ module.exports = {
     termDates: {},
     termName: '',
 
+    numOfYears: 0,
+
+    academicPlanner: null,
+
     flatCourses: {},
     sortedCourses: {},
 
@@ -17,6 +21,8 @@ module.exports = {
 
     flatSubjectList: [],
     subjectList: {},
+
+    majorMinor: {},
 
     instructorNameToTidMapping: {},
     instructorStats: {},

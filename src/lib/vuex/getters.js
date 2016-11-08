@@ -26,6 +26,9 @@ module.exports = {
     termName: function(state) {
         return state.termName;
     },
+    numOfYears: function(state) {
+        return state.numOfYears;
+    },
     flatTermsList: function(state) {
         return state.flatTermsList;
     },
@@ -50,6 +53,9 @@ module.exports = {
     subjectList: function(state) {
         return state.subjectList;
     },
+    majorMinor: function(state) {
+        return state.majorMinor;
+    },
     eventSource: function(state) {
         return state.events
     },
@@ -67,5 +73,8 @@ module.exports = {
     },
     shouldAddMargin: function(state) {
         return state.shouldAddMargin
+    },
+    academicPlanner: function(state) {
+        return state.academicPlanner
     }
 }
