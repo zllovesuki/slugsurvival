@@ -166,9 +166,7 @@ module.exports = {
                 })
             })
         })
-        this.$store.dispatch('fetchHistoricData').then(function() {
-            self.historicDataLoaded = true;
-        })
+        self.historicDataLoaded = true;
     },
     mounted: function() {
         this.$store.dispatch('setTitle', 'Terms List');

@@ -429,16 +429,14 @@ module.exports = {
         var self = this;
         var shouldInitSelectize = false;
         this.$store.dispatch('setTitle', 'Planner')
-        this.$store.dispatch('fetchHistoricData').then(function() {
-            return self.$store.dispatch('decodeHashPlanner')
-            .then(function() {
-                // no valid was decoded
-                return self.$store.dispatch('loadLocalAcademicPlanner');
-            })
-            .catch(function(e) {
-                // hash was used instead of local copy
-                self.lock = true;
-            })
+        return self.$store.dispatch('decodeHashPlanner')
+        .then(function() {
+            // no valid was decoded
+            return self.$store.dispatch('loadLocalAcademicPlanner');
+        })
+        .catch(function(e) {
+            // hash was used instead of local copy
+            self.lock = true;
         })
         .then(function() {
             if (self.academicPlanner !== null) {

@@ -22,10 +22,10 @@
                     </transition>
                     <div class="mt2 mb1">
                         <transition name="fade" mode="out-in">
-                            <div class="overflow-hidden bg-white rounded mb2" v-show="!termListsLoaded">
+                            <div class="overflow-hidden bg-white rounded mb2" v-show="!basicDataLoaded">
                                 <div class="m0 p2">
-                                    <div class="clearfix">
-                                        Loading...
+                                    <div class="clearfix h5">
+                                        Loading Terms List and Historical Data...
                                     </div>
                                 </div>
                             </div>
@@ -71,8 +71,8 @@ module.exports = {
         colorMap: function() {
             return this.$store.getters.colorMap;
         },
-        termListsLoaded: function() {
-            return this.$store.getters.termListsLoaded;
+        basicDataLoaded: function() {
+            return this.$store.getters.basicDataLoaded;
         }
     },
     methods: {

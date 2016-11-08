@@ -11,7 +11,7 @@ var self = module.exports = {
         _.getters.alert.okBtn('OK').alert('Coming soon')
     },
     ensureDataLoaded: function(_) {
-        return _.dispatch('fetchTermsListAndRMP');
+        return _.dispatch('fetchBasicData');
     },
     fetchThreeStatsByTid: function(_, tid) {
         if (typeof _.state.instructorStats[tid] !== 'undefined') {
@@ -72,7 +72,7 @@ var self = module.exports = {
             })
         }.bind(this))
     },
-    loadTermsRMPAndMajorMinorFromLocal: function(_) {
+    loadBasicDataFromLocal: function(_) {
         var online;
         var self = this;
         var loadOnlineTimestamp = function() {
@@ -182,7 +182,7 @@ var self = module.exports = {
             })
         })
     },
-    loadTermsRMPAndMajorMinorFromOnline: function(_, invalid) {
+    loadBasicDataFromOnline: function(_, invalid) {
         var self = this;
         var timestamp = Date.now() / 1000;
         return Bluebird.all([
@@ -208,6 +208,14 @@ var self = module.exports = {
                 skipSaving: false
             })
         })
+        .then(function() {
+            return true;
+        })
+        .catch(function(e) {
+            console.log('loadBasicDataFromOnline rejection')
+            console.log(e);
+            return false;
+        })
     },
     saveTermsAndRMP: function(_, payload) {
         if (payload.termsList !== null) _.commit('saveTermsList', payload);
@@ -215,15 +223,17 @@ var self = module.exports = {
         if (payload.subjects !== null) _.commit('saveSubjects', payload);
         if (payload.mm !== null) _.commit('saveMajorMinor', payload);
     },
-    fetchTermsListAndRMP: function(_) {
+    fetchBasicData: function(_) {
         if (_.state.flatTermsList.length !== 0) {
             return Bluebird.resolve();
         }
-        return _.dispatch('loadTermsRMPAndMajorMinorFromLocal')
+        return _.dispatch('loadBasicDataFromLocal')
         .catch(function(invalid) {
-            if (invalid.yes) {
-                return _.dispatch('loadTermsRMPAndMajorMinorFromOnline', invalid)
-            }
+            if (!invalid.yes) return true;
+            return _.dispatch('loadBasicDataFromOnline', invalid)
+        })
+        .then(function(success) {
+            if (success) return _.dispatch('fetchHistoricData')
         })
     },
     loadCourseDataFromLocal: function(_, termId) {
@@ -361,14 +371,11 @@ var self = module.exports = {
         }
         return _.dispatch('loadCourseDataFromLocal', termId)
         .catch(function(invalid) {
-            if (invalid.yes) {
-                return _.dispatch('loadCourseDataFromOnline', {
-                    invalid: invalid,
-                    termId: termId
-                })
-            }else{
-                return true;
-            }
+            if (!invalid.yes) return true;
+            return _.dispatch('loadCourseDataFromOnline', {
+                invalid: invalid,
+                termId: termId
+            })
         })
         .then(function(success) {
             if (success) _.commit('buildIndexedSearch', termId)
@@ -1264,11 +1271,8 @@ var self = module.exports = {
         }
         return _.dispatch('loadHistoricDataFromLocal')
         .catch(function(invalid) {
-            if (invalid.yes) {
-                return _.dispatch('loadHistoricDataFromOnline')
-            }else{
-                return true;
-            }
+            if (!invalid.yes) return true;
+            return _.dispatch('loadHistoricDataFromOnline')
         })
         .then(function(success) {
             if (success) _.dispatch('buildHistoricFrequency')
