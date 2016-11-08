@@ -3,6 +3,8 @@ var alertify = require('alertify.js'),
 
 module.exports = {
 
+    onlineState: 'online',
+
     Tracker: null,
 
     termsList: {},

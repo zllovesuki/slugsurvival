@@ -79,5 +79,8 @@ module.exports = {
     },
     academicPlanner: function(state) {
         return state.academicPlanner
+    },
+    onlineState: function(state) {
+        return state.onlineState;
     }
 }

@@ -186,5 +186,8 @@ module.exports = {
     },
     saveAcademicPlanner: function(state, table) {
         state.academicPlanner = table;
+    },
+    changeOnlineState: function(state, status) {
+        state.onlineState = status;
     }
 }

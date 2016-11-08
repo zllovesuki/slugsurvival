@@ -3,6 +3,7 @@ module.exports = function(_, router) {
     element.parentNode.removeChild(element);
 
     _.dispatch('checkVersion')
+    _.dispatch('addOnlineOfflineListener')
 
     router.beforeEach(function(to, from, next) {
         _.commit('shouldAddMargin', false);

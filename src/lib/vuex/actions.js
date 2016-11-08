@@ -1317,5 +1317,20 @@ var self = module.exports = {
                 return false;
             }
         })
+    },
+    addOnlineOfflineListener: function(_) {
+        var changeStateToOnline = function() {
+            _.commit('changeOnlineState', 'online')
+        }
+        var changeStateToOffline = function() {
+            _.commit('changeOnlineState', 'offline')
+        }
+        if (window.addEventListener) {
+            window.addEventListener("online", changeStateToOnline, false);
+            window.addEventListener("offline", changeStateToOffline, false);
+        }else{
+            document.body.ononline = changeStateToOnline;
+            document.body.onoffline = changeStateToOffline;
+        }
     }
 }
