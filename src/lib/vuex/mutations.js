@@ -1,4 +1,4 @@
-var elasticlunr = require('elasticlunr'),
+var lunr = require('lunr'),
     helper = require('./helper.js');
 
 module.exports = {
@@ -89,44 +89,37 @@ module.exports = {
     saveHistoricData: function(state, payload) {
         state.historicData = payload.historicData;
     },
-    buildIndexedSearch: function(state, payload) {
-        // termId, json, workaround, skipSaving
-        var termId = payload.termId, json = payload.index, workaround = payload.workaround, skipSaving = payload.skipSaving;
-        workaround = workaround || false;
-        if (workaround) {
-            console.log('building index on the fly')
-            /*
+    buildIndexedSearch: function(state, termId) {
+        console.log('building index on the fly')
+        /*
 
-            Apparently, according to http://stackoverflow.com/questions/29552139/website-repeatedly-reloads-then-crashes-on-iphone-4-ios-8-0-2-ios-8-1-2
-            iOS crashes on loading the index JSON from lunr.js. However, building the index on the fly does not crash browser
-            Thus, the workaround for iOS devices is to build the index from scratch
+        Apparently, according to http://stackoverflow.com/questions/29552139/website-repeatedly-reloads-then-crashes-on-iphone-4-ios-8-0-2-ios-8-1-2
+        iOS crashes on loading the index JSON from lunr.js. However, building the index on the fly does not crash browser
+        Thus, the workaround for iOS devices is to build the index from scratch
 
-            */
-            var obj, _obj = {};
-            state.search[termId] = elasticlunr(function() {
-                this.addField('c');
-                this.addField('n');
-                this.addField('f');
-                this.addField('la');
-                this.addField('d');
-                this.setRef('b');
-                this.saveDocument(false);
-            });
-            for (var courseNum in state.flatCourses[termId]) {
-                obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNum]));
+        */
+        var obj, _obj = {};
+        state.search[termId] = lunr(function() {
+            this.field('c', { boost: 5 })
+            this.field('n');
+            this.field('f');
+            this.field('la');
+            this.field('d');
+            this.ref('b');
+        })
 
-                _obj.b = obj.num;
-                _obj.c = obj.c.split(/(\d+)/).map(function(el) { return el.replace(/\s+/g, ''); }).join(' ')
-                _obj.n = obj.n;
-                _obj.f = obj.ins.f;
-                _obj.la = obj.ins.l;
-                _obj.d = obj.ins.d[0];
-                state.search[termId].addDoc(_obj);
-                obj = {};
-                _obj = {};
-            }
-        }else{
-            state.search[termId] = elasticlunr.Index.load(json);
+        for (var courseNum in state.flatCourses[termId]) {
+            obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNum]));
+
+            _obj.b = obj.num;
+            _obj.c = obj.c.split(/(\d+)/).map(function(el) { return el.replace(/\s+/g, ''); }).join(' ')
+            _obj.n = obj.n;
+            _obj.f = obj.ins.f;
+            _obj.la = obj.ins.l;
+            _obj.d = obj.ins.d[0];
+            state.search[termId].add(_obj);
+            obj = {};
+            _obj = {};
         }
     },
     /*pushToEventSource: function(state, termId, obj) {

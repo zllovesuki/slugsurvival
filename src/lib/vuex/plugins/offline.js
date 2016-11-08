@@ -147,29 +147,6 @@ module.exports = function(storage) {
 
                 break;
 
-                case 'buildIndexedSearch':
-
-                var index = mutation.payload.index;
-                var workaround = mutation.payload.workaround;
-                var skipSaving = mutation.payload.skipSaving;
-
-                if (skipSaving) return;
-
-                if (!workaround) {
-                    return fetch(config.dbURL + '/timestamp/index/' + termId + '.json?' + timestamp)
-                    .then(function(res) {
-                        return res.json();
-                    })
-                    .then(function(onlineTimestamp) {
-                        return Bluebird.all([
-                            storage.setItem('termIndexTimestamp-' + termId, onlineTimestamp),
-                            storage.setItem('termIndex-' + termId, index)
-                        ])
-                    })
-                }
-
-                break;
-
                 default:
                 break;
             }

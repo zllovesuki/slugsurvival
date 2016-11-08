@@ -1,6 +1,6 @@
 {
   "name": "slugsurvival",
-  "version": "3.2.0",
+  "version": "3.5.0",
   "scripts": {
     "dev": "node node_modules/watchify/bin/cmd.js -vd -p browserify-hmr -e src/main.js -o public/app.js -v",
     "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
@@ -29,10 +29,10 @@
     "browserify-hmr": "^0.3.5",
     "compound-subject": "0.0.1",
     "cross-env": "^3.1.3",
-    "elasticlunr": "^0.9.5",
     "envify": "^3.4.1",
     "localforage": "^1.4.3",
     "lodash.debounce": "^4.0.8",
+    "lunr": "^0.7.2",
     "mobile-detect": "^1.3.3",
     "nanobar": "^0.4.2",
     "stringify": "^5.1.0",

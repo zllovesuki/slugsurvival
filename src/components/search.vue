@@ -206,10 +206,10 @@ module.exports = {
                 })
                 cat += '_GE';
             }else{
-                var options = {
+                /*var options = {
                     fields: {
                         n: {
-                            boost: 5
+                            boost: 3
                         },
                         c: {
                             boost: 5
@@ -224,11 +224,14 @@ module.exports = {
                             boost: 2
                         }
                     }
-                };
+                };*/
                 val = val.split(/(\d+)/).map(function(el) { return el.replace(/\s+/g, ''); }).join(' ')
-                this.search.results = this.indexSearch[this.selectedTermId].search(val, options).map(function(result) {
-                    return self.flatCourses[self.selectedTermId][result.ref]
+                //var debug = this.indexSearch[this.selectedTermId].search(val, options)
+                var debug = this.indexSearch[this.selectedTermId].search(val)
+                debug = debug.map(function(result) {
+                    return Object.assign({ score: result.score}, self.flatCourses[self.selectedTermId][result.ref])
                 })
+                this.search.results = debug;
                 if (list.length > 0) {
                     this.search.results = this.search.results.filter(function(course) {
                         return list.indexOf(course.num) !== -1;

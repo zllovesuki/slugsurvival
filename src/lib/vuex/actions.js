@@ -228,40 +228,34 @@ var self = module.exports = {
     },
     loadCourseDataFromLocal: function(_, termId) {
         var online;
-        var workaround = helper.iOS();
         var self = this;
         var loadOnlineTimestamp = function() {
             var timestamp = Date.now() / 1000;
             return Bluebird.all([
                 fetch(config.dbURL + '/timestamp/terms/' + termId + '.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/courses/' + termId + '.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/index/' + termId + '.json?' + timestamp)
-            ]).spread(function(termsRes, InfoRes, indexRes){
+                fetch(config.dbURL + '/timestamp/courses/' + termId + '.json?' + timestamp)
+            ]).spread(function(termsRes, InfoRes){
                 return Bluebird.all([
                     termsRes.json(),
-                    InfoRes.json(),
-                    indexRes.json()
+                    InfoRes.json()
                 ])
             })
         }
         var loadOfflineTimestamp = function() {
             return Bluebird.all([
                 storage.getItem('termCourseTimestamp-' + termId),
-                storage.getItem('termCourseInfoTimestamp-' + termId),
-                storage.getItem('termIndexTimestamp-' + termId)
+                storage.getItem('termCourseInfoTimestamp-' + termId)
             ])
         }
         var loadFromStorage = function(invalid) {
             return Bluebird.all([
                 !invalid.coursesData ? storage.getItem('termCourse-' + termId) : null,
-                !invalid.courseInfo ? storage.getItem('termCourseInfo-' + termId) : null,
-                workaround ? null : (!invalid.index ? storage.getItem('termIndex-' + termId) : null)
-            ]).spread(function(coursesData, courseInfo, index) {
+                !invalid.courseInfo ? storage.getItem('termCourseInfo-' + termId) : null
+            ]).spread(function(coursesData, courseInfo) {
                 return _.dispatch('saveCourseData', {
                     termId: termId,
                     coursesData: coursesData,
                     courseInfo: courseInfo,
-                    index: index,
                     skipSaving: true
                 })
             })
@@ -279,8 +273,7 @@ var self = module.exports = {
                 var invalid = {
                     yes: false,
                     coursesData: false,
-                    courseInfo: false,
-                    index: false
+                    courseInfo: false
                 }
                 if (typeof online !== 'undefined') {
                     // loadOnlineTimestamp() success
@@ -294,23 +287,16 @@ var self = module.exports = {
                         invalid.courseInfo = true;
                         console.log('course info timestamp differs');
                     }
-                    if (!workaround && online[2] !== offline[2]) {
-                        invalid.yes = true;
-                        invalid.index = true;
-                        console.log('index timestamp differs');
-                    }
                 }else{
                     // possibly no connectivity
                     if (offline[0] === null
-                        || offline[1] === null
-                        || (!workaround && offline[2] === null)) {
+                        || offline[1] === null) {
                         // We don't have a local copy
                         console.log(('no local copies to fallback'));
                         invalid = {
                             yes: true,
                             coursesData: true,
-                            courseInfo: true,
-                            index: true
+                            courseInfo: true
                         }
                         return Bluebird.reject(invalid)
                     }
@@ -326,43 +312,46 @@ var self = module.exports = {
         })
     },
     loadCourseDataFromOnline: function(_, payload) {
-        var workaround = helper.iOS();
         var invalid = payload.invalid, termId = payload.termId;
         var self = this;
         var timestamp = Date.now() / 1000;
         return Bluebird.all([
             invalid.coursesData ? fetch(config.dbURL + '/terms/' + termId + '.json?' + timestamp) : null,
-            invalid.courseInfo ? fetch(config.dbURL + '/courses/' + termId + '.json?' + timestamp) : null,
-            workaround ? null : (invalid.index ? fetch(config.dbURL + '/index/' + termId + '.json?' + timestamp) : null)
+            invalid.courseInfo ? fetch(config.dbURL + '/courses/' + termId + '.json?' + timestamp) : null
         ])
-        .spread(function(courseDataRes, courseInfoRes, indexRes){
+        .spread(function(courseDataRes, courseInfoRes){
             return Bluebird.all([
                 invalid.coursesData ? courseDataRes.json() : null,
-                invalid.courseInfo ? courseInfoRes.json() : null,
-                workaround ? null : (invalid.index ? indexRes.json() : null)
+                invalid.courseInfo ? courseInfoRes.json() : null
             ])
         })
-        .spread(function(coursesData, courseInfo, index) {
+        .spread(function(coursesData, courseInfo) {
             return _.dispatch('saveCourseData', {
                 termId: termId,
                 coursesData: coursesData,
                 courseInfo: courseInfo,
-                index: index,
                 skipSaving: false
             })
         })
+        .then(function() {
+            return true;
+        })
+        .catch(function(e) {
+            console.log('loadCourseDataFromOnline rejection')
+            console.log(e);
+            return false;
+        })
     },
     saveCourseData: function(_, payload) {
-        var workaround = helper.iOS();
         var termId = payload.termId, coursesData = payload.coursesData, courseInfo = payload.courseInfo, skipSaving = payload.skipSaving, index = payload.index;
         if (coursesData !== null) _.commit('saveTermCourses', payload);
         if (courseInfo !== null) _.commit('saveCourseInfo', payload);
-        if (workaround || index !== null) _.commit('buildIndexedSearch', {
+        /*if (workaround || index !== null) _.commit('buildIndexedSearch', {
             termId: termId,
             index: index,
             workaround: workaround,
             skipSaving: skipSaving
-        });
+        });*/
     },
     fetchTermCourses: function(_, termId) {
         termId =  termId || _.getters.termId;
@@ -377,7 +366,12 @@ var self = module.exports = {
                     invalid: invalid,
                     termId: termId
                 })
+            }else{
+                return true;
             }
+        })
+        .then(function(success) {
+            if (success) _.commit('buildIndexedSearch', termId)
         })
     },
     fetchThreeStatsByFirstLastName: function(_, payload) {
