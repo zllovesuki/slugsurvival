@@ -369,7 +369,7 @@ module.exports = {
             html += ['<p>', '<i>', 'Now you can bookmark this page!', '</i>', '</p>'].join('');
             html += ['<p>', 'Your planner will show up when you visit this URL on another device.', '</p>'].join('');
             html += ['<p>', '(That means you can share this URL to your friends!)', '</p>'].join('');
-            html += ['<p class="pt1 px2 mt1">', '<input type="text" class="field block bookmark-planner" onmouseover="this.setSelectionRange(0, this.value.length)">', '</p>'].join('');
+            html += ['<p class="pt1 px2 mt1">', '<input type="text" class="field block bookmark-planner" onmouseover="this.select();">', '</p>'].join('');
 
             this.alert
             .okBtn('I\'m Done!')
@@ -386,7 +386,7 @@ module.exports = {
                 try {
                     var element = document.getElementsByClassName('bookmark-planner')[0];
                     element.value = window.location.href;
-                    element.setSelectionRange(0, element.value.length)
+                    element.select();
                 }catch(e) {}
             }, 500);
         },
