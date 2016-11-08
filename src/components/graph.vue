@@ -89,7 +89,14 @@ module.exports = {
                 color: 'red'
             }
         }
+        // a simple for loop is the best for performance
+        // http://stackoverflow.com/questions/8864430/compare-javascript-array-of-objects-to-get-min-max
+        var earliestDate = Number.POSITIVE_INFINITY;
+        for (var i = self.graphData.length - 1; i >= 0; i--) {
+            if (self.graphData[i].date < earliestDate) earliestDate = self.graphData[i].date;
+        }
         for (var i = 0, length = self.graphData.length; i < length; i++) {
+            if (earliestDate === self.graphData[i].date) continue;
             if (typeof self.graphData[i].seats.avail !== 'undefined') {
                 avail.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
                 avail.y.push(self.graphData[i].seats.avail)
