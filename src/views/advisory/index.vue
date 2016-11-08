@@ -40,11 +40,6 @@ module.exports = {
         route: function() {
             return this.$store.getters.route;
         }
-    },
-    created: function() {
-        $script([dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'lz-string/1.4.4/lz-string.min.js'], 'bundle', function() {
-            $script(dist + 'selectize/0.12.4/standalone/selectize.min.js', 'selectize')
-        })
     }
 }
 </script>

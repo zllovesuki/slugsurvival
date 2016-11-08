@@ -408,10 +408,10 @@ module.exports = {
         this.md = new MobileDetect(window.navigator.userAgent);
     },
     mounted: function() {
-        this.$store.dispatch('setTitle', 'All Classes');
         var self = this;
+        this.$store.dispatch('setTitle', 'All Classes');
         Bluebird.all([
-            this.$store.dispatch('fetchGE'),
+            self.$store.dispatch('fetchGE'),
             self.$store.dispatch('fetchTermCourses')
         ])
         .spread(function(ge) {
@@ -426,11 +426,9 @@ module.exports = {
             self.timeblocks = self.getTimeblocks();
             self.locations = self.getLocations();
             self.credits = self.getCredits();
-            $script.ready('selectize', function() {
-                self.ready = true;
-                self.$nextTick(function() {
-                    self.initSelectize();
-                })
+            self.ready = true;
+            self.$nextTick(function() {
+                self.initSelectize();
             })
         })
     },

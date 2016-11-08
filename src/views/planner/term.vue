@@ -310,56 +310,28 @@ module.exports = {
                 }
             })
         },
-        loadFileSaverBundle: function(callback) {
-            $script([dist + 'canvas/canvas-toBlob.js', dist + 'canvas/FileSaver.min.js'], 'fileSaverBundle')
-            $script.ready('fileSaverBundle', callback)
-        },
-        loadCanvasBundle: function(callback) {
-            var self = this;
-            $script(dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.min.js', 'canvasRootDep');
-            $script.ready('canvasRootDep', function() {
-                self.$store.getters.loading.go(60);
-                $script(dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.svg.min.js', 'canvasBundle')
-                $script.ready('canvasBundle', function() {
-                    self.loadFileSaverBundle(callback);
-                })
-            })
-        },
-        loadICSBundle: function(callback) {
-            var self = this;
-            $script(dist + 'ics.js/connorbode/ics.js', 'ics.js');
-            $script.ready('ics.js', function() {
-                self.loadFileSaverBundle(callback);
-            })
-        },
         saveCalendarAsImage: function() {
             var self = this;
             this.$store.getters.loading.go(30);
-            this.loadCanvasBundle(function() {
-                self.$store.getters.loading.go(80);
-                html2canvas(document.getElementById('calendar-container'), {
-                    useCORS: true
-                }).then(function(canvas) {
-                    canvas.toBlob(function(blob) {
-                        self.$store.getters.loading.go(100);
-                        saveAs(blob, 'Schedule for ' + self.$store.getters.termName + '.png');
-                        if (self.$store.getters.Tracker !== null) {
-                            self.$store.getters.Tracker.trackEvent('saveCalendarAsImage', 'clicked')
-                        }
-                    });
-                })
+            html2canvas(document.getElementById('calendar-container'), {
+                useCORS: true
+            }).then(function(canvas) {
+                self.$store.getters.loading.go(60);
+                canvas.toBlob(function(blob) {
+                    self.$store.getters.loading.go(100);
+                    saveAs(blob, 'Schedule for ' + self.$store.getters.termName + '.png');
+                    if (self.$store.getters.Tracker !== null) {
+                        self.$store.getters.Tracker.trackEvent('saveCalendarAsImage', 'clicked')
+                    }
+                });
             })
         },
         saveCalendarAsICS: function() {
             var self = this;
-            this.$store.getters.loading.go(50);
-            this.loadICSBundle(function() {
-                self.$store.getters.loading.go(100);
-                self.$store.dispatch('exportICS');
-                if (self.$store.getters.Tracker !== null) {
-                    self.$store.getters.Tracker.trackEvent('saveCalendarAsICS', 'clicked')
-                }
-            })
+            self.$store.dispatch('exportICS');
+            if (self.$store.getters.Tracker !== null) {
+                self.$store.getters.Tracker.trackEvent('saveCalendarAsICS', 'clicked')
+            }
         },
         bookmark: function() {
             var html = '';
@@ -434,44 +406,37 @@ module.exports = {
         var self = this;
         this.$store.getters.loading.go(30);
         this.$store.dispatch('setTitle', 'Planner');
-
-        $script.ready('bundle', function() {
-            self.$store.getters.loading.go(50);
-            $script(dist + 'fullcalender/2.9.1/fullcalendar.min.js', 'calendar')
-        })
-        $script.ready('calendar', function() {
-            self.$store.getters.loading.go(70);
-            self.$store.dispatch('fetchTermCourses').then(function() {
-                return self.$store.dispatch('decodeHash')
-                .then(function() {
-                    // no valid was decoded
-                    return self.$store.dispatch('loadAutosave', {
-                        termId: self.termId
-                    })
+        self.$store.dispatch('fetchTermCourses').then(function() {
+            return self.$store.dispatch('decodeHash')
+            .then(function() {
+                // no valid was decoded
+                return self.$store.dispatch('loadAutosave', {
+                    termId: self.termId
                 })
-                .catch(function(e) {
-                    // hash was used instead of local copy
-                    self.lock = true;
-                })
-            }).then(function() {
-                self.ready = true;
-                self.$nextTick(function() {
-                    self.initializeCalendar();
-                    // We will now force the allDaySlot in the bottom of the page
-                    self.$nextTick(function() {
-                        $('.fc-day-grid').insertAfter($('.fc-time-grid'))
-                        $('.fc-divider').insertAfter($('.fc-time-grid'))
-                    })
-
-                })
-            }).catch(function(e) {
-                console.log(e);
-                self.ready = false;
-                self.$store.getters.alert.error('Cannot load course data!')
-            }).finally(function() {
-                if (!self.lock && self.ready) self.$store.commit('shouldAddMargin', true);
-                self.$store.getters.loading.go(100);
             })
+            .catch(function(e) {
+                // hash was used instead of local copy
+                self.lock = true;
+            })
+        }).then(function() {
+            self.$store.getters.loading.go(70);
+            self.ready = true;
+            self.$nextTick(function() {
+                self.initializeCalendar();
+                // We will now force the allDaySlot in the bottom of the page
+                self.$nextTick(function() {
+                    $('.fc-day-grid').insertAfter($('.fc-time-grid'))
+                    $('.fc-divider').insertAfter($('.fc-time-grid'))
+                })
+
+            })
+        }).catch(function(e) {
+            console.log(e);
+            self.ready = false;
+            self.$store.getters.alert.error('Cannot load course data!')
+        }).finally(function() {
+            if (!self.lock && self.ready) self.$store.commit('shouldAddMargin', true);
+            self.$store.getters.loading.go(100);
         })
     }
 }

@@ -1171,7 +1171,7 @@ var self = module.exports = {
             })
         }
         var loadOfflineTimestamp = function() {
-            return Promise.all([
+            return Bluebird.all([
                 storage.getItem('historicDataTimestamp')
             ])
         }

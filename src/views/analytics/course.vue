@@ -184,12 +184,10 @@ module.exports = {
         })
         .then(function(deadline) {
             self.dropDeadline = moment(deadline).format('YYYY-MM-DD');
-            $script.ready('plotly.js', function() {
-                self.ready = true;
-                if (!self.route.params.courseNum) return;
-                self.graphDataReady = false;
-                return self.loadGraph(self.route.params)
-            })
+            self.ready = true;
+            if (!self.route.params.courseNum) return;
+            self.graphDataReady = false;
+            return self.loadGraph(self.route.params)
         })
     }
 }

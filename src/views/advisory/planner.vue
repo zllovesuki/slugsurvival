@@ -466,37 +466,20 @@ module.exports = {
                 })
             })
         },
-        loadFileSaverBundle: function(callback) {
-            $script([dist + 'canvas/canvas-toBlob.js', dist + 'canvas/FileSaver.min.js'], 'fileSaverBundle')
-            $script.ready('fileSaverBundle', callback)
-        },
-        loadCanvasBundle: function(callback) {
-            var self = this;
-            $script(dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.min.js', 'canvasRootDep');
-            $script.ready('canvasRootDep', function() {
-                self.$store.getters.loading.go(60);
-                $script(dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.svg.min.js', 'canvasBundle')
-                $script.ready('canvasBundle', function() {
-                    self.loadFileSaverBundle(callback);
-                })
-            })
-        },
         savePlannerAsImage: function() {
             var self = this;
             this.$store.getters.loading.go(30);
-            this.loadCanvasBundle(function() {
-                self.$store.getters.loading.go(80);
-                html2canvas(document.getElementById('planner-container'), {
-                    useCORS: true
-                }).then(function(canvas) {
-                    canvas.toBlob(function(blob) {
-                        self.$store.getters.loading.go(100);
-                        saveAs(blob, 'Academic Planner.png');
-                        if (self.$store.getters.Tracker !== null) {
-                            self.$store.getters.Tracker.trackEvent('savePlannerAsImage', 'clicked')
-                        }
-                    });
-                })
+            html2canvas(document.getElementById('planner-container'), {
+                useCORS: true
+            }).then(function(canvas) {
+                self.$store.getters.loading.go(60);
+                canvas.toBlob(function(blob) {
+                    self.$store.getters.loading.go(100);
+                    saveAs(blob, 'Academic Planner.png');
+                    if (self.$store.getters.Tracker !== null) {
+                        self.$store.getters.Tracker.trackEvent('savePlannerAsImage', 'clicked')
+                    }
+                });
             })
         },
         bookmarkPlanner: function() {
@@ -566,42 +549,40 @@ module.exports = {
         var self = this;
         var shouldInitSelectize = false;
         this.$store.dispatch('setTitle', 'Planner')
-        $script.ready('selectize', function() {
-            self.$store.dispatch('fetchHistoricData').then(function() {
-                self.windowFrequency()
-                return self.$store.dispatch('decodeHashPlanner')
-                .then(function() {
-                    // no valid was decoded
-                    return self.$store.dispatch('loadLocalAcademicPlanner');
-                })
-                .catch(function(e) {
-                    // hash was used instead of local copy
-                    self.lock = true;
-                })
-            })
+        this.$store.dispatch('fetchHistoricData').then(function() {
+            self.windowFrequency()
+            return self.$store.dispatch('decodeHashPlanner')
             .then(function() {
-                if (self.academicPlanner !== null) {
-                    if (typeof self.academicPlanner.plannerYear !== 'undefined') {
-                        self.plannerYear = self.academicPlanner.plannerYear;
-                        self.table = self.academicPlanner.table;
-                    }else{
-                        // backward compatibility
-                        self.table = self.academicPlanner
-                    }
-                }
-                if (Object.keys(self.table).length > 0) {
-                    shouldInitSelectize = true;
-                    if (!self.lock) self.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
+                // no valid was decoded
+                return self.$store.dispatch('loadLocalAcademicPlanner');
+            })
+            .catch(function(e) {
+                // hash was used instead of local copy
+                self.lock = true;
+            })
+        })
+        .then(function() {
+            if (self.academicPlanner !== null) {
+                if (typeof self.academicPlanner.plannerYear !== 'undefined') {
+                    self.plannerYear = self.academicPlanner.plannerYear;
+                    self.table = self.academicPlanner.table;
                 }else{
-                    //self.addYearAndFull('yes')
-                    self.addYear('skipSave');
-                    //self.editingYear = true;
+                    // backward compatibility
+                    self.table = self.academicPlanner
                 }
+            }
+            if (Object.keys(self.table).length > 0) {
+                shouldInitSelectize = true;
+                if (!self.lock) self.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
+            }else{
+                //self.addYearAndFull('yes')
+                self.addYear('skipSave');
+                //self.editingYear = true;
+            }
+            self.$nextTick(function() {
+                self.historicDataLoaded = true;
                 self.$nextTick(function() {
-                    self.historicDataLoaded = true;
-                    self.$nextTick(function() {
-                        if (shouldInitSelectize) self.initSelectize();
-                    })
+                    if (shouldInitSelectize) self.initSelectize();
                 })
             })
         })

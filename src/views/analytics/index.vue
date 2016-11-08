@@ -18,10 +18,6 @@
 module.exports = {
     components: {
         chevronRight: require('../../lib/icons/chevron-right.vue')
-    },
-    mounted: function() {
-        var self = this;
-        $script(dist + 'plotly.js/1.17.3-no-promise-polyfill/plotly-basic.min.js', 'plotly.js')
     }
 }
 </script>
