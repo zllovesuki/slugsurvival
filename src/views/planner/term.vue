@@ -438,6 +438,10 @@ module.exports = {
             if (!self.lock && self.ready) self.$store.commit('shouldAddMargin', true);
             self.$store.getters.loading.go(100);
         })
+    },
+    beforeDestroy: function() {
+        var termId = this.termId;
+        $('#calendar-' + termId).fullCalendar('destroy')
     }
 }
 </script>
