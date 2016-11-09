@@ -374,6 +374,7 @@ module.exports = {
 
         self.$store.dispatch('fetchTermCourses', this.latestTermCode)
         .then(function() {
+            self.$store.commit('setTermName', self.$store.getters.termsList[self.latestTermCode])
             return self.$store.dispatch('passDropDeadline', self.latestTermCode)
         })
         .then(function(is) {

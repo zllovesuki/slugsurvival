@@ -44,7 +44,7 @@ var self = module.exports = {
     },
     loadAutosave: function(_, payload) {
         termId = payload.termId;
-        alert = (typeof payload.alert === 'undefined' ? true : false);
+        alert = (payload.alert === true);
         return storage.getItem(termId).then(function(array) {
             if (array === null) return;
             return _.dispatch('parseFromCompact', {
@@ -63,12 +63,13 @@ var self = module.exports = {
                             skipSaving: false
                         });
                     })
-                    _.getters.alert.delay(0).error('Class' + (object.deferredRemoval.length > 1 ? 'es' : '') + ' with course number ' + compoundSubject(object.deferredRemoval).delimitAll().make() + ' ' + (object.deferredRemoval.length > 1 ? 'are' : 'is') +  ' no longer offered.')
+                    if (alert) _.getters.alert.delay(0).error('Class' + (object.deferredRemoval.length > 1 ? 'es' : '') + ' with course number ' + compoundSubject(object.deferredRemoval).delimitAll().make() + ' ' + (object.deferredRemoval.length > 1 ? 'are' : 'is') +  ' no longer offered.')
                     if (_.getters.Tracker !== null) {
                         _.getters.Tracker.trackEvent('loadAutosave', 'removed', object.deferredRemoval.length)
                     }
                 }
                 if (alert) _.getters.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
+                return;
             })
         }.bind(this))
     },
@@ -365,7 +366,6 @@ var self = module.exports = {
     },
     fetchTermCourses: function(_, termId) {
         termId =  termId || _.getters.termId;
-        _.commit('setTermName', _.state.termsList[termId])
         if (typeof _.state.flatCourses[termId] !== 'undefined') {
             return Bluebird.resolve();
         }
@@ -445,6 +445,7 @@ var self = module.exports = {
                     }).then(function(eventObj) {
                         if (eventObj.length === 0) object.deferredRemoval.push(split[0]);
                         object.events = object.events.concat(eventObj);
+                        return;
                     })
                 }else{
                     return _.dispatch('getEventObjectsByCourse', {
@@ -453,6 +454,7 @@ var self = module.exports = {
                     }).then(function(eventObj) {
                         if (eventObj.length === 0) object.deferredRemoval.push(split[0]);
                         object.events = object.events.concat(eventObj);
+                        return;
                     })
                 }
             })
@@ -529,6 +531,9 @@ var self = module.exports = {
         var termId = payload.termId, secSeats = (typeof payload.secSeats === 'undefined' ? null : payload.secSeats);
 
         awaitSelection = (payload.awaitSelection === true);
+
+        // if we don't have it, then you got nothing
+        if (typeof _.getters.flatCourses[termId] === 'undefined') return events;
 
         // We are not sure that if input1 is a course object or course number
         if (typeof payload.courseNum !== 'undefined') {
@@ -1336,5 +1341,73 @@ var self = module.exports = {
             document.body.ononline = changeStateToOnline;
             document.body.onoffline = changeStateToOffline;
         }
+    },
+    importQuarterlyFromAcademic: function(_, payload) {
+        var maps = {};
+        // The following code is obviously the most ugly shits
+        Object.keys(payload.table).forEach(function(year) {
+            // term code looks like: 2168
+            // 2 is the prefix for some reasons
+            // 16 is the year
+            // 8 is the quarter, see quarterToNum()
+            // and Fall is ALWAYS the first one
+            maps['2' + (parseInt(payload.plannerYear) + parseInt(year) - 1).toString().slice(-2) + helper.quarterToNum('fall')] = payload.table[year].fall;
+
+            ['winter', 'spring', 'summer'].forEach(function(quarter) {
+                maps['2' + (parseInt(payload.plannerYear) + parseInt(year)).toString().slice(-2) + helper.quarterToNum(quarter)] = payload.table[year][quarter.toLowerCase()];
+            })
+        })
+        return Bluebird.map(Object.keys(maps), function(termId) {
+            return _.dispatch('fetchTermCourses', termId)
+        }, { concurrency: 4 })
+        .then(function() {
+            console.log('fetched')
+            // the most inefficient code in the entire universe
+            var newMaps = {};
+            Object.keys(maps).forEach(function(termId) {
+                newMaps[termId] = [];
+                maps[termId].forEach(function(courseCode) {
+                    Object.keys(_.getters.flatCourses[termId]).forEach(function(courseNum) {
+                        if (_.getters.flatCourses[termId][courseNum].c == courseCode) {
+                            newMaps[termId].push(courseNum)
+                        }
+                    })
+                })
+            })
+            return newMaps;
+        })
+        .then(function(numMaps) {
+            var events = {};
+            return Bluebird.mapSeries(Object.keys(numMaps), function(termId) {
+                events[termId] = [];
+                return Bluebird.mapSeries(numMaps[termId], function(courseNum) {
+                    return _.dispatch('getEventObjectsByCourse', {
+                        termId: termId,
+                        courseNum: courseNum,
+                        sectionNum: null
+                    }).then(function(eventObj) {
+                        events[termId] = events[termId].concat(eventObj);
+                        return;
+                    })
+                })
+            })
+            .then(function() {
+                return events;
+            })
+        })
+        .then(function(events) {
+            return Bluebird.mapSeries(Object.keys(events), function(termId) {
+                return _.dispatch('loadAutosave', {
+                    termId: termId,
+                    alert: false
+                }).then(function() {
+                    if (typeof _.getters.eventSource[termId] !== 'undefined') return;
+                    return _.commit('mergeEventSource', {
+                        termId: termId,
+                        events: events[termId]
+                    });
+                })
+            })
+        })
     }
 }

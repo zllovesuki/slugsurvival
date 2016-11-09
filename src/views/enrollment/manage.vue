@@ -288,6 +288,7 @@ module.exports = {
 
         self.$store.dispatch('fetchTermCourses', this.latestTermCode)
         .then(function() {
+            self.$store.commit('setTermName', self.$store.getters.termsList[self.latestTermCode])
             self.loading.go(100);
             self.ready = true;
         })

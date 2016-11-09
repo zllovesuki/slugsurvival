@@ -114,6 +114,13 @@
         <div class="overflow-hidden bg-white rounded mb2 clearfix" key="export" v-show="historicDataLoaded">
             <div class="m0 p2">
                 <div class="clearfix">
+                    <!--<div class="left">
+                        <div class="sm-flex">
+                            <div class="p1 m1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.course }" @click="importPlanner">
+                                Import to Planner
+                            </div>
+                        </div>
+                    </div>-->
                     <div class="right">
                         <div class="sm-flex">
                             <div class="p1 m1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.share }" v-on:click.prevent.stop="showShareMenu"><i class="fa fa-share fa-lg">&nbsp;</i>click here to share the planner</div>
@@ -307,6 +314,30 @@ module.exports = {
         finishEdit: function() {
             this.editingYear = false;
             this.savePlanner();
+        },
+        importPlanner: function() {
+            var self = this;
+            var html = '';
+
+            html += ['<p>', 'We can import your academic planner into your previous quarters.', '</p>'].join('')
+            html += ['<p>', 'So we can give you suggestions on classes!', '</p>'].join('')
+            html += ['<p>', '(Very useful if you\'re a returning student)', '</p>'].join('')
+
+            self.alert
+            .okBtn('Let\s do it!')
+            .cancelBtn('Nevermind')
+            .confirm(html)
+            .then(function(resolved) {
+                resolved.event.preventDefault();
+                if (resolved.buttonClicked !== 'ok') return;
+                self.alert.success('We are importing your classes! Please wait...')
+                self.$store.dispatch('importQuarterlyFromAcademic', {
+                    plannerYear: self.plannerYear,
+                    table: self.table
+                }).then(function(maps) {
+                    self.alert.success('Import success...Greatness awaits!')
+                })
+            })
         },
         fillPDF: function() {
             var self = this;

@@ -1,5 +1,25 @@
 var self = module.exports = {
 
+    quarterToNum: function(quarter) {
+        switch (quarter.toLowerCase()) {
+            case 'fall':
+            return '8';
+            break;
+            case 'winter':
+            return '0';
+            break;
+            case 'spring':
+            return '2';
+            break;
+            case 'summer':
+            return '4';
+            break;
+            default:
+            return null;
+            break;
+        }
+    },
+
     getYears: function(flatTermsList) {
         var tmp;
         var years = {};

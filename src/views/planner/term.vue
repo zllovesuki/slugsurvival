@@ -407,11 +407,13 @@ module.exports = {
         this.$store.getters.loading.go(30);
         this.$store.dispatch('setTitle', 'Planner');
         self.$store.dispatch('fetchTermCourses').then(function() {
+            self.$store.commit('setTermName', self.$store.getters.termsList[self.$store.getters.termId])
             return self.$store.dispatch('decodeHash')
             .then(function() {
                 // no valid was decoded
                 return self.$store.dispatch('loadAutosave', {
-                    termId: self.termId
+                    termId: self.termId,
+                    alert: true
                 })
             })
             .catch(function(e) {

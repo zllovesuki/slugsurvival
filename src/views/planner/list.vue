@@ -414,6 +414,7 @@ module.exports = {
             self.$store.dispatch('fetchTermCourses')
         ])
         .spread(function(ge) {
+            self.$store.commit('setTermName', self.$store.getters.termsList[self.$store.getters.termId])
             self.courses = self.$store.getters.sortedCourses[self.termId];
             self.initReactive();
             self.availableGE = [].concat.apply([], Object.keys(self.courseInfo[self.termId]).map(function(courseNum) {
