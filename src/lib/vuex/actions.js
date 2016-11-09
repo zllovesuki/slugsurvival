@@ -1365,30 +1365,48 @@ var self = module.exports = {
             console.log('fetched')
             // the most inefficient code in the entire universe
             var newMaps = {};
-            Object.keys(maps).forEach(function(termId) {
+            return Bluebird.mapSeries(Object.keys(maps), function(termId) {
                 newMaps[termId] = [];
-                maps[termId].forEach(function(courseCode) {
-                    Object.keys(_.getters.flatCourses[termId]).forEach(function(courseNum) {
+                return Bluebird.mapSeries(maps[termId], function(courseCode) {
+                    return Bluebird.map(Object.keys(_.getters.flatCourses[termId]), function(courseNum) {
                         if (_.getters.flatCourses[termId][courseNum].c == courseCode) {
-                            newMaps[termId].push(courseNum)
+                            newMaps[termId].push({
+                                courseCode: courseCode,
+                                courseNum: courseNum
+                            });
                         }
-                    })
+                    }, { concurrency: 100 })
                 })
             })
-            return newMaps;
+            .then(function() {
+                return newMaps
+            })
         })
         .then(function(numMaps) {
+            // we want to also do schedule optimization for the user, at least try to. this will be the basic algor
+            // this is a very primitive approach as the order of adding matters, which is not good
             var events = {};
+            var breaker = {};
             return Bluebird.mapSeries(Object.keys(numMaps), function(termId) {
                 events[termId] = [];
-                return Bluebird.mapSeries(numMaps[termId], function(courseNum) {
-                    return _.dispatch('getEventObjectsByCourse', {
-                        termId: termId,
-                        courseNum: courseNum,
-                        sectionNum: null
-                    }).then(function(eventObj) {
-                        events[termId] = events[termId].concat(eventObj);
-                        return;
+                return _.dispatch('loadAutosave', {
+                    termId: termId,
+                    alert: false
+                }).then(function() {
+                    if (typeof _.getters.eventSource[termId] !== 'undefined') return;
+                    return Bluebird.mapSeries(numMaps[termId], function(obj) {
+                        if (typeof breaker[obj.courseCode] === 'undefined') breaker[obj.courseCode] = false;
+                        if (breaker[obj.courseCode] === true) return;
+                        if (helper.checkForConflict(_.state.dateMap, events[termId], _.getters.flatCourses[termId][obj.courseNum]) !== false) return;
+                        return _.dispatch('getEventObjectsByCourse', {
+                            termId: termId,
+                            courseNum: obj.courseNum,
+                            sectionNum: null
+                        })
+                        .then(function(eventObj) {
+                            events[termId] = events[termId].concat(eventObj);
+                            breaker[obj.courseCode] = true;
+                        })
                     })
                 })
             })
@@ -1398,16 +1416,11 @@ var self = module.exports = {
         })
         .then(function(events) {
             return Bluebird.mapSeries(Object.keys(events), function(termId) {
-                return _.dispatch('loadAutosave', {
+                if (typeof _.getters.eventSource[termId] !== 'undefined' || events[termId].length === 0) return;
+                return _.commit('mergeEventSource', {
                     termId: termId,
-                    alert: false
-                }).then(function() {
-                    if (typeof _.getters.eventSource[termId] !== 'undefined' || events[termId].length === 0) return;
-                    return _.commit('mergeEventSource', {
-                        termId: termId,
-                        events: events[termId]
-                    });
-                })
+                    events: events[termId]
+                });
             })
         })
     }
