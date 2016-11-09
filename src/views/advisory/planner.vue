@@ -308,6 +308,13 @@ module.exports = {
             html += ['<p>', 'So we can give you suggestions on classes!', '</p>'].join('')
             html += ['<p>', '(Very useful if you\'re a returning student)', '</p>'].join('')
 
+            var success = '';
+
+            success += ['<p>', 'We made our best guesses as to what your schedules might look like.', '</p>'].join('')
+            success += ['<p>', '(We only need the list of classes anyway.)', '</p>'].join('')
+            success += '<hr />';
+            success += ['<p>', '(We will soon rollout suggestions to classes based on your previous classes.)', '</p>'].join('')
+
             self.alert
             .okBtn('Let\s do it!')
             .cancelBtn('Nevermind')
@@ -320,7 +327,9 @@ module.exports = {
                     plannerYear: self.plannerYear,
                     table: self.table
                 }).then(function(maps) {
-                    self.alert.success('Import successfully...Greatness awaits!')
+                    return self.alert
+                    .okBtn('Cool')
+                    .alert(success)
                 })
             })
         },
