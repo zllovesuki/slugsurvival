@@ -47,6 +47,7 @@ var self = module.exports = {
         alert = (payload.alert === true);
         return storage.getItem(termId).then(function(array) {
             if (array === null) return;
+            if (typeof array === 'object' && array.length === 0) return;
             return _.dispatch('parseFromCompact', {
                 termId: termId,
                 array: array
@@ -1401,7 +1402,7 @@ var self = module.exports = {
                     termId: termId,
                     alert: false
                 }).then(function() {
-                    if (typeof _.getters.eventSource[termId] !== 'undefined') return;
+                    if (typeof _.getters.eventSource[termId] !== 'undefined' || events[termId].length === 0) return;
                     return _.commit('mergeEventSource', {
                         termId: termId,
                         events: events[termId]
