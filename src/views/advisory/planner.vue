@@ -41,7 +41,7 @@
                                 <i class="fa fa-spinner fa-pulse fa-lg fa-fw"></i>
                             </div>
                         </div>
-                        <div class="col col-6" v-show="Object.keys(table).length > 1">
+                        <div class="col col-6" v-show="table[2]">
                             <div @click="delYear"
                             v-show="!modifyingTable && !lock"
                             class="h5 black clickable"
@@ -69,7 +69,7 @@
                     <div class="inline-block col col-2">
                         <div class="p1 col col-12 parent-cell">
                             <div class="child-cell h6" @click="focusEdit">
-                                <span v-if="year == 1 && editingYear === true">
+                                <span v-show="year == 1 && editingYear === true">
                                     <input id="editingYear" class="inline-block field" size="4" v-model.lazy="plannerYear" v-on:blur="finishEdit" /> - {{ parseInt(plannerYear) + parseInt(year) }}
                                 </span>
                                 <span v-show="year > 1 || (year == 1 && editingYear === false)">
@@ -87,25 +87,9 @@
                         <div class="inline-block col col-3" v-for="(courses, quarter) in matrix">
                             <div class="p1 col col-12">
                                 <select multiple style="width: 100%" v-model="table[year][quarter]" v-bind:id="year + '-' + quarter">
-                                    <option :value="code" v-for="code in historicFrequency[quarter]" track-by="code">{{ code }}</option>
+                                    <option :value="code" v-for="code in historicFrequency[quarter]" :key="code">{{ code }}</option>
                                 </select>
                             </div>
-                            <!--<div class="p1 col col-12 center">
-                                <div class="col col-6">
-                                    <div @click="addCourse(year, quarter)"
-                                    class="h5 black clickable"
-                                    v-bind:style="{ backgroundColor: colorMap.blank }">
-                                        <i class="fa fa-plus-square-o fa-lg"></i>
-                                    </div>
-                                </div>
-                                <div class="col col-6" v-show="Object.keys(table[year][quarter]).length > 1">
-                                    <div @click="delCourse(year, quarter)"
-                                    class="h5 black clickable"
-                                    v-bind:style="{ backgroundColor: colorMap.blank }">
-                                        <i class="fa fa-minus-square-o fa-lg"></i>
-                                    </div>
-                                </div>
-                            </div>-->
                         </div>
                     </div>
                 </div>
@@ -114,13 +98,13 @@
         <div class="overflow-hidden bg-white rounded mb2 clearfix" key="export" v-show="historicDataLoaded">
             <div class="m0 p2">
                 <div class="clearfix">
-                    <!--<div class="left">
+                    <div class="left">
                         <div class="sm-flex">
                             <div class="p1 m1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.course }" @click="importPlanner">
                                 Import to Planner
                             </div>
                         </div>
-                    </div>-->
+                    </div>
                     <div class="right">
                         <div class="sm-flex">
                             <div class="p1 m1 flex-auto h6 btn white clickable" v-bind:style="{ backgroundColor: colorMap.share }" v-on:click.prevent.stop="showShareMenu"><i class="fa fa-share fa-lg">&nbsp;</i>click here to share the planner</div>
@@ -265,12 +249,12 @@ module.exports = {
                         if (largest === -1) return -1;
                         return Bluebird.map(Object.keys(self.table[largest]), function(quarter) {
                             self.unSelectize(largest, quarter);
-                            self.$delete(self.table[largest], quarter);
-                        })
+                            return self.$delete(self.table[largest], quarter);
+                        }, { concurrency: 4 })
                         .then(function() {
                             self.$delete(self.table, parseInt(largest));
                             self.modifyingTable = false;
-                            self.savePlanner();
+                            return self.savePlanner();
                         })
                     }, 500)
                 })
@@ -283,9 +267,10 @@ module.exports = {
                 return Bluebird.map(Object.keys(self.table[year]), function(quarter) {
                     self.table[year][quarter] = self.table[year][quarter].filter(function(v, i, s) {
                         return s.indexOf(v) === i;
-                    })
-                })
-            })
+                    });
+                    return;
+                }, { concurrency: 4 })
+            }, { concurrency: 2 })
             .then(function() {
                 return self.$store.commit('saveAcademicPlanner', {
                     plannerYear: self.plannerYear,
@@ -335,7 +320,7 @@ module.exports = {
                     plannerYear: self.plannerYear,
                     table: self.table
                 }).then(function(maps) {
-                    self.alert.success('Import success...Greatness awaits!')
+                    self.alert.success('Import successfully...Greatness awaits!')
                 })
             })
         },
