@@ -24,6 +24,44 @@
                 </div>
 			</div>
 		</div>
+        <div class="overflow-hidden bg-white rounded mb2" v-show="ready && !route.params.termId && !route.params.courseNum">
+			<div class="m0 p1">
+				<div class="clearfix">
+					<span class="btn black h4">Top Ten Classes in the Last Hour: </span>
+				</div>
+				<div class="clearfix">
+					<span class="ml1 btn black h5 muted not-clickable">
+                        Because the Hunger Game is real.
+                    </span>
+				</div>
+			</div>
+			<div class="m0 p1 border-top">
+                <div class="clearfix">
+                    <span class="btn black h5 not-clickable"><i>Data for {{ termName }}: </i></span>
+				</div>
+                <div class="m0 p1">
+    				<div class="clearfix">
+                        <div class="overflow-scroll" v-show="heat.length > 0">
+                            <table class="table-light">
+                                <thead class="bg-darken-1 h6">
+                                    <th>Course</th>
+                                    <th>Changes</th>
+                                </thead>
+                                <tbody class="h5">
+                                    <tr class="clickable" v-on:click.prevent.stop="openAnalytics(result.course)" v-for="result in heat" :key="result.num">
+                                        <td class="nowrap">{{ result.course.c }}</td>
+                                        <td class="nowrap">{{ result.count }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div v-show="heat.length === 0">
+                            No results.
+                        </div>
+    				</div>
+                </div>
+			</div>
+		</div>
         <search :show="searchModal" v-on:close="searchModal = false" :callback="openAnalytics" :selected-term-id="latestTermCode"></search>
         <transition name="fade" mode="out-in">
             <div class="overflow-hidden bg-white rounded mb2" v-show="!ready || !graphDataReady">
@@ -68,7 +106,9 @@ module.exports = {
             course: {},
             sectionsData: [],
             sectionsCanvasId: [],
-            graphData: []
+            graphData: [],
+            heat: [],
+            heatTimer: null
         }
     },
     computed: {
@@ -172,6 +212,19 @@ module.exports = {
                 self.course = self.flatCourses[params.termId][params.courseNum];
                 self.graphDataReady = true;
             });
+        },
+        fetchHeat: function() {
+            var self = this;
+            return fetch(config.trackingURL + '/fetch/' + self.latestTermCode + '/heat/3600').then(function(res) {
+                return res.json();
+            }).then(function(res) {
+                if (res && res.ok && res.results && res.results.length > 0) self.heat = res.results.map(function(obj) {
+                    return {
+                        course: self.flatCourses[self.latestTermCode][obj.group],
+                        count: obj.reduction
+                    }
+                }).slice(0, 10);
+            })
         }
     },
     mounted: function() {
@@ -179,6 +232,9 @@ module.exports = {
         this.canvasId = this.makeid();
         this.$store.dispatch('setTitle', 'Analytics');
         return self.$store.dispatch('fetchTermCourses', self.latestTermCode)
+        .then(function() {
+            return self.fetchHeat()
+        })
         .then(function() {
             self.$store.commit('setTermName', self.$store.getters.termsList[self.latestTermCode])
             return self.$store.dispatch('calculateDropDeadline', self.latestTermCode)
@@ -190,7 +246,8 @@ module.exports = {
             self.graphDataReady = false;
             return self.loadGraph(self.route.params)
         })
-    }
+    },
+
 }
 </script>
 
