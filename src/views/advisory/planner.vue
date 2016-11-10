@@ -86,9 +86,7 @@
                     <div class="inline-block col col-10">
                         <div class="inline-block col col-3" v-for="(courses, quarter) in matrix">
                             <div class="p1 col col-12">
-                                <select multiple style="width: 100%" v-model="table[year][quarter]" v-bind:id="year + '-' + quarter">
-                                    <option :value="code" v-for="code in historicFrequency[quarter]" :key="code">{{ code }}</option>
-                                </select>
+                                <select multiple style="width: 100%" v-bind:id="year + '-' + quarter"></select>
                             </div>
                         </div>
                     </div>
@@ -199,6 +197,10 @@ module.exports = {
         Selectize: function(year, quarter) {
             var self = this;
             this.selectizeRef[year + '-' + quarter] = $('#' + year + '-' + quarter).selectize({
+                options: self.historicFrequency[quarter].map(function(el) {
+                    return { text: el, value: el }
+                }),
+                items: (typeof self.table[year] !== 'undefined' && typeof self.table[year][quarter] !== 'undefined' ? self.table[year][quarter] : []),
                 placeholder: 'select...',
                 dropdownParent: "body",
                 hideSelected: true,
