@@ -29,13 +29,11 @@
     				</div>
     				<div class="clearfix">
     					<table class="h6 col col-12">
-    						<template v-for="course in courses" track-by="course.num">
-    							<tr>
-    								<td class="col col-6">
-    									<span class="btn clickable left" @click="showCourse(latestTermCode, course)">{{ course.c }} - {{ course.s }}</span>
-    								</td>
-    							</tr>
-    						</template>
+                            <tr v-for="course in courses" :key="course.num">
+                                <td class="col col-6">
+                                    <span class="btn clickable left" @click="showCourse(latestTermCode, course)">{{ course.c }} - {{ course.s }}</span>
+                                </td>
+                            </tr>
                             <tr v-show="courses.length === 0">
                                 <td class="col col-6">
                                     <span class="btn not-clickable left muted">(none)</span>
