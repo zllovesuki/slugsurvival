@@ -68,6 +68,7 @@ module.exports = {
             y: [],
             mode: 'lines',
             line: {
+                shape: 'spline',
                 color: 'green'
             }
         }
@@ -77,6 +78,7 @@ module.exports = {
             y: [],
             mode: 'lines',
             line: {
+                shape: 'spline',
                 color: 'blue'
             }
         }
@@ -86,6 +88,7 @@ module.exports = {
             y: [],
             mode: 'lines',
             line: {
+                shape: 'spline',
                 color: 'red'
             }
         }
@@ -93,13 +96,13 @@ module.exports = {
         var outliers = self.graphData.sort(function(a, b) {
             return a.date - b.date;
         }).reduce(function(results, data, i, arr) {
-            if (arr[i + 1] && arr[i + 1].date - arr[i].date > 86400) {
+            if (arr[i + 1] && arr[i + 1].date - arr[i].date > 604800) {
                 results.push(arr[i].date)
             }
             return results
         }, [])
         for (var i = 0, length = self.graphData.length; i < length; i++) {
-            if (outliers.length > 0 && outliers[0] >= self.graphData[i].date) continue;
+            if (outliers.length > 0 && outliers[outliers.length - 1] >= self.graphData[i].date) continue;
             if (typeof self.graphData[i].seats.avail !== 'undefined') {
                 avail.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
                 avail.y.push(self.graphData[i].seats.avail)
