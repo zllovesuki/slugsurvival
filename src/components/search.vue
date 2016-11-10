@@ -6,7 +6,7 @@
             </h4>
             <span slot="body">
                 <ul class="list-reset mt1">
-                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="cb(result)" v-for="result in search.results" track-by="result.num" v-show="!search.dirty">
+                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="cb(result)" v-for="result in search.results" :key="result.num" v-show="!search.dirty">
                         {{ result.c }} - {{ result.s }}  - {{ result.n }}
                     </li>
                     <li v-show="search.dirty">...Typing</li>

@@ -59,7 +59,7 @@
             </transition-group>
         </div>
         <search :show="searchModal" v-on:close="closeSearchModal" :show-extra="true" :callback="promptAddClass" :selected-term-id="termId" :do-not-modify-class="true"></search>
-        <div class="bg-white rounded border mb3" v-for="(subjectCourses, subject) in courses" track-by="subject" v-show="initialized && hideSubject[subject] !== true">
+        <div class="bg-white rounded border mb3" v-for="(subjectCourses, subject) in courses" :key="subject" v-show="initialized && hideSubject[subject] !== true">
             <div class="m0 p1">
                 <div class="clearfix">
                     <span class="btn black h4" @click="collapseSubject[subject] = !collapseSubject[subject]">{{ subject }}</span>
@@ -84,7 +84,7 @@
                             Time and Location
                         </div>
                     </div>
-                    <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" track-by="course.num" v-show="hideCourses[course.num] !== true">
+                    <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" :key="course.num" v-show="hideCourses[course.num] !== true">
                         <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
                             {{ course.c }} - {{ course.s }}
                         </div>

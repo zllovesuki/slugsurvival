@@ -10,22 +10,20 @@
                     </div>
                 </div>
             </div>
-            <template v-for="(term, index) in flatTermsList" track-by="term.code">
-                <div class="m0 p0 border-top" v-bind:class="{ 'hide': index > 3 && hidePrior }">
-                    <div class="clearfix">
-                        <div class="left black">
-                            <router-link :to="{ name: 'term', params: { termId: term.code } }" class="btn block h5" v-bind:class="{ 'muted': index > 0 }">
-                                {{ term.name }}
-                            </router-link>
-                        </div>
-                        <div class="right">
-                            <a class="btn h6 muted not-clickabble" v-show="saved.indexOf(term.code) !== -1">
-                                &#128190;
-                            </a>
-                        </div>
+            <div class="m0 p0 border-top" v-bind:class="{ 'hide': index > 3 && hidePrior }" v-for="(term, index) in flatTermsList" :key="term.code">
+                <div class="clearfix">
+                    <div class="left black">
+                        <router-link :to="{ name: 'term', params: { termId: term.code } }" class="btn block h5" v-bind:class="{ 'muted': index > 0 }">
+                            {{ term.name }}
+                        </router-link>
+                    </div>
+                    <div class="right">
+                        <a class="btn h6 muted not-clickabble" v-show="saved.indexOf(term.code) !== -1">
+                            &#128190;
+                        </a>
                     </div>
                 </div>
-            </template>
+            </div>
             <div class="m0 p0 border-top">
                 <div class="clearfix">
                     <div class="left black">
