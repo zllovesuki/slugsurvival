@@ -39,7 +39,7 @@
         <div class="overflow-hidden bg-white rounded mb2" v-show="historicDataLoaded">
             <div class="m0 p1">
                 <div class="clearfix">
-                    <a class="btn black h5" v-on:click="hideHistoric = !hideHistoric">Wondering what classes will be offered next? </a>
+                    <a class="btn black h5" v-on:click="hideHistoric = !hideHistoric"><i class="fa fa-question fa-2x">&nbsp;</i> Wondering what classes will be offered next? </a>
                 </div>
                 <div class="clearfix" v-bind:class="{ 'hide': hideHistoric }">
                     <span class="ml1 btn black h6 muted not-clickable">
@@ -58,15 +58,17 @@
                             <thead class="bg-darken-1 h6">
                                 <th>Course</th>
                                 <th>Quarter</th>
+                                <th>Likely?</th>
                                 <th>Frequency</th>
                                 <th>Occurence</th>
                             </thead>
                             <tbody class="h5">
                                 <tr v-for="result in search.results">
-                                    <td>{{ result.code }}</td>
+                                    <td class="nowrap">{{ result.code }}</td>
                                     <td>{{ result.qtr }}</td>
+                                    <td>{{ result.pos }}</td>
                                     <td>{{ result.fre }}</td>
-                                    <td>{{ result.occur }}</td>
+                                    <td class="nowrap">{{ result.occur }}</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -107,6 +109,9 @@ module.exports = {
         },
         flatTermsList: function() {
             return this.$store.getters.flatTermsList;
+        },
+        historicFrequency: function() {
+            return this.$store.getters.historicFrequency;
         }
     },
     methods: {
@@ -127,8 +132,9 @@ module.exports = {
                         results.push({
                             code: code,
                             qtr: quarter,
+                            pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
                             fre: keys.length + '/' + this.numOfYears,
-                            occur: keys.join(', ')
+                            occur: keys.length > 4 ? keys.reverse().slice(0, 4).join(', ') + '...' : keys.reverse().join(', ')
                         })
                     }
                 }
