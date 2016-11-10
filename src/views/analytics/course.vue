@@ -41,7 +41,7 @@
 				</div>
                 <div class="m0 p1">
     				<div class="clearfix">
-                        <div class="overflow-scroll" v-show="heat.length > 0">
+                        <div class="overflow-hidden" v-show="heat.length > 0">
                             <table class="table-light">
                                 <thead class="bg-darken-1 h6">
                                     <th>Course</th>
