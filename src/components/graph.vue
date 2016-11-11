@@ -68,7 +68,7 @@ module.exports = {
             y: [],
             mode: 'lines',
             line: {
-                shape: 'spline',
+                shape: 'linear',
                 color: 'green'
             }
         }
@@ -78,7 +78,7 @@ module.exports = {
             y: [],
             mode: 'lines',
             line: {
-                shape: 'spline',
+                shape: 'linear',
                 color: 'blue'
             }
         }
@@ -88,7 +88,7 @@ module.exports = {
             y: [],
             mode: 'lines',
             line: {
-                shape: 'spline',
+                shape: 'linear',
                 color: 'red'
             }
         }
