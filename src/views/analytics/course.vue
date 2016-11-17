@@ -85,7 +85,7 @@
                 <div class="m0 p0">
                     <div class="clearfix">
                         <div v-bind:id="sectionsCanvasId[index]"></div>
-                        <graph :canvas-id="sectionsCanvasId[index]" :graph-data="section" :graph-title="'Section ' + section[0].num"></graph>
+                        <graph :section="true ":canvas-id="sectionsCanvasId[index]" :graph-data="section" :graph-title="'Section ' + section[0].num"></graph>
                     </div>
                 </div>
             </div>

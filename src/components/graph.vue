@@ -18,6 +18,10 @@ module.exports = {
             type: Array,
             required: true
         },
+        section: {
+            type: Boolean,
+            default: false
+        }
     },
     data: function() {
         return {
@@ -92,17 +96,17 @@ module.exports = {
                 color: 'red'
             }
         }
-        // Remove the earliest outliers
-        var outliers = self.graphData.sort(function(a, b) {
-            return a.date - b.date;
-        }).reduce(function(results, data, i, arr) {
-            if (arr[i + 1] && arr[i + 1].date - arr[i].date > 604800) {
-                results.push(arr[i].date)
+        var wait = {
+            name: 'Waitlist',
+            x: [],
+            y: [],
+            mode: 'markers',
+            line: {
+                shape: 'linear',
+                color: 'black'
             }
-            return results
-        }, [])
+        }
         for (var i = 0, length = self.graphData.length; i < length; i++) {
-            if (outliers.length > 0 && outliers[outliers.length - 1] >= self.graphData[i].date) continue;
             if (typeof self.graphData[i].seats.avail !== 'undefined') {
                 avail.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
                 avail.y.push(self.graphData[i].seats.avail)
@@ -115,6 +119,9 @@ module.exports = {
             cap.y.push(self.graphData[i].seats.cap)
             enrolled.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
             enrolled.y.push(self.graphData[i].seats.enrolled)
+            wait.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
+            if (self.section) wait.y.push(self.graphData[i].seats.wait)
+            else wait.y.push(self.graphData[i].seats.waitTotal)
         }
         if (avail.x.length > 0) {
             graphConfig.push(avail);
@@ -129,6 +136,7 @@ module.exports = {
         }
         graphConfig.push(enrolled);
         graphConfig.push(cap);
+        graphConfig.push(wait);
         self.canvas = Plotly.newPlot(ctx, graphConfig, layout, {displaylogo: false});
     }
 }
