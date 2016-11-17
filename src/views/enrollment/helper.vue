@@ -268,7 +268,7 @@ module.exports = {
                     self.alert.success('Subscribed to changes!');
                     self.$router.push({ name: 'enrollManage'})
                     if (self.$store.getters.Tracker !== null) {
-                        self.$store.getters.Tracker.trackEvent('updateWatch', 'new_courses', self.courses.join(','));
+                        self.$store.getters.Tracker.trackEvent('updateWatch', 'new_courses', self.courses.map(function(el) { return el.c; }).join(','));
                     }
                 })
             })

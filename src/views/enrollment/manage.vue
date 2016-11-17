@@ -155,7 +155,7 @@ module.exports = {
                 self.sub.inFlight = false;
                 self.alert.success('Subscription list updated.');
                 if (self.$store.getters.Tracker !== null) {
-                    self.$store.getters.Tracker.trackEvent('updateWatch', 'update_courses', self.courses.join(','));
+                    self.$store.getters.Tracker.trackEvent('updateWatch', 'update_courses', self.courses.map(function(el) { return el.c; }).join(','));
                 }
             })
         },
