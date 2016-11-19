@@ -417,7 +417,7 @@ module.exports = {
                 // no valid was decoded
                 return self.$store.dispatch('loadAutosave', {
                     termId: self.termId,
-                    alert: true
+                    alert: false
                 })
             })
             .catch(function(e) {
