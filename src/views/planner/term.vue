@@ -213,9 +213,9 @@ module.exports = {
                                 resolved.event.preventDefault();
                                 if (resolved.buttonClicked !== 'ok') return;
                                 if (isSection) {
-                                    self.displaySectionsOnCalendar(calEvent.number);
+                                    return self.displaySectionsOnCalendar(calEvent.number);
                                 }else{
-                                    self.promptToRemove(calEvent);
+                                    return self.promptToRemove(calEvent);
                                 }
                             });
                         }
@@ -264,7 +264,7 @@ module.exports = {
             })
         },
         displaySectionsOnCalendar: function(courseNum) {
-            this.$store.getters.loading.go(30);
+            this.$store.getters.loading.go(50);
             var self = this;
             var termId = this.termId;
             this.searchModal = false;
@@ -272,12 +272,16 @@ module.exports = {
                 termId: termId,
                 courseNum: courseNum
             }).then(function() {
+                self.$store.getters.loading.go(60);
                 return self.$store.dispatch('grayOutEvents', termId)
             }).then(function() {
+                self.$store.getters.loading.go(70);
                 return self.$store.dispatch('pushAwaitSectionsToEventSource', {
                     termId: termId,
                     courseNum: courseNum
                 })
+            }).then(function() {
+                self.$store.getters.loading.go(100);
             })
         },
         initializeCalendar: function() {
