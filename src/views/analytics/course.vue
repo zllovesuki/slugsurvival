@@ -80,16 +80,14 @@
                 </div>
             </div>
         </div>
-        <template v-for="(section, index) in sectionsData" v-if="ready && graphDataReady && sectionsData.length > 0">
-            <div class="overflow-hidden bg-white rounded mb2 clearfix">
-                <div class="m0 p0">
-                    <div class="clearfix">
-                        <div v-bind:id="sectionsCanvasId[index]"></div>
-                        <graph :section="true ":canvas-id="sectionsCanvasId[index]" :graph-data="section" :graph-title="'Section ' + section[0].num"></graph>
-                    </div>
+        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-for="(section, index) in sectionsData" v-if="ready && graphDataReady && sectionsData.length > 0">
+            <div class="m0 p0">
+                <div class="clearfix">
+                    <div v-bind:id="sectionsCanvasId[index]"></div>
+                    <graph :section="true ":canvas-id="sectionsCanvasId[index]" :graph-data="section" :graph-title="'Section ' + section[0].num"></graph>
                 </div>
             </div>
-        </template>
+        </div>
     </div>
 </template>
 <script>
@@ -133,14 +131,14 @@ module.exports = {
     },
     watch: {
         'route': function(val, oldVal) {
-            if (!this.route.params.termId || !this.route.params.courseNum) {
+            this.$nextTick(function() {
+                this.canvasId = null;
                 this.graphData = [];
                 this.sectionsData = [];
-                this.graphDataReady = true;
-                return;
-            }
-            this.$nextTick(function() {
-                return this.loadGraph(this.route.params)
+                this.sectionsCanvasId = [];
+                this.$nextTick(function() {
+                    return this.loadGraph(this.route.params)
+                })
             })
         }
     },
@@ -166,7 +164,9 @@ module.exports = {
             return text;
         }, // http://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
         loadGraph: function(params) {
+            if (!params.termId || !params.courseNum) return;
             var self = this;
+            this.canvasId = this.makeid();
             self.graphData = [];
             return fetch(config.trackingURL + '/fetch/' + params.termId + '/' + params.courseNum).then(function(res) {
                 return res.json();
@@ -229,7 +229,6 @@ module.exports = {
     },
     mounted: function() {
         var self = this;
-        this.canvasId = this.makeid();
         this.$store.dispatch('setTitle', 'Analytics');
         return self.$store.dispatch('fetchTermCourses', self.latestTermCode)
         .then(function() {
