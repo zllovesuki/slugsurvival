@@ -68,7 +68,6 @@ var self = module.exports = {
                         _.getters.Tracker.trackEvent('loadAutosave', 'removed', object.deferredRemoval.length)
                     }
                 }
-                if (alert) _.getters.alert.okBtn('Cool!').alert('<p>We found a planner saved in your browser!</p>')
                 return;
             })
         }.bind(this))
