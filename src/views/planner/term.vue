@@ -137,17 +137,20 @@ module.exports = {
                 // Of course restore any missing color first
                 return self.$store.dispatch('restoreEventsColor', termId)
                 .then(function() {
-                    // we first remove all awaitSelections of the old one
-                    return self.$store.dispatch('removeFromSource', {
-                        termId: termId,
-                        courseNum: currentAwait.number
-                    })
-                })
-                .then(function() {
-                    // Then add back the "chooose later"
-                    return self.$store.dispatch('pushToEventSource', {
-                        termId: termId,
-                        courseObj: currentAwait.course
+                    return Bluebird.mapSeries(currentAwait, function(evt) {
+                        // we first remove all awaitSelections of the old one
+                        return self.$store.dispatch('removeFromSource', {
+                            termId: termId,
+                            courseNum: evt.number
+                        }).then(function() {
+                            // don't add section selection for Multiple
+                            if (evt.multiple === true) return;
+                            // Then add back the "chooose later"
+                            return self.$store.dispatch('pushToEventSource', {
+                                termId: termId,
+                                courseObj: evt.course
+                            })
+                        })
                     })
                 })
             })
@@ -166,11 +169,18 @@ module.exports = {
 
                 return this.$store.dispatch('restoreEventsColor', termId)
                 .then(function() {
-                    return self.$store.dispatch('pushSectionToEventSource', {
-                        termId: termId,
-                        courseNum: calEvent.number,
-                        sectionNum: calEvent.sectionNum
-                    })
+                    if (calEvent.multiple === true) {
+                        return self.$store.dispatch('selectMultiple', {
+                            termId: termId,
+                            courseNum: calEvent.number
+                        })
+                    } else {
+                        return self.$store.dispatch('pushSectionToEventSource', {
+                            termId: termId,
+                            courseNum: calEvent.number,
+                            sectionNum: calEvent.sectionNum
+                        })
+                    }
                 })
                 .then(function() {
                     self.$store.dispatch('refreshCalendar')
@@ -229,11 +239,17 @@ module.exports = {
             var code = helper.checkForConflict(this.dateMap, this.$store.getters.eventSource[termId], course);
             var alertHandle = function() {};
 
-            return this.$store.dispatch('getCourseDom', {
-                termId: termId,
-                courseObj: course,
-                isSection: false
-            }).then(function(html) {
+            return Bluebird.all([
+                this.$store.dispatch('checkForMultiple', {
+                    termId: termId,
+                    courseNum: course.num
+                }),
+                this.$store.dispatch('getCourseDom', {
+                    termId: termId,
+                    courseObj: course,
+                    isSection: false
+                })
+            ]).spread(function(multiple, html) {
                 if (code !== false || code === null) {
                     alertHandle = function() {
                         return self.alert
@@ -242,25 +258,44 @@ module.exports = {
                     }
                 }else{
                     alertHandle = function() {
-                        return self.alert
-                        .okBtn('Add Class')
-                        .cancelBtn("Go Back")
-                        .confirm(html)
+                        var alert = self.alert.okBtn('Add Class').cancelBtn('Go Back');
+                        if (multiple.length > 1) {
+                            alert = alert.okBtn('Show All On Calendar');
+                        }
+                        return alert.confirm(html)
                         .then(function(resolved) {
                             resolved.event.preventDefault();
-                            if (resolved.buttonClicked !== 'ok') return;
+                            if (resolved.buttonClicked !== 'ok') throw new Error();
+                            if (multiple.length > 1) {
+                                return self.displayMultipleOnCalendar(multiple)
+                            }else{
+                                return self.$store.dispatch('pushToEventSource', {
+                                    termId: termId,
+                                    courseObj: course
+                                })
+                            }
+                        }).then(function() {
+                            self.$store.dispatch('refreshCalendar')
+                            if (multiple.length > 1) self.alert.success('Showing all ' + course.c + ' on the planner!');
+                            else self.alert.success(course.c + ' added to the planner!');
+                        }).catch(function() {
 
-                            return self.$store.dispatch('pushToEventSource', {
-                                termId: termId,
-                                courseObj: course
-                            }).then(function() {
-                                self.$store.dispatch('refreshCalendar')
-                                self.alert.success(course.c + ' added to the planner!');
-                            })
-                        });
+                        })
                     }
                 }
                 return alertHandle()
+            })
+        },
+        displayMultipleOnCalendar: function(multiple) {
+            var self = this;
+            var termId = this.termId;
+            this.searchModal = false;
+            return self.$store.dispatch('grayOutEvents', termId)
+            .then(function() {
+                return self.$store.dispatch('pushMultipleToEventSource', {
+                    termId: termId,
+                    multiple: multiple
+                })
             })
         },
         displaySectionsOnCalendar: function(courseNum) {

@@ -532,6 +532,8 @@ var self = module.exports = {
 
         awaitSelection = (payload.awaitSelection === true);
 
+        multiple = (payload.multiple === true);
+
         // if we don't have it, then you got nothing
         if (typeof _.getters.flatCourses[termId] === 'undefined') return events;
 
@@ -560,7 +562,13 @@ var self = module.exports = {
             obj.end = dateMap['Saturday'];
             obj.course = course;
             obj.color = colorMap.course;
+            obj.awaitSelection = awaitSelection;
+            obj.conflict = helper.checkForConflict(dateMap, _.state.events[termId], course);
+            obj.multiple = multiple;
             if (course.custom) obj.color = colorMap.custom;
+            if (awaitSelection && multiple) {
+                obj.color = colorMap.awaitSelection;
+            }
             if (t === false) {
                 // class is cancelled
                 obj.color = 'black';
@@ -588,7 +596,7 @@ var self = module.exports = {
 
         section = _.getters.courseInfo[termId][courseNum].sec.length > 0;
 
-        if (section === false && awaitSelection !== true) return events;
+        if (multiple || (section === false && awaitSelection !== true)) return events;
 
         // Now we process sections
 
@@ -604,22 +612,6 @@ var self = module.exports = {
             return seats.filter(function(el) {
                 return el.num == secNum;
             })[0];
-        }
-
-        if (awaitSelection) {
-
-            obj.title = ['Now You Are Choosing Section', 'For ' + course.c].join("\n");
-            obj.number = course.num;
-            obj.sectionNum = null;
-            obj.color = colorMap.awaitSelection;
-            obj.course = course;
-            obj.section = false;
-            obj.conflict = false;
-            obj.awaitSelection = true;
-            obj.start = dateMap['Monday'];
-            obj.end = dateMap['Saturday'];
-            events.push(obj);
-            obj = {};
         }
 
         if (!awaitSelection && sectionNumber === null) {
@@ -693,7 +685,7 @@ var self = module.exports = {
             return el.awaitSelection === true;
         })
         if (currentAwait.length === 0) return false;
-        return currentAwait[0];
+        return currentAwait;
     },
     grayOutEvents: function(_, termId) {
         _.commit('grayOutEvents', termId);
@@ -770,6 +762,59 @@ var self = module.exports = {
             });
 
             return Bluebird.resolve();
+        })
+    },
+    pushMultipleToEventSource: function(_, payload) {
+        var termId = payload.termId, multiple = payload.multiple, events = [];
+        return Bluebird.mapSeries(multiple, function(course) {
+            return _.dispatch('getEventObjectsByCourse', {
+                termId: termId,
+                courseNum: course.num,
+                awaitSelection: true,
+                multiple: true,
+                secSeats: null
+            }).then(function(eventObj) {
+                events = events.concat(eventObj);
+            })
+        }).then(function() {
+            _.commit('mergeEventSource', {
+                termId: termId,
+                events: events,
+                skipSaving: true
+            });
+
+            return Bluebird.resolve();
+        })
+    },
+    selectMultiple: function(_, payload) {
+        var termId = payload.termId, courseNum = payload.courseNum;
+
+        var events = _.getters.eventSource[termId].filter(function(evt) {
+            return evt.multiple === true;
+        })
+
+        return Bluebird.mapSeries(events, function(evt) {
+            return _.dispatch('removeFromSource', {
+                termId: termId,
+                courseNum: evt.number,
+                skipSaving: false
+            });
+        }).then(function() {
+            return _.dispatch('getEventObjectsByCourse', {
+                termId: termId,
+                courseNum: courseNum,
+                awaitSelection: false,
+                sectionNum: (_.getters.courseInfo[termId][courseNum].sec.length > 0 ? null : undefined),
+                secSeats: null
+            }).then(function(events) {
+                _.commit('mergeEventSource', {
+                    termId: termId,
+                    events: events,
+                    skipSaving: false
+                });
+
+                return Bluebird.resolve();
+            })
         })
     },
     pushAwaitSectionsToEventSource: function(_, payload) {
@@ -876,6 +921,17 @@ var self = module.exports = {
         return _.state.events[termId].filter(function(el){
             return el.awaitSelection === true;
         }).length === 0;
+    },
+    checkForMultiple: function(_, payload) {
+        var termId = payload.termId, courseNum = payload.courseNum;
+        var course = _.state.flatCourses[termId][courseNum];
+        var validMultiple = ['Laboratory', 'Lecture']
+        var results = Object.keys(_.getters.flatCourses[termId]).reduce(function(results, courseNum) {
+            if (_.getters.flatCourses[termId][courseNum].c === course.c &&
+            validMultiple.indexOf(_.getters.courseInfo[termId][courseNum].ty) !== -1) results.push(_.getters.flatCourses[termId][courseNum])
+            return results;
+        }, [])
+        return results;
     },
     exportICS: function(_) {
         var termId = _.getters.termId;
