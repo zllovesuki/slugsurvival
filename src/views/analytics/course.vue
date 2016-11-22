@@ -200,6 +200,7 @@ module.exports = {
                             if (typeof self.sectionsData[j] === 'undefined') {
                                 self.sectionsData[j] = [];
                             }
+                            if (!res.results[i].seats.sec[j]) continue;
                             self.sectionsCanvasId[j] = self.makeid();
                             self.sectionsData[j].push({
                                 num: res.results[i].seats.sec[j].sec,
