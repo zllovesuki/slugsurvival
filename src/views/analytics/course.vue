@@ -299,7 +299,7 @@ module.exports = {
         ratio: function(obj) {
             if (obj.enrolled < obj.cap || obj.enrolled === 0 || obj.enrolled < 10) return 0;
             //if (obj.cap === 0) return 1;
-            return obj.waitTotal / obj.enrolled;
+            return (obj.cap > 0 ? (obj.waitTotal + obj.enrolled) / obj.cap : (obj.waitTotal + obj.enrolled) / obj.enrolled) - 1;
         }
     },
     mounted: function() {
