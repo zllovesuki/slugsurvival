@@ -24,10 +24,54 @@
                 </div>
 			</div>
 		</div>
+        <hr class="mb2" v-show="ready"/>
         <div class="overflow-hidden bg-white rounded mb2" v-show="ready && !route.params.termId && !route.params.courseNum">
 			<div class="m0 p1">
 				<div class="clearfix">
-					<span class="btn black h4">Top Ten Classes in the Last Hour: </span>
+					<span class="btn black h4">Most Compacted Classes: </span>
+				</div>
+				<div class="clearfix">
+					<span class="ml1 btn black h5 muted not-clickable">
+                        "Make Enrollment Great Again" - Show Top:
+                        <template v-for="num in tops">
+                            <a class="clickable" v-bind:class="{ 'black': top === num }" @click="top = num" >{{ num }}</a>&nbsp;
+                        </template>
+                    </span>
+				</div>
+			</div>
+			<div class="m0 p1 border-top">
+                <div class="clearfix">
+                    <span class="btn black h5 not-clickable"><i>Data for {{ termName }}: </i></span>
+				</div>
+                <div class="m0 p1">
+    				<div class="clearfix">
+                        <div class="overflow-hidden" v-show="compacted.length > 0">
+                            <table class="table-light">
+                                <thead class="bg-darken-1 h6">
+                                    <th>Course</th>
+                                    <th>Waitlisted</th>
+                                    <th>Enrolled / Capacity</th>
+                                </thead>
+                                <tbody class="h5">
+                                    <tr class="clickable" v-on:click.prevent.stop="openAnalytics(result.course)" v-for="result in compacted.slice(0, top)" :key="result.num">
+                                        <td class="nowrap">{{ result.course.c }} - {{ result.course.s }}</td>
+                                        <td class="nowrap bold">{{ result.seats.waitTotal }}</td>
+                                        <td class="nowrap">{{ result.seats.enrolled }} / {{ result.seats.cap }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div v-show="heat.length === 0">
+                            No results.
+                        </div>
+    				</div>
+                </div>
+			</div>
+		</div>
+        <div class="overflow-hidden bg-white rounded mb2" v-show="ready && !route.params.termId && !route.params.courseNum">
+			<div class="m0 p1">
+				<div class="clearfix">
+					<span class="btn black h4">Top 10 Classes in the Last Hour: </span>
 				</div>
 				<div class="clearfix">
 					<span class="ml1 btn black h5 muted not-clickable">
@@ -49,7 +93,7 @@
                                 </thead>
                                 <tbody class="h5">
                                     <tr class="clickable" v-on:click.prevent.stop="openAnalytics(result.course)" v-for="result in heat" :key="result.num">
-                                        <td class="nowrap">{{ result.course.c }}</td>
+                                        <td class="nowrap">{{ result.course.c }} - {{ result.course.s }}</td>
                                         <td class="nowrap">{{ result.count }}</td>
                                     </tr>
                                 </tbody>
@@ -106,6 +150,13 @@ module.exports = {
             sectionsCanvasId: [],
             graphData: [],
             heat: [],
+            compacted: [],
+            top: 10,
+            tops: [
+                10,
+                20,
+                50
+            ],
             heatTimer: null
         }
     },
@@ -226,6 +277,19 @@ module.exports = {
                     }
                 }).slice(0, 10);
             })
+        },
+        fetchCompacted: function() {
+            var self = this;
+            return fetch(config.trackingURL + '/fetch/' + self.latestTermCode + '/compacted').then(function(res) {
+                return res.json();
+            }).then(function(res) {
+                if (res && res.ok && res.results && res.results.length > 0) self.compacted = res.results.map(function(obj) {
+                    return {
+                        course: self.flatCourses[self.latestTermCode][obj.group],
+                        seats: obj.reduction.seats
+                    }
+                });
+            })
         }
     },
     mounted: function() {
@@ -233,7 +297,10 @@ module.exports = {
         this.$store.dispatch('setTitle', 'Analytics');
         return self.$store.dispatch('fetchTermCourses', self.latestTermCode)
         .then(function() {
-            return self.fetchHeat()
+            return Bluebird.all([
+                self.fetchHeat(),
+                self.fetchCompacted()
+            ])
         })
         .then(function() {
             self.$store.commit('setTermName', self.$store.getters.termsList[self.latestTermCode])
