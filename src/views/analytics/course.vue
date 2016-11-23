@@ -49,13 +49,15 @@
                             <table class="table-light">
                                 <thead class="bg-darken-1 h6">
                                     <th>Course</th>
+                                    <th>Excess Demand</th>
                                     <th>Waitlisted</th>
                                     <th>Enrolled / Capacity</th>
                                 </thead>
                                 <tbody class="h5">
                                     <tr class="clickable" v-on:click.prevent.stop="openAnalytics(result.course)" v-for="result in compacted.slice(0, top)" :key="result.num">
                                         <td class="nowrap">{{ result.course.c }} - {{ result.course.s }}</td>
-                                        <td class="nowrap bold">{{ result.seats.waitTotal }}</td>
+                                        <td class="nowrap bold">{{ (result.ratio * 100).toPrecision(4) + '%' }}</td>
+                                        <td class="nowrap italic">{{ result.seats.waitTotal }}</td>
                                         <td class="nowrap">{{ result.seats.enrolled }} / {{ result.seats.cap }}</td>
                                     </tr>
                                 </tbody>
@@ -286,10 +288,18 @@ module.exports = {
                 if (res && res.ok && res.results && res.results.length > 0) self.compacted = res.results.map(function(obj) {
                     return {
                         course: self.flatCourses[self.latestTermCode][obj.group],
-                        seats: obj.reduction.seats
+                        seats: obj.reduction.seats,
+                        ratio: self.ratio(obj.reduction.seats)
                     }
+                }).sort(function(a, b) {
+                    return b.ratio - a.ratio;
                 });
             })
+        },
+        ratio: function(obj) {
+            if (obj.enrolled < obj.cap || obj.enrolled === 0 || obj.enrolled < 10) return 0;
+            //if (obj.cap === 0) return 1;
+            return obj.waitTotal / obj.enrolled;
         }
     },
     mounted: function() {
