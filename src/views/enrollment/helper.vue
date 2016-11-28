@@ -78,7 +78,7 @@
             <div class="m0 p1 border-top">
                 <div class="clearfix">
                     <div class="sm-flex ml1">
-                        <router-link class="p1 m1 h6 btn white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'enrollManage' }" target="_blank" tag="div"><i class="fa fa-pencil fa-lg">&nbsp;</i> Manage subscription</router-link>
+                        <router-link class="p1 m1 h6 btn white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'enrollManage' }" tag="div"><i class="fa fa-pencil fa-lg">&nbsp;</i> Manage subscription</router-link>
                     </div>
 				</div>
 			</div>
