@@ -69,7 +69,8 @@ module.exports = {
             searchModal: false,
             chooseSectionModal: false,
             sectionList: [],
-            lock: false
+            lock: false,
+            inflight: false
         }
     },
     computed: {
@@ -129,6 +130,7 @@ module.exports = {
             });
         },
         jumpOutAwait: function() {
+            if (this.inflight) return;
             var self = this;
             var termId = this.termId;
             return this.$store.dispatch('getCurrentAwaitSection', termId)
@@ -156,6 +158,14 @@ module.exports = {
             })
         },
         promptForAction: function(calEvent) {
+            if (this.inflight) return;
+            var self = this;
+            this.inflight = true;
+            return this._promptForAction(calEvent).then(function() {
+                self.inflight = false;
+            })
+        },
+        _promptForAction: function(calEvent) {
             var self = this;
             var termId = this.termId;
             var awaitSelection = calEvent.awaitSelection;
