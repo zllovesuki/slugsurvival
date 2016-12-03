@@ -14,7 +14,7 @@
             <div class="m0 p2 border-top">
                 <div class="clearfix">
                     <div class="md-flex">
-                        <router-link class="p2 flex-auto m1 h5 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'advPlanner' }" target="_blank" tag="div"><i class="fa fa-book fa-2x">&nbsp;</i>Interactive Academic Planner</router-link>
+                        <router-link class="p2 flex-auto m1 h5 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'advPlanner' }" tag="div"><i class="fa fa-book fa-2x">&nbsp;</i>Interactive Academic Planner</router-link>
                     </div>
                 </div>
             </div>

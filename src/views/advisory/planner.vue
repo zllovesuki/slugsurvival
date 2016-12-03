@@ -22,7 +22,7 @@
                         We also recommend that you use this planner on a larger screen.
                     </span>
                 </div>
-                <form class="hide" action="/fillAcademicPlannerPDF" target="_blank" method="post" id="fillPDF">
+                <form class="hide" action="/fillAcademicPlannerPDF" method="post" id="fillPDF">
                     <input type="hidden" :name="name" :value="value" v-for="(value, name) in pdfFormData"/>
                 </form>
             </div>
