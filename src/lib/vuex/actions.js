@@ -526,7 +526,7 @@ var self = module.exports = {
         var colorMap = _.state.colorMap;
         var events = [];
         var obj = {};
-        var courseNum, course, courseInfo, sectionNumber, section, conflict;
+        var courseNum, course, courseInfo, sectionNumber, section, conflict, multiple;
         var termId = payload.termId, secSeats = (typeof payload.secSeats === 'undefined' ? null : payload.secSeats);
 
         awaitSelection = (payload.awaitSelection === true);
@@ -612,8 +612,7 @@ var self = module.exports = {
                 return el.num == secNum;
             })[0];
         }
-
-        if (!awaitSelection && sectionNumber === null) {
+        if (!awaitSelection && !!!sectionNumber) {
             obj.title = ['Please Choose a Section', 'For ' + course.c].join("\n");
             obj.number = course.num;
             obj.sectionNum = null

@@ -130,7 +130,6 @@ module.exports = {
             });
         },
         jumpOutAwait: function() {
-            if (this.inflight) return;
             var self = this;
             var termId = this.termId;
             return this.$store.dispatch('getCurrentAwaitSection', termId)
@@ -161,17 +160,15 @@ module.exports = {
             if (this.inflight) return;
             var self = this;
             this.inflight = true;
-            var checkPromise = function() {
-                var promise = self._promptForAction(calEvent);
-                if (typeof promise.then === 'function') {
-                    return promise;
-                }else{
-                    return Bluebird.resolve();
-                }
+            var promise = this._promptForAction(calEvent);
+            if (typeof promise.then === 'function') {
+                return promise.then(function() {
+                    self.inflight = false;
+                });
+            }else{
+                this.inflight = false;
+                return Bluebird.resolve();
             }
-            return checkPromise().then(function() {
-                self.inflight = false;
-            })
         },
         _promptForAction: function(calEvent) {
             var self = this;
@@ -361,6 +358,7 @@ module.exports = {
                     self.promptForAction(calEvent);
                 },
                 dayClick: function(date, jsEvent, view) {
+                    if (self.inflight) return;
                     return self.jumpOutAwait().then(function() {
                         return self.$store.dispatch('refreshCalendar')
                     })
