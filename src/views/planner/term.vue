@@ -161,7 +161,15 @@ module.exports = {
             if (this.inflight) return;
             var self = this;
             this.inflight = true;
-            return this._promptForAction(calEvent).then(function() {
+            var checkPromise = function() {
+                var promise = self._promptForAction(calEvent);
+                if (typeof promise.then === 'function') {
+                    return promise;
+                }else{
+                    return Bluebird.resolve();
+                }
+            }
+            return checkPromise().then(function() {
                 self.inflight = false;
             })
         },
