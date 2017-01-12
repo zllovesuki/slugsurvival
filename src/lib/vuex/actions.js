@@ -965,7 +965,7 @@ var self = module.exports = {
     },
     fetchRealTimeEnrollment: function(_, payload) {
         var timestamp = Date.now() / 1000;
-        return fetch(config.trackingURL + '/fetch/' + payload.termCode + '/' + payload.courseNum + '?' + timestamp)
+        return fetch(config.trackingURL + '/fetch/' + payload.termCode + '/' + payload.courseNum + '/latestOne?' + timestamp)
         .then(function(res) {
             return res.json();
         })
