@@ -645,7 +645,9 @@ var self = module.exports = {
             }
             if (secSeats && awaitSelection) {
                 seat = getSeatBySectionNum(secSeats, section.num);
-                obj.title = [section.sec + ' - ' + seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
+                //obj.title = [section.sec + ' - ' + seat.status, (seat.cap - seat.enrolled) + ' avail.'].join("\n")
+                // As of Jan 11 2017. no sections has more than one loct, so this hard coding is safe for now
+                obj.title = [!!!section.loct[0].loc ? 'TBA' : section.loct[0].loc, section.sec + ' - ' + seat.status].join("\n")
             }
             if (t === false) {
                 // section is cancelled
@@ -973,8 +975,13 @@ var self = module.exports = {
     },
     _showRealTimeEnrollment: function(_, string) {
         _.getters.loading.go(30);
+        var getSeatBySectionNum = function(seats, secNum) {
+            return seats.filter(function(el) {
+                return el.num == secNum;
+            })[0];
+        }
         var split = string.split('+');
-        var termCode = split[0], courseNum = split[1];
+        var termCode = split[0], courseNum = split[1], sectionNum = split[2];
         var html = '';
         var template = function(key, value) {
             return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
@@ -993,14 +1000,25 @@ var self = module.exports = {
             if (res.ok && res.results[0] && res.results[0].seats) {
                 var latest = res.results[0];
                 var seat = latest.seats;
+                var isSection = (courseNum !== sectionNum);
+
+                if (isSection) {
+                    // checking section
+                    seat = getSeatBySectionNum(seat.sec, sectionNum)
+                }
 
                 html += template('Status', seat.status);
-                html += template('Available', seat.avail);
+                if (!isSection) html += template('Available', seat.avail);
                 html += template('Enrolled', seat.enrolled);
                 html += template('Capacity', seat.cap);
                 html += '<hr />';
-                html += template('Waitlisted', seat.waitTotal);
-                html += template('Waitlist Cap.', seat.waitCap);
+                if (isSection) {
+                    html += template('Waitlisted', seat.wait);
+                    html += template('Waitlist Cap.', seat.waitTotal);
+                }else{
+                    html += template('Waitlisted', seat.waitTotal);
+                    html += template('Waitlist Cap.', seat.waitCap);
+                }
                 html += '<p><span class="muted h6">Last Changed: ' + new Date(latest.date * 1000).toLocaleString() + '</span></p>';
 
                 _.getters.alert
@@ -1075,8 +1093,8 @@ var self = module.exports = {
         })
     },
     getCourseDom: function(_, payload) {
-        var termId = payload.termId, course = payload.courseObj, isSection = payload.isSection;
-        var courseInfo = _.getters.courseInfo[termId][course.num];
+        var termId = payload.termId, course = payload.courseObj, isSection = payload.isSection, courseNum = payload.courseNum;
+        var courseInfo = courseNum ? _.getters.courseInfo[termId][courseNum] : _.getters.courseInfo[termId][course.num];
         isSection = isSection || false;
         if (!isSection) {
             var courseHasSections = _.getters.courseInfo[termId][course.num].sec.length > 0;
@@ -1115,8 +1133,8 @@ var self = module.exports = {
             html += '<hr />'
         }
 
-        if (!isSection && course.custom !== true) {
-            html += template('Is It Open', '<span class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showRealTimeEnrollment\', \'' + termId + '+' + course.num + '\')">Check Real Time</span>');
+        if (course.custom !== true) {
+            html += template('Is It Open', '<span class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showRealTimeEnrollment\', \'' + termId + (courseNum ? '+' + courseNum : '') + '+' + course.num + '\')">Check Real Time</span>');
         }
 
         return html;

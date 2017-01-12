@@ -223,6 +223,7 @@ module.exports = {
                     var course = isSection ? calEvent.section : calEvent.course;
                     return self.$store.dispatch('getCourseDom', {
                         termId: termId,
+                        courseNum: calEvent.number,
                         courseObj: course,
                         isSection: isSection
                     })
