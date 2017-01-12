@@ -214,7 +214,7 @@ module.exports = {
             var self = this;
             this.selectizeRef[year + '-' + quarter] = $('#' + year + '-' + quarter).selectize({
                 options: self.historicFrequency[quarter].map(function(el) {
-                    return { text: el, value: el }
+                    return { text: el.replace(/\s+/g, ''), value: el }
                 }),
                 items: (typeof self.table[year] !== 'undefined' && typeof self.table[year][quarter] !== 'undefined' ? self.table[year][quarter] : []),
                 placeholder: 'select...',
@@ -231,6 +231,9 @@ module.exports = {
                     self.savePlanner();
                 },
                 render: {
+                    option: function(item, escape) {
+                        return '<div class="h6">' + escape(item.value) + '</div>';
+                    },
                     item: function(item, escape) {
                         return '<div class="h6">' + escape(item.value) + '</div>';
                     }
