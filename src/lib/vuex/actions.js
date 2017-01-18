@@ -1000,7 +1000,7 @@ var self = module.exports = {
             if (res.ok && res.results[0] && res.results[0].seats) {
                 var latest = res.results[0];
                 var seat = latest.seats;
-                var isSection = (courseNum !== sectionNum);
+                var isSection = (!!sectionNum && courseNum !== sectionNum);
 
                 if (isSection) {
                     // checking section
