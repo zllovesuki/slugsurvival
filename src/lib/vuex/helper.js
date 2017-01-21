@@ -296,7 +296,7 @@ var self = module.exports = {
         for (var i = 0, length = events.length; i < length; i++) {
             // You can't take the same class twice in a quarter
             // At least you shouldn't
-            if (events[i].course.c === course.c) {
+            if (events[i].course.c === course.c && course.custom !== true) {
                 conflict = course.c;
                 break;
             }
