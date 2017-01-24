@@ -32,7 +32,7 @@
 				</div>
 				<div class="clearfix">
 					<span class="ml1 btn black h5 muted not-clickable">
-                        "Make Enrollment Great Again" - Show Top:
+                        "Make Enrollment Great Again" - Show Recent Top:
                         <template v-for="num in tops">
                             <a class="clickable" v-bind:class="{ 'black': top === num }" @click="top = num" >{{ num }}</a>&nbsp;
                         </template>
@@ -63,7 +63,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div v-show="heat.length === 0">
+                        <div v-show="compacted.length === 0">
                             No results.
                         </div>
     				</div>
@@ -280,9 +280,10 @@ module.exports = {
                 }).slice(0, 10);
             })
         },
-        fetchCompacted: function() {
+        fetchCompacted: function(showMax) {
+            showMax = showMax || false;
             var self = this;
-            return fetch(config.trackingURL + '/fetch/' + self.latestTermCode + '/compacted').then(function(res) {
+            return fetch(config.trackingURL + '/fetch/' + self.latestTermCode + '/compacted' + (showMax ? 'Max': '')).then(function(res) {
                 return res.json();
             }).then(function(res) {
                 if (res && res.ok && res.results && res.results.length > 0) self.compacted = res.results.map(function(obj) {
