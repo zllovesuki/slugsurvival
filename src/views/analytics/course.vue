@@ -224,8 +224,8 @@ module.exports = {
             return fetch(config.trackingURL + '/fetch/' + params.termId + '/' + params.courseNum).then(function(res) {
                 return res.json();
             }).then(function(res) {
-                if (typeof self.$store.state.termDates[self.latestTermCode] !== 'undefined') {
-                    var start = self.$store.state.termDates[self.latestTermCode].start;
+                if (typeof self.$store.state.termDates[(self.route.params.termId || self.latestTermCode)] !== 'undefined') {
+                    var start = self.$store.state.termDates[(self.route.params.termId || self.latestTermCode)].start;
                     var monitorStart = new Date(start);
                     monitorStart.setDate(monitorStart.getDate() - 75);
                 }
@@ -269,12 +269,12 @@ module.exports = {
         },
         fetchHeat: function() {
             var self = this;
-            return fetch(config.trackingURL + '/fetch/' + self.latestTermCode + '/heat/3600').then(function(res) {
+            return fetch(config.trackingURL + '/fetch/' + (self.route.params.termId || self.latestTermCode) + '/heat/3600').then(function(res) {
                 return res.json();
             }).then(function(res) {
                 if (res && res.ok && res.results && res.results.length > 0) self.heat = res.results.map(function(obj) {
                     return {
-                        course: self.flatCourses[self.latestTermCode][obj.group],
+                        course: self.flatCourses[(self.route.params.termId || self.latestTermCode)][obj.group],
                         count: obj.reduction
                     }
                 }).slice(0, 10);
@@ -283,12 +283,12 @@ module.exports = {
         fetchCompacted: function(showMax) {
             showMax = showMax || false;
             var self = this;
-            return fetch(config.trackingURL + '/fetch/' + self.latestTermCode + '/compacted' + (showMax ? 'Max': '')).then(function(res) {
+            return fetch(config.trackingURL + '/fetch/' + (self.route.params.termId || self.latestTermCode) + '/compacted' + (showMax ? 'Max': '')).then(function(res) {
                 return res.json();
             }).then(function(res) {
                 if (res && res.ok && res.results && res.results.length > 0) self.compacted = res.results.map(function(obj) {
                     return {
-                        course: self.flatCourses[self.latestTermCode][obj.group],
+                        course: self.flatCourses[(self.route.params.termId || self.latestTermCode)][obj.group],
                         seats: obj.reduction.seats,
                         ratio: self.ratio(obj.reduction.seats)
                     }
@@ -306,7 +306,7 @@ module.exports = {
     mounted: function() {
         var self = this;
         this.$store.dispatch('setTitle', 'Analytics');
-        return self.$store.dispatch('fetchTermCourses', self.latestTermCode)
+        return self.$store.dispatch('fetchTermCourses', (self.route.params.termId || self.latestTermCode))
         .then(function() {
             return Bluebird.all([
                 self.fetchHeat(),
@@ -314,8 +314,8 @@ module.exports = {
             ])
         })
         .then(function() {
-            self.$store.commit('setTermName', self.$store.getters.termsList[self.latestTermCode])
-            return self.$store.dispatch('calculateDropDeadline', self.latestTermCode)
+            self.$store.commit('setTermName', self.$store.getters.termsList[(self.route.params.termId || self.latestTermCode)])
+            return self.$store.dispatch('calculateDropDeadline', (self.route.params.termId || self.latestTermCode))
         })
         .then(function(deadline) {
             self.dropDeadline = moment(deadline).format('YYYY-MM-DD');
