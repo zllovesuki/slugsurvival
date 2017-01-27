@@ -306,6 +306,21 @@ var self = module.exports = {
         return epochTimes;
     },
 
+    removeDuplicateTimes: function(array) {
+        var newArray = [];
+        var hash = {};
+
+        for (var key in array) {
+            hash[[array[key].start, array[key].end].join('-')] = array[key];
+        }
+
+        for (key in hash) {
+            newArray.push(hash[key]);
+        }
+
+        return newArray;
+    },
+
     checkForConflict: function(dateMap, events, course) {
         /*
             Instead of doing some ugly loops and intersects and shits, why don't we just compare the epoch time?
@@ -334,15 +349,15 @@ var self = module.exports = {
 
             if (typeof events[i].section !== 'undefined' && events[i].section !== null) {
 
-                if (typeof checker[events[i].course.c + ' Section'] !== 'undefined') continue;
+                if (typeof checker[events[i].course.c + ' Section'] === 'undefined') checker[events[i].course.c + ' Section'] = [];
 
-                checker[events[i].course.c + ' Section'] = self.tConvertToEpoch(dateMap, events[i].section.loct);
+                checker[events[i].course.c + ' Section'] = checker[events[i].course.c + ' Section'].concat(self.tConvertToEpoch(dateMap, events[i].section.loct));
 
             } else {
 
-                if (typeof checker[events[i].course.c] !== 'undefined') continue;
+                if (typeof checker[events[i].course.c] === 'undefined') checker[events[i].course.c] = []
 
-                checker[events[i].course.c] = self.tConvertToEpoch(dateMap, events[i].course.loct);
+                checker[events[i].course.c] = checker[events[i].course.c].concat(self.tConvertToEpoch(dateMap, events[i].course.loct));
 
             }
         }
@@ -352,6 +367,12 @@ var self = module.exports = {
         if (course.loct.length === 1 && !!!course.loct[0].t) {
             // TBA
             return false;
+        }
+
+        // the side effect of using .concat() in the above loop is that time slots will have duplicates
+        // (because in customize events, you can have duplicate names, and they won't be "taking the same class twice")
+        for (var code in checker) {
+            checker[code] = self.removeDuplicateTimes(checker[code])
         }
 
         var oldStart, newStart, oldEnd, newEnd;

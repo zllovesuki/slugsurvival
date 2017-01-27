@@ -705,6 +705,7 @@ var self = module.exports = {
             }else{
                 for (var j = 0, days = sections[i].loct[0].t.day, length2 = days.length; j < length2; j++) {
                     conflict = helper.checkForConflict(dateMap, _.state.events[termId], sections[i]);
+                    console.log(sections[i], conflict)
                     events.push(secObj(course, sections[i], conflict, awaitSelection, days[j], days[j], sections[i].loct[0].t, secSeats))
                 }
             }
