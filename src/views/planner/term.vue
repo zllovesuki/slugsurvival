@@ -510,7 +510,7 @@ ul {
     max-height: 20em;
 }
 
-.fc-time-grid tr {
+.fc-agenda-view tr {
      height: 30px;
 }
 
