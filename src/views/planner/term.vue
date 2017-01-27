@@ -344,7 +344,7 @@ module.exports = {
                 maxTime: '23:00',
                 defaultDate: self.dateMap.Monday,
                 allDayText: 'TBD',
-                slotDuration: '01:00:00',
+                slotDuration: '00:30:00',
                 //allDaySlot: false,
                 weekends: false,
                 defaultView: 'agendaWeek',
@@ -508,16 +508,9 @@ module.exports = {
 ul {
     max-height: 20em;
 }
-@media (max-height: 800px) {
-    .fc-agenda-view tr {
-         height: 60px !important;
-    }
-}
 
-@media (min-height: 800px) {
-    .fc-agenda-view tr {
-         height: 45px !important;
-    }
+.fc-time-grid tr {
+     height: 30px;
 }
 
 /*
