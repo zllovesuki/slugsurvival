@@ -26,7 +26,7 @@
             </div>
         </div>
         <div class="overflow-hidden bg-white rounded mb2 clearfix">
-            <div class="m0 p2">
+            <div class="m0 p1">
                 <div class="clearfix">
                     <div class="right">
                         <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.TBA }">
@@ -46,7 +46,7 @@
             </div>
         </div>
         <div class="overflow-hidden bg-white rounded mb2 clearfix">
-            <div class="m0 p2">
+            <div class="m0 p1">
                 <div class="clearfix">
                     <div class="right">
                         <div class="sm-flex">
@@ -156,6 +156,11 @@ module.exports = {
                 })
             })
         },
+        scrollToTop: function() {
+            $('html, body').animate({
+                scrollTop: $("#calendar-container").offset().top - 60
+            }, 250);
+        },
         promptForAction: function(calEvent) {
             if (this.inflight) return;
             var self = this;
@@ -164,9 +169,11 @@ module.exports = {
             if (typeof promise.then === 'function') {
                 return promise.then(function() {
                     self.inflight = false;
+                    self.scrollToTop();
                 });
             }else{
                 this.inflight = false;
+                self.scrollToTop();
                 return Bluebird.resolve();
             }
         },
@@ -361,6 +368,7 @@ module.exports = {
                 dayClick: function(date, jsEvent, view) {
                     if (self.inflight) return;
                     return self.jumpOutAwait().then(function() {
+                        self.scrollToTop();
                         return self.$store.dispatch('refreshCalendar')
                     })
                 }
@@ -484,7 +492,8 @@ module.exports = {
                 // We will now force the allDaySlot in the bottom of the page
                 self.$nextTick(function() {
                     $('.fc-day-grid').insertAfter($('.fc-time-grid'))
-                    $('.fc-divider').insertAfter($('.fc-time-grid'));
+                    $('.fc-divider').insertAfter($('.fc-time-grid'))
+                    self.scrollToTop()
                     self.$store.dispatch('refreshCalendar')
                 })
 
