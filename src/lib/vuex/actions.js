@@ -544,7 +544,6 @@ var self = module.exports = {
         $('.fc-day-grid').insertAfter($('.fc-time-grid'))
         $('.fc-divider').insertAfter($('.fc-time-grid'))
 
-        $('.alertify').remove();
     },
     returnEventSourceSnapshot: function(_) {
         var termId = this.termId;
