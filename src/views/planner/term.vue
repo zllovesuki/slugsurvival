@@ -508,9 +508,18 @@ module.exports = {
 ul {
     max-height: 20em;
 }
-.fc-agenda-view tr {
-     height: 40px !important;
+@media (max-height: 800px) {
+    .fc-agenda-view tr {
+         height: 60px !important;
+    }
 }
+
+@media (min-height: 800px) {
+    .fc-agenda-view tr {
+         height: 45px !important;
+    }
+}
+
 /*
     https://codepen.io/beben-koben/pen/gfuvc
 */
