@@ -1029,7 +1029,7 @@ var self = module.exports = {
             if (typeof _.state.termDates[_.getters.termId] !== 'undefined') {
                 var start =_.state.termDates[_.getters.termId].start;
                 var monitorStart = new Date(start);
-                monitorStart.setDate(monitorStart.getDate() - 75);
+                monitorStart.setDate(monitorStart.getDate() - helper.delta(_.getters.termId).enrollment);
             }
             _.getters.loading.go(70);
             if (res.ok && res.results[0] && res.results[0].seats) {

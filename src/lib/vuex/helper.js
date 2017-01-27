@@ -1,5 +1,33 @@
 var self = module.exports = {
 
+    delta: function(termCode) {
+        switch (termCode[termCode.length - 1]) {
+            case '0': // Winter
+            return {
+                deadline: 21,
+                enrollment: 63 // use the upper bound
+            };
+
+            case '2': // Spring
+            return {
+                deadline: 18,
+                enrollment: 35 // use the upper bound
+            };
+
+            case '8': // Fall
+            return {
+                deadline: 20,
+                enrollment: 129
+            };
+
+            case '4': // Summer
+            return {
+                deadline: 7,
+                enrollment: 0
+            };
+        }
+    },
+
     quarterToNum: function(quarter) {
         switch (quarter.toLowerCase()) {
             case 'fall':
