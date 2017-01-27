@@ -2,7 +2,7 @@
     <div>
         <div class="fixed bottom-0 left-0 m2" style="z-index: 2000">
             <a class="btn block muted" @click="$store.commit('flipLockMinMax')" v-tooltip="!lockMinMax ? 'Show 07:00am-11:00pm': 'Show concise time'">
-                <i class="fa" v-bind:class="{'fa-lock': lockMinMax, 'fa-unlock': !lockMinMax}">&nbsp;</i>
+                <i class="fa" v-bind:class="{'fa-minus-circle': lockMinMax, 'fa-plus-circle': !lockMinMax}">&nbsp;</i>
             </a>
         </div>
         <transition-group name="list-complete" appear>
@@ -153,6 +153,7 @@ module.exports = {
             .then(function(currentAwait) {
                 if (currentAwait === false) return;
                 // Of course restore any missing color first
+                self.scrollToTop()
                 return self.$store.dispatch('restoreEventsColor', termId)
                 .then(function() {
                     return Bluebird.mapSeries(currentAwait, function(evt) {
@@ -187,11 +188,9 @@ module.exports = {
             if (typeof promise.then === 'function') {
                 return promise.then(function() {
                     self.inflight = false;
-                    self.scrollToTop();
                 });
             }else{
                 this.inflight = false;
-                self.scrollToTop();
                 return Bluebird.resolve();
             }
         },
@@ -225,6 +224,7 @@ module.exports = {
                 .then(function() {
                     self.$store.dispatch('refreshCalendar')
                     self.alert.success(self.flatCourses[termId][calEvent.number].c + ' added to the planner!');
+                    self.scrollToTop();
                 })
             }
 
@@ -386,7 +386,6 @@ module.exports = {
                 dayClick: function(date, jsEvent, view) {
                     if (self.inflight) return;
                     return self.jumpOutAwait().then(function() {
-                        self.scrollToTop();
                         return self.$store.dispatch('refreshCalendar')
                     })
                 }
@@ -505,18 +504,9 @@ module.exports = {
         }).then(function() {
             self.$store.getters.loading.go(70);
             self.ready = true;
-            self.$nextTick(function() {
+            self.$store.dispatch('lockMinMax').then(function() {
                 self.initializeCalendar();
-                // We will now force the allDaySlot in the bottom of the page
-                self.$nextTick(function() {
-                    $('.fc-day-grid').insertAfter($('.fc-time-grid'))
-                    $('.fc-divider').insertAfter($('.fc-time-grid'))
-                    self.$store.dispatch('lockMinMax').then(function() {
-                        self.$store.dispatch('refreshCalendar')
-                        if (!self.lockMinMax) self.scrollToTop();
-                    })
-                })
-
+                self.$store.dispatch('refreshCalendar', self.scrollToTop)
             })
         }).catch(function(e) {
             console.log(e);

@@ -507,7 +507,7 @@ var self = module.exports = {
             return Bluebird.resolve();
         }
     },
-    refreshCalendar: function(_) {
+    refreshCalendar: function(_, cb) {
         var termId = _.getters.termId;
         var dateMap = _.state.dateMap;
 
@@ -541,8 +541,10 @@ var self = module.exports = {
         })
         $('#calendar-' + termId).fullCalendar('refetchEvents')
 
-        $('.fc-day-grid').insertAfter($('.fc-time-grid'))
-        $('.fc-divider').insertAfter($('.fc-time-grid'))
+        if (cb) cb();
+
+        //$('.fc-day-grid').insertAfter($('.fc-time-grid'))
+        //$('.fc-divider').insertAfter($('.fc-time-grid'))
 
     },
     returnEventSourceSnapshot: function(_) {
@@ -705,7 +707,6 @@ var self = module.exports = {
             }else{
                 for (var j = 0, days = sections[i].loct[0].t.day, length2 = days.length; j < length2; j++) {
                     conflict = helper.checkForConflict(dateMap, _.state.events[termId], sections[i]);
-                    console.log(sections[i], conflict)
                     events.push(secObj(course, sections[i], conflict, awaitSelection, days[j], days[j], sections[i].loct[0].t, secSeats))
                 }
             }
