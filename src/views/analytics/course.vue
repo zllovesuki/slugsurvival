@@ -13,7 +13,11 @@
 			</div>
 			<div class="m0 p1 border-top">
                 <div class="clearfix">
-                    <span class="btn black h5 not-clickable"><i>Currently we have the data for {{ termName }} until {{ dropDeadline }}: </i></span>
+                    <span class="btn black h5 not-clickable"><i>Currently we have the data for
+                        <select class="border h6" v-model="termCode">
+                            <option v-for="t in availableTerms" track-by="code" :value="t.code">{{ t.name }}</option>
+					    </select>
+                    until {{ dropDeadline }}: </i></span>
 				</div>
                 <div class="m0 p1">
     				<div class="clearfix">
@@ -108,7 +112,7 @@
                 </div>
 			</div>
 		</div>
-        <search :show="searchModal" v-on:close="searchModal = false" :callback="openAnalytics" :selected-term-id="latestTermCode"></search>
+        <search :show="searchModal" v-on:close="searchModal = false" :callback="openAnalytics" :selected-term-id="termCode"></search>
         <transition name="fade" mode="out-in">
             <div class="overflow-hidden bg-white rounded mb2" v-show="!ready || !graphDataReady">
                 <div class="m0 p2">
@@ -138,6 +142,7 @@
 </template>
 <script>
 var config = require('../../../config')
+var helper = require('../../lib/vuex/helper')
 
 module.exports = {
     data: function() {
@@ -148,6 +153,7 @@ module.exports = {
             dropDeadline: null,
             canvasId: null,
             course: {},
+            availableTerms: [],
             sectionsData: [],
             sectionsCanvasId: [],
             graphData: [],
@@ -159,7 +165,8 @@ module.exports = {
                 20,
                 50
             ],
-            heatTimer: null
+            heatTimer: null,
+            termCode: null
         }
     },
     computed: {
@@ -172,14 +179,14 @@ module.exports = {
         flatCourses: function() {
             return this.$store.getters.flatCourses
         },
+        termsList: function() {
+            return this.$store.getters.termsList
+        },
         colorMap: function() {
             return this.$store.getters.colorMap;
         },
         termName: function() {
             return this.$store.getters.termName;
-        },
-        latestTermCode: function() {
-            return this.$store.getters.latestTermCode;
         }
     },
     watch: {
@@ -190,9 +197,17 @@ module.exports = {
                 this.sectionsData = [];
                 this.sectionsCanvasId = [];
                 this.$nextTick(function() {
-                    return this.loadGraph(this.route.params)
+                    return this.loadGraph({
+                        termId: this.route.params.termId || this.termCode,
+                        courseNum: this.route.params.courseNum
+                    })
                 })
             })
+        },
+        'termCode': function(val, oldVal) {
+            this.termCode = val;
+            this.$router.push({ name: 'analyticsCourse' })
+            this.switchTerm();
         }
     },
     methods: {
@@ -205,7 +220,7 @@ module.exports = {
         openAnalytics: function(course) {
             this.searchModal = false;
             this.graphDataReady = false;
-            this.$router.push({ name: 'analyticsCourse', params: { termId: this.latestTermCode, courseNum: course.num }})
+            this.$router.push({ name: 'analyticsCourse', params: { termId: this.termCode, courseNum: course.num }})
         },
         makeid: function() {
             var text = "";
@@ -224,10 +239,10 @@ module.exports = {
             return fetch(config.trackingURL + '/fetch/' + params.termId + '/' + params.courseNum).then(function(res) {
                 return res.json();
             }).then(function(res) {
-                if (typeof self.$store.state.termDates[(self.route.params.termId || self.latestTermCode)] !== 'undefined') {
-                    var start = self.$store.state.termDates[(self.route.params.termId || self.latestTermCode)].start;
+                if (typeof self.$store.state.termDates[self.termCode] !== 'undefined') {
+                    var start = self.$store.state.termDates[self.termCode].start;
                     var monitorStart = new Date(start);
-                    monitorStart.setDate(monitorStart.getDate() - 75);
+                    monitorStart.setDate(monitorStart.getDate() - helper.delta(self.termCode).enrollment);
                 }
                 if (!res.ok && res.message && res.message.indexOf('not tracked') !== -1) {
                     if (typeof monitorStart === 'undefined') {
@@ -253,7 +268,10 @@ module.exports = {
                             if (typeof self.sectionsData[j] === 'undefined') {
                                 self.sectionsData[j] = [];
                             }
-                            if (!res.results[i].seats.sec[j]) continue;
+                            if (!res.results[i] ||
+                                !res.results[i].seats ||
+                                !res.results[i].seats.sec ||
+                                !res.results[i].seats.sec[j]) continue;
                             self.sectionsCanvasId[j] = self.makeid();
                             self.sectionsData[j].push({
                                 num: res.results[i].seats.sec[j].sec,
@@ -267,62 +285,86 @@ module.exports = {
                 self.graphDataReady = true;
             });
         },
+        fetchAvailableTerms: function() {
+            var self = this;
+            return fetch(config.trackingURL + '/fetch/available').then(function(res) {
+                return res.json();
+            }).then(function(res) {
+                if (res && res.ok && res.results) self.availableTerms = res.results.map(function(termCode) {
+                    return {
+                        code: termCode,
+                        name: self.termsList[termCode]
+                    }
+                });
+            })
+        },
         fetchHeat: function() {
             var self = this;
-            return fetch(config.trackingURL + '/fetch/' + (self.route.params.termId || self.latestTermCode) + '/heat/3600').then(function(res) {
+            return fetch(config.trackingURL + '/fetch/' + self.termCode + '/heat/3600').then(function(res) {
                 return res.json();
             }).then(function(res) {
                 if (res && res.ok && res.results && res.results.length > 0) self.heat = res.results.map(function(obj) {
                     return {
-                        course: self.flatCourses[(self.route.params.termId || self.latestTermCode)][obj.group],
+                        course: self.flatCourses[self.termCode][obj.group],
                         count: obj.reduction
                     }
                 }).slice(0, 10);
+                else self.heat = [];
             })
         },
         fetchCompacted: function(showMax) {
             showMax = showMax || false;
             var self = this;
-            return fetch(config.trackingURL + '/fetch/' + (self.route.params.termId || self.latestTermCode) + '/compacted' + (showMax ? 'Max': '')).then(function(res) {
+            return fetch(config.trackingURL + '/fetch/' + self.termCode + '/compacted' + (showMax ? 'Max': '')).then(function(res) {
                 return res.json();
             }).then(function(res) {
                 if (res && res.ok && res.results && res.results.length > 0) self.compacted = res.results.map(function(obj) {
                     return {
-                        course: self.flatCourses[(self.route.params.termId || self.latestTermCode)][obj.group],
+                        course: self.flatCourses[self.termCode][obj.group],
                         seats: obj.reduction.seats,
                         ratio: self.ratio(obj.reduction.seats)
                     }
                 }).sort(function(a, b) {
                     return b.ratio - a.ratio;
                 });
+                else self.compacted = [];
             })
         },
         ratio: function(obj) {
             if (obj.enrolled < obj.cap || obj.enrolled === 0 || obj.enrolled < 10) return 0;
             //if (obj.cap === 0) return 1;
             return (obj.cap > 0 ? (obj.waitTotal + obj.enrolled) / obj.cap : (obj.waitTotal + obj.enrolled) / obj.enrolled) - 1;
+        },
+        switchTerm: function() {
+            var self = this;
+            return Bluebird.all([
+                self.$store.dispatch('fetchTermCourses', self.termCode),
+                self.fetchHeat(),
+                self.fetchCompacted()
+            ])
+            .then(function() {
+                self.$store.commit('setTermName', self.$store.getters.termsList[self.termCode])
+                return self.$store.dispatch('calculateDropDeadline', self.termCode)
+            })
+            .then(function(deadline) {
+                self.dropDeadline = moment(deadline).format('YYYY-MM-DD');
+                self.ready = true;
+                if (!self.route.params.courseNum) return;
+                self.graphDataReady = false;
+                return self.loadGraph({
+                    termId: self.route.params.termId || self.termCode,
+                    courseNum: self.route.params.courseNum
+                })
+            })
         }
     },
     mounted: function() {
         var self = this;
         this.$store.dispatch('setTitle', 'Analytics');
-        return self.$store.dispatch('fetchTermCourses', (self.route.params.termId || self.latestTermCode))
+        return self.fetchAvailableTerms()
         .then(function() {
-            return Bluebird.all([
-                self.fetchHeat(),
-                self.fetchCompacted()
-            ])
-        })
-        .then(function() {
-            self.$store.commit('setTermName', self.$store.getters.termsList[(self.route.params.termId || self.latestTermCode)])
-            return self.$store.dispatch('calculateDropDeadline', (self.route.params.termId || self.latestTermCode))
-        })
-        .then(function(deadline) {
-            self.dropDeadline = moment(deadline).format('YYYY-MM-DD');
-            self.ready = true;
-            if (!self.route.params.courseNum) return;
-            self.graphDataReady = false;
-            return self.loadGraph(self.route.params)
+            self.termCode = self.route.params.termId || self.availableTerms[self.availableTerms.length - 1].code;
+            return self.switchTerm();
         })
     },
 
