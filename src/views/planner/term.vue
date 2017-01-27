@@ -1,7 +1,7 @@
 <template>
     <div>
         <transition-group name="list-complete" appear>
-            <div id="top-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-black-transparent': !lock }" v-show="ready" key="actions">
+            <div id="top-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-black-transparent': !lock }" v-if="ready" key="actions">
                 <div class="m0 p0 rounded">
                     <div class="clearfix">
                         <div class="right rounded" v-show="!lock">
