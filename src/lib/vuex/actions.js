@@ -1096,7 +1096,7 @@ var self = module.exports = {
         var termId = payload.termId, course = payload.courseObj, isSection = payload.isSection, courseNum = payload.courseNum;
         var courseInfo = courseNum ? _.getters.courseInfo[termId][courseNum] : _.getters.courseInfo[termId][course.num];
         isSection = isSection || false;
-        if (!isSection) {
+        if (!isSection && !course.custom) {
             var courseHasSections = _.getters.courseInfo[termId][course.num].sec.length > 0;
             var materialLink = helper.getMaterialsLink(termId, course);
         }
