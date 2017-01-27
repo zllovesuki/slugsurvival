@@ -82,5 +82,8 @@ module.exports = {
     },
     onlineState: function(state) {
         return state.onlineState;
+    },
+    lockMinMax: function(state) {
+        return state.lockMinMax;
     }
 }

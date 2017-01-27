@@ -2,8 +2,10 @@ var Vue = require('vue')
 
 var VueRouter = require('vue-router')
 var sync = require('vuex-router-sync').sync
+var VTooltip = require('v-tooltip')
 
 Vue.use(VueRouter)
+Vue.use(VTooltip)
 
 var store = require('./lib/vuex/store.js');
 

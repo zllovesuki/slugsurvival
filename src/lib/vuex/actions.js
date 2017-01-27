@@ -1515,5 +1515,12 @@ var self = module.exports = {
                 })
             })
         })
+    },
+    lockMinMax: function(_) {
+        var self = this;
+        return storage.getItem('lockMinMax').then(function(lock) {
+            if (lock === null) return;
+            if (lock !== _.getters.lockMinMax) return _.commit('flipLockMinMax')
+        })
     }
 }

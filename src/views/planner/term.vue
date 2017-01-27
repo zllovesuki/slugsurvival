@@ -1,5 +1,10 @@
 <template>
     <div>
+        <div class="fixed bottom-0 left-0 m2" style="z-index: 2000">
+            <a class="btn block muted" @click="$store.commit('flipLockMinMax')" v-tooltip="!lockMinMax ? 'Show 07:00am-11:00pm': 'Show concise time'">
+                <i class="fa" v-bind:class="{'fa-lock': lockMinMax, 'fa-unlock': !lockMinMax}">&nbsp;</i>
+            </a>
+        </div>
         <transition-group name="list-complete" appear>
             <div id="top-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-black-transparent': !lock }" v-if="ready" key="actions">
                 <div class="m0 p0 rounded">
@@ -88,6 +93,18 @@ module.exports = {
         },
         flatCourses: function() {
             return this.$store.getters.flatCourses;
+        },
+        lockMinMax: function() {
+            return this.$store.getters.lockMinMax;
+        }
+    },
+    watch: {
+        'lockMinMax': function(old, oldVal) {
+            var self = this;
+            self.$store.dispatch('refreshCalendar')
+            .then(function() {
+                self.scrollToTop()
+            })
         }
     },
     methods: {
@@ -157,6 +174,7 @@ module.exports = {
             })
         },
         scrollToTop: function() {
+            if (this.lockMinMax) return;
             $('html, body').animate({
                 scrollTop: $("#calendar-container").offset().top - 60
             }, 250);
@@ -470,7 +488,7 @@ module.exports = {
         var self = this;
         this.$store.getters.loading.go(30);
         this.$store.dispatch('setTitle', 'Planner');
-        self.$store.dispatch('fetchTermCourses').then(function() {
+        return self.$store.dispatch('fetchTermCourses').then(function() {
             self.$store.commit('setTermName', self.$store.getters.termsList[self.$store.getters.termId])
             return self.$store.dispatch('decodeHash')
             .then(function() {
@@ -493,8 +511,10 @@ module.exports = {
                 self.$nextTick(function() {
                     $('.fc-day-grid').insertAfter($('.fc-time-grid'))
                     $('.fc-divider').insertAfter($('.fc-time-grid'))
-                    self.scrollToTop()
-                    self.$store.dispatch('refreshCalendar')
+                    self.$store.dispatch('lockMinMax').then(function() {
+                        self.$store.dispatch('refreshCalendar')
+                        if (!self.lockMinMax) self.scrollToTop();
+                    })
                 })
 
             })

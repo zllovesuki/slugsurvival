@@ -1,10 +1,10 @@
 <template>
     <div>
         <div class="fixed bottom-0 right-0 m2" style="z-index: 2000">
-			<a class="btn block muted" @click="showFeedback">
-				<i class="fa fa-warning">&nbsp;</i>
-			</a>
-		</div>
+            <a class="btn block muted" @click="showFeedback" v-tooltip="'Click to report a problem'">
+                <i class="fa fa-warning">&nbsp;</i>
+            </a>
+        </div>
         <transition name="fade" mode="out-in">
             <div class="mt3" v-show="shouldAddMargin"></div>
         </transition>
@@ -239,5 +239,27 @@ svg {
         max-height: 528px;
         overflow: auto;
     }
+}
+
+.tooltip {
+    display: none;
+    opacity: 0;
+    transition: opacity .15s;
+    pointer-events: none;
+    padding: 4px;
+    z-index: 10000;
+}
+.tooltip .tooltip-content {
+    font-size: 0.75em;
+    background: black;
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px 4px;
+}
+.tooltip.tooltip-open-transitionend {
+    display: block;
+}
+.tooltip.tooltip-after-open {
+    opacity: 1;
 }
 </style>

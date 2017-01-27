@@ -147,6 +147,12 @@ module.exports = function(storage) {
 
                 break;
 
+                case 'flipLockMinMax':
+
+                storage.setItem('lockMinMax', state.lockMinMax)
+
+                break;
+
                 default:
                 break;
             }

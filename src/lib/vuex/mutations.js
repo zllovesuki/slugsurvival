@@ -189,5 +189,8 @@ module.exports = {
     },
     changeOnlineState: function(state, status) {
         state.onlineState = status;
+    },
+    flipLockMinMax: function(state) {
+        state.lockMinMax = !state.lockMinMax;
     }
 }
