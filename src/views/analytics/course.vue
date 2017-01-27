@@ -112,7 +112,7 @@
                 </div>
 			</div>
 		</div>
-        <search :show="searchModal" v-on:close="searchModal = false" :callback="openAnalytics" :selected-term-id="termCode"></search>
+        <search :show="searchModal" :resetOnShow="true" v-on:close="searchModal = false" :callback="openAnalytics" :selected-term-id="termCode"></search>
         <transition name="fade" mode="out-in">
             <div class="overflow-hidden bg-white rounded mb2" v-show="!ready || !graphDataReady">
                 <div class="m0 p2">
@@ -234,6 +234,7 @@ module.exports = {
         loadGraph: function(params) {
             if (!params.termId || !params.courseNum) return;
             var self = this;
+            self.graphDataReady = false;
             this.canvasId = this.makeid();
             self.graphData = [];
             return fetch(config.trackingURL + '/fetch/' + params.termId + '/' + params.courseNum).then(function(res) {
@@ -282,8 +283,10 @@ module.exports = {
                     }
                 }
                 self.course = self.flatCourses[params.termId][params.courseNum];
+            })
+            .then(function() {
                 self.graphDataReady = true;
-            });
+            })
         },
         fetchAvailableTerms: function() {
             var self = this;
@@ -337,6 +340,7 @@ module.exports = {
         },
         switchTerm: function() {
             var self = this;
+            self.graphDataReady = true;
             return Bluebird.all([
                 self.$store.dispatch('fetchTermCourses', self.termCode),
                 self.fetchHeat(),
@@ -350,7 +354,6 @@ module.exports = {
                 self.dropDeadline = moment(deadline).format('YYYY-MM-DD');
                 self.ready = true;
                 if (!self.route.params.courseNum) return;
-                self.graphDataReady = false;
                 return self.loadGraph({
                     termId: self.route.params.termId || self.termCode,
                     courseNum: self.route.params.courseNum

@@ -118,6 +118,10 @@ module.exports = {
         doNotModifyClass: {
             type: Boolean,
             default: false
+        },
+        resetOnShow: {
+            type: Boolean,
+            default: false
         }
     },
     data: function() {
@@ -172,6 +176,13 @@ module.exports = {
         }
     },
     watch: {
+        'show': function(val, oldVal) {
+            if (this.resetOnShow && val === true) {
+                this.search.results = [];
+                this.search.string = '';
+                this.search.dirty = false;
+            }
+        },
         'search.string': function(val, oldVal) {
             if (val.length < 1) {
                 this.search.results = [];
