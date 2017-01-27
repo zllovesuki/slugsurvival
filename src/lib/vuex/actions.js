@@ -508,7 +508,42 @@ var self = module.exports = {
         }
     },
     refreshCalendar: function(_) {
-        $('#calendar-' + _.getters.termId).fullCalendar('refetchEvents');
+        var termId = _.getters.termId;
+        var dateMap = _.state.dateMap;
+
+        var calendarStart = '07:00', calendarEnd = '23:00';
+
+        if (_.state.lockMinMax !== true) {
+            var startTime = new Date(), endTime = new Date(), minStart = Infinity, maxEnd = -Infinity;
+            var split = null;
+            (_.getters.eventSource[termId] || []).forEach(function(e) {
+                split = e.start.split(' ');
+                if (split) startTime = new Date(dateMap.Monday + ' ' + split[1]);
+                else return;
+                split = e.end.split(' ');
+                if (split) endTime = new Date(dateMap.Monday + ' ' + split[1]);
+                else return;
+
+                if (endTime.getTime() <= startTime.getTime()) return;
+                if (startTime.getTime() < minStart) minStart = startTime.getTime();
+                if (endTime.getTime() > maxEnd) maxEnd = endTime.getTime();
+            })
+
+            if (minStart !== Infinity || maxEnd !== -Infinity) {
+                calendarStart = (new Date(minStart).getMinutes()) > 0 ? new Date(minStart).getHours() + ':00' : new Date(minStart).getHours() + ':' + new Date(minStart).getMinutes()
+                calendarEnd = (new Date(maxEnd).getMinutes()) > 0 ? (new Date(maxEnd).getHours() + 1) + ':00' : new Date(maxEnd).getHours() + ':' + new Date(maxEnd).getMinutes()
+            }
+        }
+
+        $('#calendar-' + termId).fullCalendar('option', {
+            minTime: calendarStart,
+            maxTime: calendarEnd
+        })
+        $('#calendar-' + termId).fullCalendar('refetchEvents')
+
+        $('.fc-day-grid').insertAfter($('.fc-time-grid'))
+        $('.fc-divider').insertAfter($('.fc-time-grid'))
+
         $('.alertify').remove();
     },
     returnEventSourceSnapshot: function(_) {

@@ -37,6 +37,8 @@ module.exports = {
 
     title: 'Index',
 
+    lockMinMax: false,
+
     colorMap: {
         // Buttons
         regular: '#509ACC',

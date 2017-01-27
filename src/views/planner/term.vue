@@ -484,7 +484,8 @@ module.exports = {
                 // We will now force the allDaySlot in the bottom of the page
                 self.$nextTick(function() {
                     $('.fc-day-grid').insertAfter($('.fc-time-grid'))
-                    $('.fc-divider').insertAfter($('.fc-time-grid'))
+                    $('.fc-divider').insertAfter($('.fc-time-grid'));
+                    self.$store.dispatch('refreshCalendar')
                 })
 
             })
