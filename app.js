@@ -23,7 +23,7 @@ module.exports = function() {
     }
 
     var html = fs.readFileSync(root).toString('utf-8');
-    var analytics = '';
+    var analytics = '', drift = '';
 
     if (config.analytics && config.analytics.piwik && config.analytics.piwik.enabled) {
         analytics = fs.readFileSync(__dirname + '/src/static/piwik.tmpl').toString('utf-8');
@@ -33,6 +33,15 @@ module.exports = function() {
         html = html.replace('__ANALYTICS__', analytics);
     }else{
         html = html.replace('__ANALYTICS__', '');
+    }
+
+    if (config.analytics && config.analytics.drift) {
+        drift = fs.readFileSync(__dirname + '/src/static/drift.tmpl').toString('utf-8');
+        drift = drift.replace('__DRIFT_VERSION__', config.analytics.drift.version);
+        drift = drift.replace('__DRIFT_ID__', config.analytics.drift.id);
+        html = html.replace('__DRIFT__', drift);
+    }else{
+        html = html.replace('__DRIFT__', '');
     }
 
     html = html.replace('__JS__', js)

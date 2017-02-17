@@ -1,10 +1,10 @@
 <template>
     <div>
-        <div class="fixed bottom-0 right-0 m2" style="z-index: 2000">
+        <!--<div class="fixed bottom-0 right-0 m2" style="z-index: 2000">
             <a class="btn block muted" @click="showFeedback" v-tooltip="'Click to report a problem'">
                 <i class="fa fa-warning">&nbsp;</i>
             </a>
-        </div>
+        </div>-->
         <transition name="fade" mode="out-in">
             <div class="mt3" v-show="shouldAddMargin"></div>
         </transition>
