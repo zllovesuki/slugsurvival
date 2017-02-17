@@ -73,5 +73,5 @@ module.exports = {
     shouldAddMargin: false,
 
     loading: new Nanobar(),
-    alert: alertify.reset().closeLogOnClick(true).logPosition("bottom right").maxLogItems(1)
+    alert: alertify.reset().closeLogOnClick(true).logPosition("bottom left").maxLogItems(1)
 }
