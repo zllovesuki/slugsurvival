@@ -518,10 +518,10 @@ var self = module.exports = {
             var split = null;
             (_.getters.eventSource[termId] || []).forEach(function(e) {
                 split = e.start.split(' ');
-                if (split) startTime = new Date(dateMap.Monday + ' ' + split[1]);
+                if (split && split[1]) startTime = new Date(dateMap.Monday + ' ' + split[1]);
                 else return;
                 split = e.end.split(' ');
-                if (split) endTime = new Date(dateMap.Monday + ' ' + split[1]);
+                if (split && split[1]) endTime = new Date(dateMap.Monday + ' ' + split[1]);
                 else return;
 
                 if (endTime.getTime() <= startTime.getTime()) return;
