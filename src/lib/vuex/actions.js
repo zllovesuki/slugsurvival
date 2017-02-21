@@ -516,12 +516,13 @@ var self = module.exports = {
         if (_.state.lockMinMax !== true) {
             var startTime = new Date(), endTime = new Date(), minStart = Infinity, maxEnd = -Infinity;
             var split = null;
-            (_.getters.eventSource[termId] || []).forEach(function(e) {
+            if (typeof _.getters.eventSource[termId] === 'undefined') return;
+            _.getters.eventSource[termId].forEach(function(e) {
                 split = e.start.split(' ');
-                if (split && split[1]) startTime = new Date(dateMap.Monday + ' ' + split[1]);
+                if (split && split[1]) startTime = new Date(moment(dateMap.Monday + ' ' + split[1]));
                 else return;
                 split = e.end.split(' ');
-                if (split && split[1]) endTime = new Date(dateMap.Monday + ' ' + split[1]);
+                if (split && split[1]) endTime = new Date(moment(dateMap.Monday + ' ' + split[1]));
                 else return;
 
                 if (endTime.getTime() <= startTime.getTime()) return;
