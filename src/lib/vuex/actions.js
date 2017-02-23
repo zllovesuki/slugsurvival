@@ -909,7 +909,7 @@ var self = module.exports = {
                 var max = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
                 html += template('Quality', course.ins.f + ' is ' + max)
                 html += template('Clarity', rmp.stats.stats.clarity.toFixed(1))
-                html += template('Easy', rmp.stats.stats.easy.toFixed(1))
+                html += template('Difficulty', rmp.stats.stats.easy.toFixed(1))
                 html += template('Overall', rmp.stats.stats.overall.toFixed(1))
                 html += template('Based on', rmp.stats.scores.count + ' ratings')
                 _.getters.alert
