@@ -191,6 +191,7 @@ module.exports = {
     },
     watch: {
         'route': function(val, oldVal) {
+            if (!this.ready) return;
             this.$nextTick(function() {
                 this.canvasId = null;
                 this.graphData = [];
@@ -205,6 +206,7 @@ module.exports = {
             })
         },
         'termCode': function(val, oldVal) {
+            if (!this.ready) return;
             this.termCode = val;
             this.$router.push({ name: 'analyticsCourse' })
             this.switchTerm();
@@ -355,7 +357,7 @@ module.exports = {
                 self.ready = true;
                 if (!self.route.params.courseNum) return;
                 return self.loadGraph({
-                    termId: self.route.params.termId || self.termCode,
+                    termId: self.termCode,
                     courseNum: self.route.params.courseNum
                 })
             })
