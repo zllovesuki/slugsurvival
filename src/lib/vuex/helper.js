@@ -457,7 +457,7 @@ var self = module.exports = {
             });
     }, // http://stackoverflow.com/questions/16227197/compute-intersection-of-two-arrays-in-javascript
 
-    compact: function(events) {
+    compact: function(events, skipExtra) {
         var array = [];
         var tracker = {};
         var extra = {};
@@ -482,7 +482,7 @@ var self = module.exports = {
 
         for (var courseNum in tracker.coursesWithoutSections) {
             if (tracker.coursesWithSections.indexOf(courseNum) === -1) {
-                if (courseNum / 100000 >= 1) {
+                if (courseNum / 100000 >= 1 && skipExtra !== true) {
                     // we got a traitor!
                     array.push(courseNum + '-' + JSON.stringify(extra[courseNum]));
                 }else{

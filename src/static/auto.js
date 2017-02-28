@@ -93,11 +93,9 @@
 
 // Bookmark
 
-var classes = [
-    '62920',
-    '60873-null',
-    '62271'
-]
+var classes = []
+
+var quarter = '2017 Spring Quarter';
 
 function loadJquery(cb) {
     var script = document.createElement('script');
@@ -192,6 +190,11 @@ loadBluebird(function() {
         }
 
         var split = null;
+
+        if ($($('#ptifrmtgtframe').contents().find('.PABOLDTEXT')[0]).text().indexOf(quarter) === -1) {
+            alert('Wrong quarter!')
+            return;
+        }
 
         Promise.map(classes, function(classString) {
             split = classString.split('-');
