@@ -309,6 +309,7 @@ module.exports = {
                 return res.json();
             }).then(function(res) {
                 if (res && res.ok && res.results && res.results.length > 0) self.heat = res.results.map(function(obj) {
+                    if (!self.flatCourses[self.termCode][obj.group]) return;
                     return {
                         course: self.flatCourses[self.termCode][obj.group],
                         count: obj.reduction
@@ -324,6 +325,7 @@ module.exports = {
                 return res.json();
             }).then(function(res) {
                 if (res && res.ok && res.results && res.results.length > 0) self.compacted = res.results.map(function(obj) {
+                    if (!self.flatCourses[self.termCode][obj.group]) return;
                     return {
                         course: self.flatCourses[self.termCode][obj.group],
                         seats: obj.reduction.seats,
