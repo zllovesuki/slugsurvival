@@ -34,17 +34,8 @@
             <div class="m0 p1">
                 <div class="clearfix">
                     <div class="right">
-                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.TBA }">
-                            TBA
-                        </a>
-                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.course }">
-                            Class
-                        </a>
-                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.section }">
-                            Section
-                        </a>
-                        <a class="btn btn-outline white h6" v-bind:style="{ backgroundColor: colorMap.custom }">
-                            Other
+                        <a class="btn btn-outline white h6 clickable" v-bind:style="{ backgroundColor: colorMap.TBA }" v-on:click.prevent.stop="exportToUCSC">
+                            Export to my.ucsc.edu (beta)
                         </a>
                     </div>
                 </div>
@@ -412,6 +403,23 @@ module.exports = {
             self.$store.dispatch('exportICS');
             if (self.$store.getters.Tracker !== null) {
                 self.$store.getters.Tracker.trackEvent('saveCalendarAsICS', 'clicked')
+            }
+        },
+        exportToUCSC: function() {
+            var classes = JSON.stringify(helper.compact(this.$store.getters.eventSource[this.$store.getters.termId]));
+            var script = 'javascript:(function(){function jQ(a){var b=document.createElement("script");b.src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.slim.min.js",b.type="text/javascript",b.onload=a,document.getElementsByTagName("head")[0].appendChild(b)}function bl(a){var b=document.createElement("script");b.src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.4.7/bluebird.min.js",b.type="text/javascript",b.onload=a,document.getElementsByTagName("head")[0].appendChild(b)}var classes='+classes+';bl(function(){jQ(function(){var a=function(){return $("#ptifrmtgtframe").contents().find("input[name=DERIVED_REGFRM1_CLASS_NBR]")[0],Promise.resolve()},b=function(a){return $($("#ptifrmtgtframe").contents().find("input[name=DERIVED_REGFRM1_CLASS_NBR]")[0]).val(a),Promise.resolve()},c=function(a){return new Promise(function(b){var c=function(){setTimeout(function(){0===$("#ptifrmtgtframe").contents().find("a").filter(function(b){return $(this).text().trim()===a}).length?c():b()},100)};c()})},d=function(){return new Promise(function(a){var b=function(){setTimeout(function(){0===$("#ptifrmtgtframe").contents().find(".PSCHECKBOX").length?b():a()},100)};b()})},e=function(a){return c("Next").then(function(){for(var c,b=$("#ptifrmtgtframe").contents().find(".PSLEVEL1GRID").find("tr"),d=1;d<b.length;d++)if(c=$(b[d]).find("td"),"null"!=a&&c[1]&&a==$(c[1]).text().trim()||c[2]&&"No Selection"==$(c[2]).text().trim()){$(c[0]).find("input")[0].click();break}})},f=function(){return d().then(function(){$("#ptifrmtgtframe").contents().find(".PSCHECKBOX")[0].click()})},g=function(){return c("Enter").then(function(){$("#ptifrmtgtframe").contents().find("a").filter(function(a){return"Enter"===$(this).text().trim()})[0].click()})},h=function(){return c("Next").then(function(){$("#ptifrmtgtframe").contents().find("a").filter(function(a){return"Next"===$(this).text().trim()})[0].click()})},i=null;Promise.map(classes,function(d){return i=d.split("-"),a().then(function(){return b(i[0])}).then(g).then(function(){return e(i[1]||"null")}).then(function(){return h()}).then(f).then(function(){return h()}).then(function(){return c("Enter")})},{concurrency:1})})});})()';
+            var html = '';
+
+            html += ['<p>', '<i>', 'Automatically fill in your shopping cart', '</i>', '</p>'].join('');
+            html += ['<p>', 'First, bookmark <a href=\'' + script + '\'>', 'Fill in ', this.$store.getters.termName ,'</a>', '</p>'].join('');
+            html += ['<p>', 'Then click the bookmark when you in the cart' ,'</p>'].join('');
+
+            this.alert
+            .okBtn('OK')
+            .alert(html);
+
+            if (this.$store.getters.Tracker !== null) {
+                this.$store.getters.Tracker.trackEvent('exportToUCSC', 'clicked')
             }
         },
         bookmark: function() {

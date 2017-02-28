@@ -93,9 +93,15 @@
 
 // Bookmark
 
+var classes = [
+    '62920',
+    '60873-null',
+    '62271'
+]
+
 function loadJquery(cb) {
     var script = document.createElement('script');
-    script.src = 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js';
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.slim.min.js';
     script.type = 'text/javascript';
     script.onload = cb
     document.getElementsByTagName('head')[0].appendChild(script);
@@ -108,12 +114,6 @@ function loadBluebird(cb) {
     script.onload = cb
     document.getElementsByTagName('head')[0].appendChild(script);
 }
-
-var classes = [
-    '62920',
-    '60873-null',
-    '62271'
-]
 
 loadBluebird(function() {
     loadJquery(function() {
@@ -135,7 +135,7 @@ loadBluebird(function() {
                         }else{
                             resolve();
                         }
-                    }, 250)
+                    }, 100)
                 }
                 polling();
             });
@@ -150,7 +150,7 @@ loadBluebird(function() {
                         }else{
                             resolve();
                         }
-                    }, 250)
+                    }, 100)
                 }
                 polling();
             });
