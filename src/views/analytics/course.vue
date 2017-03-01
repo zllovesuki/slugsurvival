@@ -58,7 +58,7 @@
                                     <th>Enrolled / Capacity</th>
                                 </thead>
                                 <tbody class="h5">
-                                    <tr class="clickable" v-on:click.prevent.stop="openAnalytics(result.course)" v-for="result in compacted.slice(0, top)" :key="result.num">
+                                    <tr class="clickable" v-on:click.prevent.stop="openAnalytics(result.course)" v-for="result in compacted.slice(0, top)">
                                         <td class="nowrap">{{ result.course.c }} - {{ result.course.s }}</td>
                                         <td class="nowrap bold">{{ (result.ratio * 100).toPrecision(4) + '%' }}</td>
                                         <td class="nowrap italic">{{ result.seats.waitTotal }}</td>
@@ -98,7 +98,7 @@
                                     <th>Changes</th>
                                 </thead>
                                 <tbody class="h5">
-                                    <tr class="clickable" v-on:click.prevent.stop="openAnalytics(result.course)" v-for="result in heat" :key="result.num">
+                                    <tr class="clickable" v-on:click.prevent.stop="openAnalytics(result.course)" v-for="result in heat">
                                         <td class="nowrap">{{ result.course.c }} - {{ result.course.s }}</td>
                                         <td class="nowrap">{{ result.count }}</td>
                                     </tr>
