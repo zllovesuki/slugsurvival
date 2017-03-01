@@ -492,6 +492,7 @@ module.exports = {
             return self.$store.dispatch('decodeHash')
             .then(function() {
                 // no valid was decoded
+                self.$store.dispatch('showDisclaimer')
                 return self.$store.dispatch('loadAutosave', {
                     termId: self.termId,
                     alert: true
