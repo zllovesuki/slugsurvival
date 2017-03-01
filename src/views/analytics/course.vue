@@ -347,11 +347,13 @@ module.exports = {
         switchTerm: function() {
             var self = this;
             self.graphDataReady = true;
-            return Bluebird.all([
-                self.$store.dispatch('fetchTermCourses', self.termCode),
-                self.fetchHeat(),
-                self.fetchCompacted()
-            ])
+            return self.$store.dispatch('fetchTermCourses', self.termCode)
+            .then(function() {
+                return Bluebird.all([
+                    self.fetchHeat(),
+                    self.fetchCompacted()
+                ])
+            })
             .then(function() {
                 self.$store.commit('setTermName', self.$store.getters.termsList[self.termCode])
                 return self.$store.dispatch('calculateDropDeadline', self.termCode)
