@@ -17,11 +17,10 @@ var self = module.exports = {
         if (typeof _.state.instructorStats[tid] !== 'undefined') {
             return Bluebird.resolve(_.state.instructorStats[tid]);
         }
-        var timestamp = Date.now() / 1000;
         return Bluebird.all([
-            fetch(config.dbURL + '/rmp/ratings/' + tid + '.json?' + timestamp),
-            fetch(config.dbURL + '/rmp/scores/' + tid + '.json?' + timestamp),
-            fetch(config.dbURL + '/rmp/stats/' + tid + '.json?' + timestamp)
+            fetch(config.dbURL + '/rmp/ratings/' + tid + '.json'),
+            fetch(config.dbURL + '/rmp/scores/' + tid + '.json'),
+            fetch(config.dbURL + '/rmp/stats/' + tid + '.json')
         ])
         .spread(function(ratingsRes, scoresRes, statsRes){
             return Bluebird.all([
@@ -76,12 +75,11 @@ var self = module.exports = {
         var online;
         var self = this;
         var loadOnlineTimestamp = function() {
-            var timestamp = Date.now() / 1000;
             return Bluebird.all([
-                fetch(config.dbURL + '/timestamp/terms.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/rmp.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/subjects.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/major-minor.json?' + timestamp)
+                fetch(config.dbURL + '/timestamp/terms.json'),
+                fetch(config.dbURL + '/timestamp/rmp.json'),
+                fetch(config.dbURL + '/timestamp/subjects.json'),
+                fetch(config.dbURL + '/timestamp/major-minor.json')
             ]).spread(function(termsRes, rmpRes, subjectsRes, mmRes){
                 return Bluebird.all([
                     termsRes.json(),
@@ -184,12 +182,11 @@ var self = module.exports = {
     },
     loadBasicDataFromOnline: function(_, invalid) {
         var self = this;
-        var timestamp = Date.now() / 1000;
         return Bluebird.all([
-            invalid.termsList ? fetch(config.dbURL + '/terms.json?' + timestamp) : null,
-            invalid.rmp ? fetch(config.dbURL + '/rmp.json?' + timestamp) : null,
-            invalid.subjects ? fetch(config.dbURL + '/subjects.json?' + timestamp) : null,
-            invalid.mm ? fetch(config.dbURL + '/major-minor.json?' + timestamp) : null
+            invalid.termsList ? fetch(config.dbURL + '/terms.json') : null,
+            invalid.rmp ? fetch(config.dbURL + '/rmp.json') : null,
+            invalid.subjects ? fetch(config.dbURL + '/subjects.json') : null,
+            invalid.mm ? fetch(config.dbURL + '/major-minor.json') : null
         ])
         .spread(function(termsRes, rmpRes, subjectsRes, mmRes){
             return Bluebird.all([
@@ -240,10 +237,9 @@ var self = module.exports = {
         var online;
         var self = this;
         var loadOnlineTimestamp = function() {
-            var timestamp = Date.now() / 1000;
             return Bluebird.all([
-                fetch(config.dbURL + '/timestamp/terms/' + termId + '.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/courses/' + termId + '.json?' + timestamp)
+                fetch(config.dbURL + '/timestamp/terms/' + termId + '.json'),
+                fetch(config.dbURL + '/timestamp/courses/' + termId + '.json')
             ]).spread(function(termsRes, InfoRes){
                 return Bluebird.all([
                     termsRes.json(),
@@ -324,10 +320,9 @@ var self = module.exports = {
     loadCourseDataFromOnline: function(_, payload) {
         var invalid = payload.invalid, termId = payload.termId;
         var self = this;
-        var timestamp = Date.now() / 1000;
         return Bluebird.all([
-            invalid.coursesData ? fetch(config.dbURL + '/terms/' + termId + '.json?' + timestamp) : null,
-            invalid.courseInfo ? fetch(config.dbURL + '/courses/' + termId + '.json?' + timestamp) : null
+            invalid.coursesData ? fetch(config.dbURL + '/terms/' + termId + '.json') : null,
+            invalid.courseInfo ? fetch(config.dbURL + '/courses/' + termId + '.json') : null
         ])
         .spread(function(courseDataRes, courseInfoRes){
             return Bluebird.all([
@@ -1001,7 +996,6 @@ var self = module.exports = {
         cal.download('Schedule for ' + _.state.termName);
     },
     fetchRealTimeEnrollment: function(_, payload) {
-        var timestamp = Date.now() / 1000;
         return fetch(config.trackingURL + '/fetch/' + payload.termCode + '/' + payload.courseNum + '/latestOne?' + timestamp)
         .then(function(res) {
             return res.json();
@@ -1214,8 +1208,7 @@ var self = module.exports = {
         _.commit('appendCourseInfo', payload);
     },
     fetchGE: function(_) {
-        var timestamp = Date.now() / 1000;
-        return fetch(config.dbURL + '/ge.json?' + timestamp)
+        return fetch(config.dbURL + '/ge.json')
         .then(function(res) {
             return res.json();
         })
@@ -1275,10 +1268,9 @@ var self = module.exports = {
     loadHistoricDataFromLocal: function(_) {
         var online;
         var self = this;
-        var timestamp = Date.now() / 1000;
         var loadOnlineTimestamp = function() {
             return Bluebird.all([
-                fetch(config.dbURL + '/timestamp/terms.json?' + timestamp)
+                fetch(config.dbURL + '/timestamp/terms.json')
             ]).spread(function(res) {
                 return Bluebird.all([
                     res.json()
@@ -1344,12 +1336,11 @@ var self = module.exports = {
         })
     },
     loadHistoricDataFromOnline: function(_) {
-        var timestamp = Date.now() / 1000;
         return Bluebird.all([
-            fetch(config.dbURL + '/offered/spring.json?' + timestamp),
-            fetch(config.dbURL + '/offered/summer.json?' + timestamp),
-            fetch(config.dbURL + '/offered/fall.json?' + timestamp),
-            fetch(config.dbURL + '/offered/winter.json?' + timestamp)
+            fetch(config.dbURL + '/offered/spring.json'),
+            fetch(config.dbURL + '/offered/summer.json'),
+            fetch(config.dbURL + '/offered/fall.json'),
+            fetch(config.dbURL + '/offered/winter.json')
         ])
         .spread(function(springRes, summerRes, fallRes, winterRes){
             return Bluebird.all([

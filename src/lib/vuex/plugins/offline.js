@@ -5,7 +5,6 @@ module.exports = function(storage) {
         store.subscribe(function(mutation, state) {
 
             var termId;
-            var timestamp = Date.now() / 1000;
             if (mutation.payload && mutation.payload.termId) termId = mutation.payload.termId;
 
             switch (mutation.type) {
@@ -16,7 +15,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/terms/' + termId + '.json?' + timestamp)
+                return fetch(config.dbURL + '/timestamp/terms/' + termId + '.json')
                 .then(function(res) {
                     return res.json();
                 })
@@ -36,7 +35,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/courses/' + termId + '.json?' + timestamp)
+                return fetch(config.dbURL + '/timestamp/courses/' + termId + '.json')
                 .then(function(res) {
                     return res.json();
                 })
@@ -56,7 +55,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/rmp.json?' + timestamp)
+                return fetch(config.dbURL + '/timestamp/rmp.json')
                 .then(function(res) {
                     return res.json();
                 })
@@ -76,7 +75,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/terms.json?' + timestamp)
+                return fetch(config.dbURL + '/timestamp/terms.json')
                 .then(function(res) {
                     return res.json();
                 })
@@ -96,7 +95,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/subjects.json?' + timestamp)
+                return fetch(config.dbURL + '/timestamp/subjects.json')
                 .then(function(res) {
                     return res.json();
                 })
@@ -114,7 +113,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/major-minor.json?' + timestamp)
+                return fetch(config.dbURL + '/timestamp/major-minor.json')
                 .then(function(res) {
                     return res.json();
                 })
@@ -134,7 +133,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/terms.json?' + timestamp)
+                return fetch(config.dbURL + '/timestamp/terms.json')
                 .then(function(res) {
                     return res.json();
                 })
