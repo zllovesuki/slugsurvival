@@ -182,6 +182,9 @@ module.exports = {
         termsList: function() {
             return this.$store.getters.termsList
         },
+        termDates: function() {
+            return this.$store.getters.termDates
+        },
         colorMap: function() {
             return this.$store.getters.colorMap;
         },
@@ -356,10 +359,16 @@ module.exports = {
             })
             .then(function() {
                 self.$store.commit('setTermName', self.$store.getters.termsList[self.termCode])
-                return self.$store.dispatch('calculateDropDeadline', self.termCode)
+                var startDate = self.termDates[self.termCode]
+                if (startDate.start === null) return false;
+                else return self.$store.dispatch('calculateDropDeadline', self.termCode)
             })
             .then(function(deadline) {
-                self.dropDeadline = moment(deadline).format('YYYY-MM-DD');
+                if (deadline === false) {
+                    self.dropDeadline = '(Not Available)'
+                }else{
+                    self.dropDeadline = moment(deadline).format('YYYY-MM-DD');
+                }
                 self.ready = true;
                 if (!self.route.params.courseNum) return;
                 return self.loadGraph({

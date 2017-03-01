@@ -35,6 +35,9 @@ module.exports = {
     termsList: function(state) {
         return state.termsList;
     },
+    termDates: function(state) {
+        return state.termDates;
+    },
     historicData: function(state) {
         return state.historicData;
     },
