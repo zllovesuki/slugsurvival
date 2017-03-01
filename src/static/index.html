@@ -6,14 +6,14 @@
         <title>SlugSurvival</title>
         <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-        <link rel="stylesheet" href="https://dist.s3.fmt01.sdapi.net/css/normalize/v3.0.3/normalize.min.css">
-        <link rel="stylesheet" href="https://dist.s3.fmt01.sdapi.net/css/basscss/v7.1.1/basscss.min.css">
-        <link rel="stylesheet" href="https://dist.s3.fmt01.sdapi.net/css/basscss/v7.1.1/basscss-ui-groups.min.css">
-        <link rel="stylesheet" href="https://dist.s3.fmt01.sdapi.net/css/fullcalendar/3.2.0/fullcalendar.min.css">
-        <link rel="stylesheet" href="https://dist.s3.fmt01.sdapi.net/css/selectize/0.12.4/selectize.css">
-        <link rel="stylesheet" href="https://dist.s3.fmt01.sdapi.net/css/alertify/1.0.11/alertify.css" id="alertifyCSS">
-        <link href="https://dist.s3.fmt01.sdapi.net/fonts/lato-v11/lato-v11-all.css" rel="stylesheet" type="text/css">
-        <link href="https://dist.s3.fmt01.sdapi.net/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/normalize/v3.0.3/normalize.min.css">
+        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/basscss/v7.1.1/basscss.min.css">
+        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/basscss/v7.1.1/basscss-ui-groups.min.css">
+        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/fullcalendar/3.2.0/fullcalendar.min.css">
+        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/selectize/0.12.4/selectize.css">
+        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/alertify/1.0.11/alertify.css" id="alertifyCSS">
+        <link href="https://rachel.s3.fmt01.sdapi.net/dist/fonts/lato-v11/lato-v11-all.css" rel="stylesheet" type="text/css">
+        <link href="https://rachel.s3.fmt01.sdapi.net/dist/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
     </head>
     <body>
@@ -23,15 +23,15 @@
         <div id="app">
 
         </div>
-        <script type="text/javascript" src="https://dist.s3.fmt01.sdapi.net/js/script.js/2.5.8/script.min.js"></script>
-        <script type="text/javascript" src="https://dist.s3.fmt01.sdapi.net/js/bluebird/v3.4.6/bluebird.min.js"></script>
+        <script type="text/javascript" src="https://rachel.s3.fmt01.sdapi.net/dist/js/script.js/2.5.8/script.min.js"></script>
+        <script type="text/javascript" src="https://rachel.s3.fmt01.sdapi.net/dist/js/bluebird/v3.4.6/bluebird.min.js"></script>
         <script type="text/javascript">
             window.Bluebird = Promise.noConflict();
             var loadingDiv = document.getElementById('loading');
             var loadingText = function(text) {
                 loadingDiv.innerHTML = text;
             }
-            var dist = 'https://dist.s3.fmt01.sdapi.net/js/';
+            var dist = 'https://rachel.s3.fmt01.sdapi.net/dist/js/';
             loadingText('Loading base files...')
             $script([dist + 'fetch/0.11.1/fetch.js', dist + 'moment/2.17.1/moment.min.js', dist + 'lz-string/1.4.4/lz-string.min.js', dist + 'jquery/3.1.0/jquery-3.1.0.min.js'], function() {
                 loadingText('Loading interface elements...')
