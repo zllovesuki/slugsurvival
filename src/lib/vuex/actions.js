@@ -516,8 +516,11 @@ var self = module.exports = {
         if (_.state.lockMinMax !== true) {
             var startTime = new Date(), endTime = new Date(), minStart = Infinity, maxEnd = -Infinity;
             var split = null;
-            if (typeof _.getters.eventSource[termId] === 'undefined') return;
-            _.getters.eventSource[termId].forEach(function(e) {
+            var events = _.getters.eventSource[termId];
+
+            if (typeof events === 'undefined') events = [];
+            
+            events.forEach(function(e) {
                 split = e.start.split(' ');
                 if (split && split[1]) startTime = new Date(moment(dateMap.Monday + ' ' + split[1]));
                 else return;
