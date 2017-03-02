@@ -15,6 +15,11 @@
 				<div class="clearfix">
                     <span class="btn black h6 not-clickable">
                         <form v-on:submit.prevent="checkSub" class="h6">
+                            <label for="term" class="block mb2">
+                                <select class="col-12 field inline-block border h5" v-model="termCode">
+                                    <option v-for="t in availableTerms" track-by="code" :value="t.code">{{ t.name }}</option>
+        					    </select>
+                            </label>
                             <label for="recipient" class="block">
                                 <input type="text" class="col-12 field inline-block" v-model="sub.recipient" placeholder="phone/email">
                             </label>
@@ -43,7 +48,7 @@
                     <table class="h6 col col-12">
                         <tr v-for="course in courses" :key="course.num">
                             <td class="col col-6">
-                                <span class="btn clickable left" @click="showCourse(latestTermCode, course)">{{ course.c }} - {{ course.s }}</span>
+                                <span class="btn clickable left" @click="showCourse(termCode, course)">{{ course.c }} - {{ course.s }}</span>
                             </td>
                         </tr>
                         <tr v-show="courses.length === 0">
@@ -66,7 +71,7 @@
                 </div>
 			</div>
 		</div>
-        <search :show="searchModal" v-on:close="searchModal = false" :callback="addToNotifyList" :selected-term-id="latestTermCode"></search>
+        <search :show="searchModal" v-on:close="searchModal = false" :callback="addToNotifyList" :selected-term-id="termCode"></search>
     </div>
 </template>
 
@@ -78,7 +83,8 @@ module.exports = {
         return {
             ready: false,
             searchModal: false,
-            latestTermCode: config.latestTermCode,
+            availableTerms: [],
+            termCode: null,
             courses: [],
             sub: {
                 recipient: '',
@@ -110,8 +116,15 @@ module.exports = {
         termName: function() {
             return this.$store.getters.termName;
         },
-        latestTermCode: function() {
-            return this.$store.getters.latestTermCode;
+        termDates: function() {
+            return this.$store.getters.termDates;
+        }
+    },
+    watch: {
+        'termCode': function(val, oldVal) {
+            if (!this.ready) return;
+            this.termCode = val;
+            this.switchTerm();
         }
     },
     methods: {
@@ -124,7 +137,7 @@ module.exports = {
         addToNotifyList: function(course) {
             var self = this;
             return self.$store.dispatch('getCourseDom', {
-                termId: self.latestTermCode,
+                termId: self.termCode,
                 courseObj: course,
                 isSection: false
             })
@@ -148,7 +161,8 @@ module.exports = {
             return self.$store.dispatch('updateWatch', {
                 recipient: self.sub.recipient,
                 code: self.sub.code,
-                courses: self.courses
+                courses: self.courses,
+                termId: self.termCode
             })
             .then(function() {
                 self.loading.go(100);
@@ -171,7 +185,7 @@ module.exports = {
                 body: JSON.stringify({
                     recipient: self.sub.recipient,
                     code: self.sub.code,
-                    termId: self.latestTermCode
+                    termId: self.termCode
                 })
             })
             .then(function(res) {
@@ -214,7 +228,7 @@ module.exports = {
                 body: JSON.stringify({
                     recipient: self.sub.recipient,
                     code: self.sub.code,
-                    termId: self.latestTermCode
+                    termId: self.termCode
                 })
             })
             .then(function(res) {
@@ -235,7 +249,7 @@ module.exports = {
                 self.sub.verified = true;
                 self.sub.inFlight = false;
                 self.courses = res.courses.map(function(num) {
-                    return self.flatCourses[self.latestTermCode][num]
+                    return self.flatCourses[self.termCode][num]
                 });
             })
             .catch(function(e) {
@@ -277,6 +291,12 @@ module.exports = {
             this.courses = this.courses.filter(function(el) {
                 return el.num !== course.num
             })
+        },
+        switchTerm: function() {
+            var self = this;
+            self.courses = [];
+            self.$store.commit('setTermName', self.$store.getters.termsList[self.termCode])
+            return self.$store.dispatch('fetchTermCourses', self.termCode)
         }
     },
     mounted: function() {
@@ -284,9 +304,15 @@ module.exports = {
         this.loading.go(30);
         this.$store.dispatch('setTitle', 'Manage');
 
-        self.$store.dispatch('fetchTermCourses', this.latestTermCode)
+        return self.$store.dispatch('fetchAvailableTerms')
+        .then(function(list) {
+            self.availableTerms = list.filter(function(term) {
+                return self.termDates[term.code].start !== null;
+            });
+            self.termCode = self.availableTerms[self.availableTerms.length - 1].code;
+            return self.switchTerm();
+        })
         .then(function() {
-            self.$store.commit('setTermName', self.$store.getters.termsList[self.latestTermCode])
             self.loading.go(100);
             self.ready = true;
         })

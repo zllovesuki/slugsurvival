@@ -293,19 +293,6 @@ module.exports = {
                 self.graphDataReady = true;
             })
         },
-        fetchAvailableTerms: function() {
-            var self = this;
-            return fetch(config.trackingURL + '/fetch/available').then(function(res) {
-                return res.json();
-            }).then(function(res) {
-                if (res && res.ok && res.results) self.availableTerms = res.results.map(function(termCode) {
-                    return {
-                        code: termCode,
-                        name: self.termsList[termCode]
-                    }
-                });
-            })
-        },
         fetchHeat: function() {
             var self = this;
             return fetch(config.trackingURL + '/fetch/' + self.termCode + '/heat/3600').then(function(res) {
@@ -381,8 +368,9 @@ module.exports = {
     mounted: function() {
         var self = this;
         this.$store.dispatch('setTitle', 'Analytics');
-        return self.fetchAvailableTerms()
-        .then(function() {
+        return this.$store.dispatch('fetchAvailableTerms')
+        .then(function(list) {
+            self.availableTerms = list;
             self.termCode = self.route.params.termId || self.availableTerms[self.availableTerms.length - 1].code;
             return self.switchTerm();
         })

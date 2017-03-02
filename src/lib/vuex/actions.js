@@ -519,7 +519,7 @@ var self = module.exports = {
             var events = _.getters.eventSource[termId];
 
             if (typeof events === 'undefined') events = [];
-            
+
             events.forEach(function(e) {
                 split = e.start.split(' ');
                 if (split && split[1]) startTime = new Date(moment(dateMap.Monday + ' ' + split[1]));
@@ -1180,7 +1180,7 @@ var self = module.exports = {
         return html;
     },
     updateWatch: function(_, payload) {
-        var self = this, recipient = payload.recipient, code = payload.code, courses = payload.courses;
+        var self = this, recipient = payload.recipient, code = payload.code, courses = payload.courses, termId = payload.termId;
         return fetch(config.notifyURL + '/watch/update', {
             method: 'POST',
             headers: {
@@ -1193,7 +1193,7 @@ var self = module.exports = {
                 courses: courses.map(function(el) {
                     return el.num
                 }),
-                termId: _.getters.latestTermCode
+                termId: termId
             })
         })
         .then(function(res) {
@@ -1542,6 +1542,19 @@ var self = module.exports = {
                 resolved.event.preventDefault();
                 return storage.setItem('disclaimerShown', true)
             })
+        })
+    },
+    fetchAvailableTerms: function(_) {
+        var self = this;
+        return fetch(config.trackingURL + '/fetch/available').then(function(res) {
+            return res.json();
+        }).then(function(res) {
+            if (res && res.ok && res.results) return res.results.map(function(termCode) {
+                return {
+                    code: termCode,
+                    name: _.state.termsList[termCode]
+                }
+            });
         })
     }
 }

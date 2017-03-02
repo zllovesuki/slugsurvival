@@ -25,13 +25,15 @@
                         </div>
                     </div>
                     <div class="clearfix">
-                        <span class="btn black h5">For {{ termName }}: </span>
+                        <span class="btn black h5">For <select class="border h6" v-model="termCode">
+                            <option v-for="t in availableTerms" track-by="code" :value="t.code">{{ t.name }}</option>
+					    </select>: </span>
     				</div>
     				<div class="clearfix">
     					<table class="h6 col col-12">
                             <tr v-for="course in courses" :key="course.num">
                                 <td class="col col-6">
-                                    <span class="btn clickable left" @click="showCourse(latestTermCode, course)">{{ course.c }} - {{ course.s }}</span>
+                                    <span class="btn clickable left" @click="showCourse(termCode, course)">{{ course.c }} - {{ course.s }}</span>
                                 </td>
                             </tr>
                             <tr v-show="courses.length === 0">
@@ -83,7 +85,7 @@
 				</div>
 			</div>
 		</div>
-        <search :show="searchModal" v-on:close="searchModal = false" :callback="addToNotifyList" :selected-term-id="latestTermCode"></search>
+        <search :show="searchModal" :resetOnShow="true" v-on:close="searchModal = false" :callback="addToNotifyList" :selected-term-id="termCode"></search>
         <modal :show="sub.modal" v-on:close="sub.modal = false">
 			<h4 slot="header">Subscribe to Changes</h4>
 			<span slot="body">
@@ -116,8 +118,8 @@ module.exports = {
         return {
             ready: false,
             searchModal: false,
-            passDropDeadline: false,
             courses: [],
+            termCode: null,
             sub: {
                 modal: false,
                 recipient: '',
@@ -152,11 +154,15 @@ module.exports = {
         flatCourses: function() {
             return this.$store.getters.flatCourses;
         },
-        termName: function() {
-            return this.$store.getters.termName;
-        },
-        latestTermCode: function() {
-            return this.$store.getters.latestTermCode;
+        termDates: function() {
+            return this.$store.getters.termDates;
+        }
+    },
+    watch: {
+        'termCode': function(val, oldVal) {
+            if (!this.ready) return;
+            this.termCode = val;
+            this.switchTerm();
         }
     },
     methods: {
@@ -180,7 +186,7 @@ module.exports = {
                 },
                 body: JSON.stringify({
                     recipient: self.sub.recipient,
-                    termId: self.latestTermCode
+                    termId: self.termCode
                 })
             })
             .then(function(res) {
@@ -231,7 +237,7 @@ module.exports = {
                 body: JSON.stringify({
                     recipient: self.sub.recipient,
                     code: self.sub.code,
-                    termId: self.latestTermCode
+                    termId: self.termCode
                 })
             })
             .then(function(res) {
@@ -254,7 +260,8 @@ module.exports = {
                 return self.$store.dispatch('updateWatch', {
                     recipient: self.sub.recipient,
                     code: self.sub.code,
-                    courses: self.courses
+                    courses: self.courses,
+                    termId: self.termCode
                 })
                 .then(function() {
                     clearInterval(self.sub.timer);
@@ -321,15 +328,15 @@ module.exports = {
         importPlanner: function() {
             var self = this;
             // In case the user is accessing via a bookmark link
-            return this.$store.dispatch('emptyEventSource', this.latestTermCode)
+            return this.$store.dispatch('emptyEventSource', this.termCode)
             .then(function() {
                 // Force to load from local
                 return self.$store.dispatch('loadAutosave', {
-                    termId: self.latestTermCode + '',
+                    termId: self.termCode + '',
                     alert: false
                 })
                 .then(function() {
-                    var events = self.$store.getters.eventSource[self.latestTermCode];
+                    var events = self.$store.getters.eventSource[self.termCode];
                     if (!events) return;
                     self.courses = [];
                     var compact = helper.compact(events);
@@ -338,7 +345,7 @@ module.exports = {
                     for (var i = 0, length = compact.length; i < length; i++) {
                         split = compact[i].split('-');
                         if (split[0] / 100000 >= 1) continue;
-                        course = self.flatCourses[self.latestTermCode][split[0]];
+                        course = self.flatCourses[self.termCode][split[0]];
                         self.courses.push(course)
                     }
                 })
@@ -347,7 +354,7 @@ module.exports = {
         addToNotifyList: function(course) {
             var self = this;
             return self.$store.dispatch('getCourseDom', {
-                termId: self.latestTermCode,
+                termId: self.termCode,
                 courseObj: course,
                 isSection: false
             })
@@ -363,6 +370,11 @@ module.exports = {
                     self.courses.push(course);
                 });
             })
+        },
+        switchTerm: function() {
+            var self = this;
+            self.courses = [];
+            return self.$store.dispatch('fetchTermCourses', self.termCode)
         }
     },
     mounted: function() {
@@ -370,14 +382,16 @@ module.exports = {
         this.loading.go(30);
         this.$store.dispatch('setTitle', 'Tracker');
 
-        self.$store.dispatch('fetchTermCourses', this.latestTermCode)
-        .then(function() {
-            self.$store.commit('setTermName', self.$store.getters.termsList[self.latestTermCode])
-            return self.$store.dispatch('passDropDeadline', self.latestTermCode)
+        return self.$store.dispatch('fetchAvailableTerms')
+        .then(function(list) {
+            self.availableTerms = list.filter(function(term) {
+                return self.termDates[term.code].start !== null;
+            });
+            self.termCode = self.availableTerms[self.availableTerms.length - 1].code;
+            return self.switchTerm();
         })
-        .then(function(is) {
+        .then(function() {
             self.loading.go(100);
-            self.passDropDeadline = is;
             self.ready = true;
         })
     }
