@@ -81,6 +81,7 @@
 module.exports = {
     mounted: function() {
         this.$store.dispatch('setTitle', 'gif')
+        this.$store.dispatch('hideSpinner')
     }
 }
 </script>

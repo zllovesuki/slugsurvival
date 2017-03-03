@@ -40,6 +40,7 @@
 module.exports = {
     mounted: function() {
         this.$store.dispatch('setTitle', 'Privacy');
+        this.$store.dispatch('hideSpinner')
     }
 }
 </script>

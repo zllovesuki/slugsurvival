@@ -76,6 +76,7 @@ module.exports = {
     },
     mounted: function() {
         this.$store.dispatch('setTitle', 'Explain')
+        this.$store.dispatch('hideSpinner')
     }
 }
 </script>
