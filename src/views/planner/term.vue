@@ -387,16 +387,13 @@ module.exports = {
         saveCalendarAsImage: function() {
             var self = this;
             self.$store.dispatch('showSpinner')
-            html2canvas(document.getElementById('calendar-container'), {
-                useCORS: true
-            }).then(function(canvas) {
-                canvas.toBlob(function(blob) {
-                    self.$store.dispatch('hideSpinner')
-                    saveAs(blob, 'Schedule for ' + self.$store.getters.termName + '.png');
-                    if (self.$store.getters.Tracker !== null) {
-                        self.$store.getters.Tracker.trackEvent('saveCalendarAsImage', 'clicked')
-                    }
-                });
+            domtoimage.toBlob(document.getElementById('calendar-container'))
+            .then(function(blob) {
+                self.$store.dispatch('hideSpinner')
+                saveAs(blob, 'Schedule for ' + self.$store.getters.termName + '.png');
+                if (self.$store.getters.Tracker !== null) {
+                    self.$store.getters.Tracker.trackEvent('saveCalendarAsImage', 'clicked')
+                }
             })
         },
         saveCalendarAsICS: function() {

@@ -374,16 +374,13 @@ module.exports = {
         savePlannerAsImage: function() {
             var self = this;
             self.$store.dispatch('showSpinner')
-            html2canvas(document.getElementById('planner-container'), {
-                useCORS: true
-            }).then(function(canvas) {
-                canvas.toBlob(function(blob) {
-                    self.$store.dispatch('hideSpinner')
-                    saveAs(blob, 'Academic Planner.png');
-                    if (self.$store.getters.Tracker !== null) {
-                        self.$store.getters.Tracker.trackEvent('savePlannerAsImage', 'clicked')
-                    }
-                });
+            domtoimage.toBlob(document.getElementById('planner-container'))
+            .then(function(blob) {
+                self.$store.dispatch('hideSpinner')
+                saveAs(blob, 'Academic Planner.png');
+                if (self.$store.getters.Tracker !== null) {
+                    self.$store.getters.Tracker.trackEvent('savePlannerAsImage', 'clicked')
+                }
             })
         },
         bookmarkPlanner: function() {

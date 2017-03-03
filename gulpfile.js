@@ -17,6 +17,7 @@ var jsAssets = [
     'assets/js/fullcalendar.js',
     'assets/js/canvas-toBlob.js',
     'assets/js/FileSaver.js',
+    'assets/js/dom-to-image.js',
     'assets/js/ics.js',
     'assets/js/plotly-basic.js'
 ];
