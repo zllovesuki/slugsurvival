@@ -406,6 +406,8 @@ module.exports = {
             self.ready = true;
             self.$nextTick(function() {
                 self.initSelectize()
+                // TODO: don't hard code this
+                $('#quarters-selectized').prop('readonly', true)
                 self.selectizeRef[0].selectize.setValue(self.termCode)
                 self.$store.dispatch('hideSpinner')
             })

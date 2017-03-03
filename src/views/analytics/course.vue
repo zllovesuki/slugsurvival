@@ -396,8 +396,8 @@ module.exports = {
         })
         .then(function() {
             self.initSelectize()
-        })
-        .then(function() {
+            // TODO: don't hard code this
+            $('#quarters-selectized').prop('readonly', true)
             self.selectizeRef[0].selectize.setValue(self.termCode)
             self.$store.dispatch('hideSpinner')
         })
