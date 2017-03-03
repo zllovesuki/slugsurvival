@@ -6,12 +6,7 @@
         <title>SlugSurvival</title>
         <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/normalize/v3.0.3/normalize.min.css">
-        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/basscss/v7.1.1/basscss.min.css">
-        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/basscss/v7.1.1/basscss-ui-groups.min.css">
-        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/fullcalendar/3.2.0/fullcalendar.min.css">
-        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/selectize/0.12.4/selectize.css">
-        <link rel="stylesheet" href="https://rachel.s3.fmt01.sdapi.net/dist/css/alertify/1.0.11/alertify.css" id="alertifyCSS">
+        <link rel="stylesheet" href="/public/style.min.css" id="alertifyCSS">
         <link href="https://rachel.s3.fmt01.sdapi.net/dist/fonts/lato-v13/lato-v13-all.css" rel="stylesheet" type="text/css">
         <link href="https://rachel.s3.fmt01.sdapi.net/dist/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
 
@@ -33,16 +28,10 @@
                 loadingDiv.innerHTML = text;
             }
             var dist = 'https://rachel.s3.fmt01.sdapi.net/dist/js/';
-            loadingText('Loading base files...')
-            $script([dist + 'fetch/0.11.1/fetch.js', dist + 'moment/2.17.1/moment.min.js', dist + 'lz-string/1.4.4/lz-string.min.js', dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'spin.min.js'], function() {
-                loadingText('Loading interface elements...')
-                $script([dist + 'jquery.spin.js', dist + 'selectize/0.12.4/standalone/selectize.min.js', dist + 'fullcalendar/3.2.0/fullcalendar.min.js', dist + 'canvas/canvas-toBlob.js', dist + 'canvas/FileSaver.min.js', dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.min.js'], function() {
-                    loadingText('Loading extras juices...')
-                    $script([dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.svg.min.js', dist + 'ics.js/connorbode/ics.js', dist + 'plotly.js/1.17.3-no-promise-polyfill/plotly-basic.min.js'], function() {
-                        loadingText('Initializing interface...')
-                        $script('/public/__JS__')
-                    })
-                })
+            loadingText('Loading assets...')
+            $script('/public/assets.min.js', function() {
+                loadingText('Initializing interface...')
+                $script('/public/__JS__')
             })
         </script>
         __ANALYTICS__
