@@ -1,15 +1,6 @@
 <template>
     <div>
         <transition name="fade" mode="out-in">
-            <div class="overflow-hidden bg-white rounded mb2" v-show="!initialized">
-                <div class="m0 p1">
-                    <div class="clearfix">
-                        Loading...
-                    </div>
-                </div>
-            </div>
-        </transition>
-        <transition name="fade" mode="out-in">
             <div class="bar-mask" @click="flip" v-show="ready && show && initialized">
             </div>
         </transition>
@@ -429,6 +420,7 @@ module.exports = {
             self.ready = true;
             self.$nextTick(function() {
                 self.initSelectize();
+                self.$store.dispatch('hideSpinner')
             })
         })
     },
