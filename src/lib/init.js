@@ -7,6 +7,8 @@ module.exports = function(_, router) {
 
     router.beforeEach(function(to, from, next) {
         _.commit('shouldAddMargin', false);
-        _.dispatch('ensureDataLoaded').then(next);
+        _.dispatch('showSpinner').then(function() {
+            _.dispatch('ensureDataLoaded').then(next);
+        });
     })
 }

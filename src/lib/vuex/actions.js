@@ -858,7 +858,7 @@ var self = module.exports = {
         })
     },
     pushAwaitSectionsToEventSource: function(_, payload) {
-        _.getters.loading.go(50);
+        _.dispatch('showSpinner')
         var secSeats = null, termId = payload.termId, courseNum = payload.courseNum;
 
         return _.dispatch('fetchRealTimeEnrollment', {
@@ -869,7 +869,6 @@ var self = module.exports = {
             if (res.ok && res.results[0] && res.results[0].seats) {
                 secSeats = res.results[0].seats.sec;
             }
-            _.getters.loading.go(70);
             return _.dispatch('getEventObjectsByCourse', {
                 termId: termId,
                 courseNum: courseNum,
@@ -884,7 +883,7 @@ var self = module.exports = {
                 });
 
                 _.dispatch('refreshCalendar');
-                _.getters.loading.go(100);
+                _.dispatch('hideSpinner')
                 _.getters.alert.success('Now You Are Choosing Section For ' + _.state.flatCourses[termId][courseNum].c)
             })
         }.bind(this))
@@ -893,7 +892,7 @@ var self = module.exports = {
         _.commit('removeFromSource', payload);
     },
     _showInstructorRMP: function(_, string) {
-        _.getters.loading.go(30);
+        _.dispatch('showSpinner')
         var split = string.split('+');
         var termId = split[0], courseNum = split[1];
         var course = _.getters.flatCourses[termId][courseNum]
@@ -906,7 +905,6 @@ var self = module.exports = {
             lastName: course.ins.l
         })
         .then(function(rmp) {
-            _.getters.loading.go(70);
             if (rmp !== null) {
                 var obj = rmp.stats.stats.quality;
                 var max = Object.keys(obj).reduce(function(a, b){ return obj[a] > obj[b] ? a : b });
@@ -953,7 +951,7 @@ var self = module.exports = {
             }
         }.bind(this))
         .finally(function() {
-            _.getters.loading.go(100);
+            _.dispatch('hideSpinner')
         }.bind(this))
     },
     noAwaitSection: function(_, termId) {
@@ -1014,7 +1012,7 @@ var self = module.exports = {
         })
     },
     _showRealTimeEnrollment: function(_, string) {
-        _.getters.loading.go(30);
+        _.dispatch('showSpinner')
         var getSeatBySectionNum = function(seats, secNum) {
             return seats.filter(function(el) {
                 return el.num == secNum;
@@ -1036,7 +1034,6 @@ var self = module.exports = {
                 var monitorStart = new Date(start);
                 monitorStart.setDate(monitorStart.getDate() - helper.delta(_.getters.termId).enrollment);
             }
-            _.getters.loading.go(70);
             if (res.ok && res.results[0] && res.results[0].seats) {
                 var latest = res.results[0];
                 var seat = latest.seats;
@@ -1095,7 +1092,7 @@ var self = module.exports = {
                     _.getters.Tracker.trackEvent('realTimeEnrollment', 'empty', termCode + '_' + courseNum)
                 }
             }
-            _.getters.loading.go(100);
+            _.dispatch('hideSpinner')
         }.bind(this))
     },
     _showCoursePreReq: function(_, string) {
@@ -1556,5 +1553,11 @@ var self = module.exports = {
                 }
             });
         })
+    },
+    showSpinner: function(_) {
+        $('.spinner').spin({ lines:  8, length: 4, width: 3, radius: 5, position: 'fixed', left: '24px', top: '24px' })
+    },
+    hideSpinner: function(_) {
+        $('.spinner').spin(false);
     }
 }

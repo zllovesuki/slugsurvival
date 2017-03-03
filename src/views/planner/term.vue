@@ -20,11 +20,6 @@
                 </div>
             </div>
         </transition-group>
-        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-show="!lock && !ready">
-            <div class="m0 p2">
-                Loading...
-            </div>
-        </div>
         <div id="calendar-container" class="overflow-hidden bg-white mb2 clearfix h6" v-show="ready">
             <div class="m0 p1">
                 <div v-bind:id="'calendar-' + termId"></div>
@@ -340,24 +335,22 @@ module.exports = {
             })
         },
         displaySectionsOnCalendar: function(courseNum) {
-            this.$store.getters.loading.go(50);
             var self = this;
+            self.$store.dispatch('showSpinner')
             var termId = this.termId;
             this.searchModal = false;
             return this.$store.dispatch('removeFromSource', {
                 termId: termId,
                 courseNum: courseNum
             }).then(function() {
-                self.$store.getters.loading.go(60);
                 return self.$store.dispatch('grayOutEvents', termId)
             }).then(function() {
-                self.$store.getters.loading.go(70);
                 return self.$store.dispatch('pushAwaitSectionsToEventSource', {
                     termId: termId,
                     courseNum: courseNum
                 })
             }).then(function() {
-                self.$store.getters.loading.go(100);
+                self.$store.dispatch('hideSpinner')
             })
         },
         initializeCalendar: function() {
@@ -393,13 +386,12 @@ module.exports = {
         },
         saveCalendarAsImage: function() {
             var self = this;
-            this.$store.getters.loading.go(30);
+            self.$store.dispatch('showSpinner')
             html2canvas(document.getElementById('calendar-container'), {
                 useCORS: true
             }).then(function(canvas) {
-                self.$store.getters.loading.go(60);
                 canvas.toBlob(function(blob) {
-                    self.$store.getters.loading.go(100);
+                    self.$store.dispatch('hideSpinner')
                     saveAs(blob, 'Schedule for ' + self.$store.getters.termName + '.png');
                     if (self.$store.getters.Tracker !== null) {
                         self.$store.getters.Tracker.trackEvent('saveCalendarAsImage', 'clicked')
@@ -485,7 +477,6 @@ module.exports = {
     },
     mounted: function() {
         var self = this;
-        this.$store.getters.loading.go(30);
         this.$store.dispatch('setTitle', 'Planner');
         return self.$store.dispatch('fetchTermCourses').then(function() {
             self.$store.commit('setTermName', self.$store.getters.termsList[self.$store.getters.termId])
@@ -503,7 +494,6 @@ module.exports = {
                 self.lock = true;
             })
         }).then(function() {
-            self.$store.getters.loading.go(70);
             self.ready = true;
             self.$store.dispatch('lockMinMax').then(function() {
                 self.initializeCalendar();
@@ -515,7 +505,7 @@ module.exports = {
             self.$store.getters.alert.error('Cannot load course data!')
         }).finally(function() {
             if (!self.lock && self.ready) self.$store.commit('shouldAddMargin', true);
-            self.$store.getters.loading.go(100);
+            self.$store.dispatch('hideSpinner')
         })
     },
     beforeDestroy: function() {

@@ -21,3 +21,10 @@ module.exports = {
     }
 }
 </script>
+
+<style>
+.selectize-input input[type="text"] {
+    width: 150px !important;
+    height: 1rem !important;
+}
+</style>

@@ -13,11 +13,8 @@
 			</div>
 			<div class="m0 p1 border-top">
                 <div class="clearfix">
-                    <span class="btn black h5 not-clickable"><i>Currently we have the data for
-                        <select class="border h6" v-model="termCode">
-                            <option v-for="t in availableTerms" track-by="code" :value="t.code">{{ t.name }}</option>
-					    </select>
-                    until {{ dropDeadline }}: </i></span>
+                    <span class="btn black h5 not-clickable block"><i>Currently we have the data until {{ dropDeadline }}: </i></span>
+                    <select class="col col-6 p1 ml1 h6 block" id="quarters"></select>
 				</div>
                 <div class="m0 p1">
     				<div class="clearfix">
@@ -113,15 +110,6 @@
 			</div>
 		</div>
         <search :show="searchModal" :resetOnShow="true" v-on:close="searchModal = false" :callback="openAnalytics" :selected-term-id="termCode"></search>
-        <transition name="fade" mode="out-in">
-            <div class="overflow-hidden bg-white rounded mb2" v-show="!ready || !graphDataReady">
-                <div class="m0 p2">
-                    <div class="clearfix">
-                        Loading...
-                    </div>
-                </div>
-            </div>
-        </transition>
         <div class="overflow-hidden bg-white rounded mb2 clearfix" v-if="ready && graphDataReady && graphData.length > 0">
             <div class="m0 p0">
                 <div class="clearfix">
@@ -159,6 +147,7 @@ module.exports = {
             graphData: [],
             heat: [],
             compacted: [],
+            selectizeRef: null,
             top: 10,
             tops: [
                 10,
@@ -239,6 +228,7 @@ module.exports = {
         loadGraph: function(params) {
             if (!params.termId || !params.courseNum) return;
             var self = this;
+            self.$store.dispatch('showSpinner')
             self.graphDataReady = false;
             this.canvasId = this.makeid();
             self.graphData = [];
@@ -291,6 +281,7 @@ module.exports = {
             })
             .then(function() {
                 self.graphDataReady = true;
+                self.$store.dispatch('hideSpinner')
             })
         },
         fetchHeat: function() {
@@ -336,6 +327,7 @@ module.exports = {
         },
         switchTerm: function() {
             var self = this;
+            self.$store.dispatch('showSpinner')
             self.graphDataReady = true;
             return self.$store.dispatch('fetchTermCourses', self.termCode)
             .then(function() {
@@ -363,6 +355,31 @@ module.exports = {
                     courseNum: self.route.params.courseNum
                 })
             })
+            .then(function() {
+                self.$store.dispatch('hideSpinner')
+            })
+        },
+        initSelectize: function() {
+            var self = this;
+            this.selectizeRef = $('#quarters').selectize({
+                options: self.availableTerms.map(function(term) {
+                    return { text: term.name, value: term.code }
+                }),
+                placeholder: 'select a quarter...',
+                dropdownParent: "body",
+                hideSelected: true,
+                onChange: function(val) {
+                    self.termCode = val;
+                },
+                render: {
+                    option: function(item, escape) {
+                        return '<div class="h6">' + escape(item.text) + '</div>';
+                    },
+                    item: function(item, escape) {
+                        return '<div class="h6 inline-block">' + escape(item.text) + '</div>';
+                    }
+                }
+            })
         }
     },
     mounted: function() {
@@ -374,7 +391,18 @@ module.exports = {
             self.termCode = self.route.params.termId || self.availableTerms[self.availableTerms.length - 1].code;
             return self.switchTerm();
         })
+        .then(function() {
+            self.initSelectize()
+        })
+        .then(function() {
+            self.selectizeRef[0].selectize.setValue(self.termCode)
+            self.$store.dispatch('hideSpinner')
+        })
     },
+    beforeDestroy: function() {
+        // garbage collection
+        this.selectizeRef[0].selectize.destroy()
+    }
 
 }
 </script>

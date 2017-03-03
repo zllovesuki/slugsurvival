@@ -20,6 +20,7 @@
         <div id="loading" style="font-family: 'Lato'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); -ms-transform: translate(-50%, -50%); -webkit-transform: translate(-50%, -50%);">
             Loading...
         </div>
+        <span class="spinner"></span>
         <div id="app">
 
         </div>
@@ -33,9 +34,9 @@
             }
             var dist = 'https://rachel.s3.fmt01.sdapi.net/dist/js/';
             loadingText('Loading base files...')
-            $script([dist + 'fetch/0.11.1/fetch.js', dist + 'moment/2.17.1/moment.min.js', dist + 'lz-string/1.4.4/lz-string.min.js', dist + 'jquery/3.1.0/jquery-3.1.0.min.js'], function() {
+            $script([dist + 'fetch/0.11.1/fetch.js', dist + 'moment/2.17.1/moment.min.js', dist + 'lz-string/1.4.4/lz-string.min.js', dist + 'jquery/3.1.0/jquery-3.1.0.min.js', dist + 'spin.min.js'], function() {
                 loadingText('Loading interface elements...')
-                $script([dist + 'selectize/0.12.4/standalone/selectize.min.js', dist + 'fullcalendar/3.2.0/fullcalendar.min.js', dist + 'canvas/canvas-toBlob.js', dist + 'canvas/FileSaver.min.js', dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.min.js'], function() {
+                $script([dist + 'jquery.spin.js', dist + 'selectize/0.12.4/standalone/selectize.min.js', dist + 'fullcalendar/3.2.0/fullcalendar.min.js', dist + 'canvas/canvas-toBlob.js', dist + 'canvas/FileSaver.min.js', dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.min.js'], function() {
                     loadingText('Loading extras juices...')
                     $script([dist + 'html2canvas/0.5.0-beta4-no-585a96a/html2canvas.svg.min.js', dist + 'ics.js/connorbode/ics.js', dist + 'plotly.js/1.17.3-no-promise-polyfill/plotly-basic.min.js'], function() {
                         loadingText('Initializing interface...')

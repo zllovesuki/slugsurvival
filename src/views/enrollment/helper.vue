@@ -25,9 +25,7 @@
                         </div>
                     </div>
                     <div class="clearfix">
-                        <span class="btn black h5">For <select class="border h6" v-model="termCode">
-                            <option v-for="t in availableTerms" track-by="code" :value="t.code">{{ t.name }}</option>
-					    </select>: </span>
+                        <select class="col col-6 p1 ml1 h6" id="quarters"></select>
     				</div>
     				<div class="clearfix">
     					<table class="h6 col col-12">
@@ -57,13 +55,6 @@
         				</div>
                     </div>
     			</div>
-            </div>
-            <div class="overflow-hidden bg-white rounded mb2" v-show="!ready" key="loading">
-                <div class="m0 p1">
-                    <div class="clearfix">
-                        Loading...
-                    </div>
-                </div>
             </div>
         </transition-group>
         <div class="overflow-hidden bg-white rounded mb2">
@@ -120,6 +111,7 @@ module.exports = {
             searchModal: false,
             courses: [],
             termCode: null,
+            selectizeRef: null,
             sub: {
                 modal: false,
                 recipient: '',
@@ -144,9 +136,6 @@ module.exports = {
         },
         colorMap: function() {
             return this.$store.getters.colorMap;
-        },
-        loading: function() {
-            return this.$store.getters.loading;
         },
         color: function() {
             return this.$store.getters.color;
@@ -173,7 +162,7 @@ module.exports = {
         },
         sendVerify: function() {
             var self = this;
-            self.loading.go(30);
+            self.$store.dispatch('showSpinner')
             self.sub.sendInflight = true;
             if (self.$store.getters.Tracker !== null) {
                 self.$store.getters.Tracker.trackEvent('sendVerify', 'recipient', self.sub.recipient);
@@ -190,14 +179,13 @@ module.exports = {
                 })
             })
             .then(function(res) {
-                self.loading.go(50);
                 return res.json()
                 .catch(function(e) {
                     return res.text();
                 })
             })
             .then(function(res) {
-                self.loading.go(100);
+                self.$store.dispatch('hideSpinner')
                 self.sub.sendInflight = false;
                 self.sub.counter = 59;
                 if (!res.ok) {
@@ -219,14 +207,14 @@ module.exports = {
             })
             .catch(function(e) {
                 console.log(e);
-                self.loading.go(100);
+                self.$store.dispatch('hideSpinner')
                 self.sub.sendInflight = false;
                 self.alert.error('An error has occurred.')
             })
         },
         verifyCode: function() {
             var self = this;
-            self.loading.go(30);
+            self.$store.dispatch('showSpinner')
             self.sub.verifyInflight = true;
             return fetch(config.notifyURL + '/verify/check', {
                 method: 'POST',
@@ -241,17 +229,15 @@ module.exports = {
                 })
             })
             .then(function(res) {
-                self.loading.go(50);
                 return res.json()
                 .catch(function(e) {
                     return res.text();
                 })
             })
             .then(function(res) {
-                self.loading.go(70);
                 self.sub.verifyInflight = false;
                 if (!res.ok) {
-                    self.loading.go(100);
+                    self.$store.dispatch('hideSpinner')
                     return self.alert().error(res.message);
                 }
                 if (self.$store.getters.Tracker !== null) {
@@ -271,7 +257,7 @@ module.exports = {
                     self.sub.sent = false;
                     self.sub.counter = 300;
                     self.sub.modal = false;
-                    self.loading.go(100);
+                    self.$store.dispatch('hideSpinner')
                     self.alert.success('Subscribed to changes!');
                     self.$router.push({ name: 'enrollManage'})
                     if (self.$store.getters.Tracker !== null) {
@@ -281,7 +267,7 @@ module.exports = {
             })
             .catch(function(e) {
                 console.log(e);
-                self.loading.go(100);
+                self.$store.dispatch('hideSpinner')
                 self.sub.verifyInflight = false;
                 self.alert.error('An error has occurred.')
             })
@@ -374,12 +360,36 @@ module.exports = {
         switchTerm: function() {
             var self = this;
             self.courses = [];
-            return self.$store.dispatch('fetchTermCourses', self.termCode)
+            self.$store.dispatch('showSpinner')
+            return self.$store.dispatch('fetchTermCourses', self.termCode).then(function() {
+                self.$store.dispatch('hideSpinner')
+            })
+        },
+        initSelectize: function() {
+            var self = this;
+            this.selectizeRef = $('#quarters').selectize({
+                options: self.availableTerms.map(function(term) {
+                    return { text: term.name, value: term.code }
+                }),
+                placeholder: 'select a quarter...',
+                dropdownParent: "body",
+                hideSelected: true,
+                onChange: function(val) {
+                    self.termCode = val;
+                },
+                render: {
+                    option: function(item, escape) {
+                        return '<div class="h6">' + escape(item.text) + '</div>';
+                    },
+                    item: function(item, escape) {
+                        return '<div class="h6 inline-block">' + escape(item.text) + '</div>';
+                    }
+                }
+            })
         }
     },
     mounted: function() {
         var self = this;
-        this.loading.go(30);
         this.$store.dispatch('setTitle', 'Tracker');
 
         return self.$store.dispatch('fetchAvailableTerms')
@@ -391,9 +401,17 @@ module.exports = {
             return self.switchTerm();
         })
         .then(function() {
-            self.loading.go(100);
             self.ready = true;
+            self.$nextTick(function() {
+                self.initSelectize()
+                self.selectizeRef[0].selectize.setValue(self.termCode)
+                self.$store.dispatch('hideSpinner')
+            })
         })
+    },
+    beforeDestroy: function() {
+        // garbage collection
+        this.selectizeRef[0].selectize.destroy()
     }
 }
 </script>

@@ -34,7 +34,7 @@
                 </div>
             </div>
         </div>
-        <div class="overflow-hidden bg-white rounded mb2" v-show="historicDataLoaded">
+        <div class="overflow-hidden bg-white rounded mb2">
             <div class="m0 p1">
                 <div class="clearfix">
                     <a class="btn black h5" v-on:click="hideHistoric = !hideHistoric"><i class="fa fa-question fa-2x">&nbsp;</i> Wondering what classes will be offered next? </a>
@@ -87,7 +87,6 @@ var storage = require('../../lib/vuex/plugins/storage')
 module.exports = {
     data: function() {
         return {
-            historicDataLoaded: false,
             hideHistoric: true,
             hidePrior: true,
             saved: [],
@@ -162,15 +161,16 @@ module.exports = {
     created: function() {
         var self = this;
         storage.keys().then(function(keys) {
-            keys.forEach(function(key) {
-                storage.getItem(key).then(function(events) {
+            Bluebird.map(keys, function(key) {
+                return storage.getItem(key).then(function(events) {
                     if (events !== null && events.length > 0) {
                         self.saved.push(key);
                     }
                 })
-            })
+            }, { concurrency: 4 })
+        }).then(function() {
+            self.$store.dispatch('hideSpinner')
         })
-        self.historicDataLoaded = true;
     },
     mounted: function() {
         this.$store.dispatch('setTitle', 'Terms List');

@@ -1,5 +1,4 @@
-var alertify = require('alertify.js'),
-    Nanobar = require('nanobar');
+var alertify = require('alertify.js');
 
 module.exports = {
 
@@ -72,6 +71,5 @@ module.exports = {
     blockCheckVersion: false,
     shouldAddMargin: false,
 
-    loading: new Nanobar(),
     alert: alertify.reset().closeLogOnClick(true).logPosition("bottom left").maxLogItems(1)
 }

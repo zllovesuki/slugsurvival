@@ -16,9 +16,7 @@
                     <span class="btn black h6 not-clickable">
                         <form v-on:submit.prevent="checkSub" class="h6">
                             <label for="term" class="block mb2">
-                                <select class="col-12 field inline-block border h5" v-model="termCode">
-                                    <option v-for="t in availableTerms" track-by="code" :value="t.code">{{ t.name }}</option>
-        					    </select>
+                                <select class="col-12 inline-block" id="quarters"></select>
                             </label>
                             <label for="recipient" class="block">
                                 <input type="text" class="col-12 field inline-block" v-model="sub.recipient" placeholder="phone/email">
@@ -85,6 +83,7 @@ module.exports = {
             searchModal: false,
             availableTerms: [],
             termCode: null,
+            selectizeRef: null,
             courses: [],
             sub: {
                 recipient: '',
@@ -103,9 +102,6 @@ module.exports = {
         },
         colorMap: function() {
             return this.$store.getters.colorMap;
-        },
-        loading: function() {
-            return this.$store.getters.loading;
         },
         color: function() {
             return this.$store.getters.color;
@@ -156,7 +152,7 @@ module.exports = {
         },
         update: function() {
             var self = this;
-            self.loading.go(30);
+            self.$store.dispatch('showSpinner')
             self.sub.inFlight = true;
             return self.$store.dispatch('updateWatch', {
                 recipient: self.sub.recipient,
@@ -165,7 +161,7 @@ module.exports = {
                 termId: self.termCode
             })
             .then(function() {
-                self.loading.go(100);
+                self.$store.dispatch('hideSpinner')
                 self.sub.inFlight = false;
                 self.alert.success('Subscription list updated.');
                 if (self.$store.getters.Tracker !== null) {
@@ -175,7 +171,7 @@ module.exports = {
         },
         unSub: function() {
             var self = this;
-            self.loading.go(30);
+            self.$store.dispatch('showSpinner')
             return fetch(config.notifyURL + '/verify/stop', {
                 method: 'POST',
                 headers: {
@@ -189,35 +185,34 @@ module.exports = {
                 })
             })
             .then(function(res) {
-                self.loading.go(50);
                 return res.json()
                 .catch(function(e) {
                     return res.text();
                 })
             })
             .then(function(res) {
-                self.loading.go(100);
+                self.$store.dispatch('hideSpinner')
                 if (!res.ok) {
                     return self.alert.error(res.message);
                 }
                 if (self.$store.getters.Tracker !== null) {
                     self.$store.getters.Tracker.trackEvent('unsubscribe', 'recipient', self.sub.recipient);
                 }
-                self.loading.go(100);
+                self.$store.dispatch('hideSpinner')
                 self.sub.inFlight = false;
                 self.alert.success('Unsubscribed. You will no longer receive notifications.');
                 self.$router.push({ name: 'enrollHelper'})
             })
             .catch(function(e) {
                 console.log(e);
-                self.loading.go(100);
+                self.$store.dispatch('hideSpinner')
                 self.sub.inFlight = false;
                 self.alert.error('An error has occurred.')
             })
         },
         checkSub: function() {
             var self = this;
-            self.loading.go(30);
+            self.$store.dispatch('showSpinner')
             self.sub.inFlight = true;
             return fetch(config.notifyURL + '/watch/get', {
                 method: 'POST',
@@ -232,20 +227,18 @@ module.exports = {
                 })
             })
             .then(function(res) {
-                self.loading.go(50);
                 return res.json()
                 .catch(function(e) {
                     return res.text();
                 })
             })
             .then(function(res) {
-                self.loading.go(70);
                 if (!res.ok) {
-                    self.loading.go(100);
+                    self.$store.dispatch('hideSpinner')
                     self.sub.inFlight = false;
                     return self.alert.error(res.message);
                 }
-                self.loading.go(100);
+                self.$store.dispatch('hideSpinner')
                 self.sub.verified = true;
                 self.sub.inFlight = false;
                 self.courses = res.courses.map(function(num) {
@@ -254,7 +247,7 @@ module.exports = {
             })
             .catch(function(e) {
                 console.log(e);
-                self.loading.go(100);
+                self.$store.dispatch('hideSpinner')
                 self.sub.inFlight = false;
                 self.alert.error('An error has occurred.')
             })
@@ -297,11 +290,32 @@ module.exports = {
             self.courses = [];
             self.$store.commit('setTermName', self.$store.getters.termsList[self.termCode])
             return self.$store.dispatch('fetchTermCourses', self.termCode)
+        },
+        initSelectize: function() {
+            var self = this;
+            this.selectizeRef = $('#quarters').selectize({
+                options: self.availableTerms.map(function(term) {
+                    return { text: term.name, value: term.code }
+                }),
+                placeholder: 'select a quarter...',
+                dropdownParent: "body",
+                hideSelected: true,
+                onChange: function(val) {
+                    self.termCode = val;
+                },
+                render: {
+                    option: function(item, escape) {
+                        return '<div class="h6">' + escape(item.text) + '</div>';
+                    },
+                    item: function(item, escape) {
+                        return '<div class="h6 inline-block">' + escape(item.text) + '</div>';
+                    }
+                }
+            })
         }
     },
     mounted: function() {
         var self = this;
-        this.loading.go(30);
         this.$store.dispatch('setTitle', 'Manage');
 
         return self.$store.dispatch('fetchAvailableTerms')
@@ -313,9 +327,16 @@ module.exports = {
             return self.switchTerm();
         })
         .then(function() {
-            self.loading.go(100);
             self.ready = true;
+            self.$nextTick(function() {
+                self.initSelectize()
+                self.$store.dispatch('hideSpinner')
+            })
         })
+    },
+    beforeDestroy: function() {
+        // garbage collection
+        this.selectizeRef[0].selectize.destroy()
     }
 }
 </script>

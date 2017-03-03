@@ -1,6 +1,6 @@
 <template>
     <transition-group name="fade" mode="in-out">
-        <div id="top-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-black-transparent': !lock }" v-show="lock && historicDataLoaded" key="actions">
+        <div id="top-bar" class="rounded fixed top-0" v-bind:class="{ 'bg-black-transparent': !lock }" v-show="lock" key="actions">
             <div class="m0 p0 rounded">
                 <div class="clearfix">
                     <div class="right rounded bg-black-transparent">
@@ -9,7 +9,7 @@
                 </div>
             </div>
         </div>
-        <div class="overflow-hidden bg-white mb2 clearfix h5" key="planner" v-show="historicDataLoaded">
+        <div class="overflow-hidden bg-white mb2 clearfix h5" key="planner">
             <div class="m0 p1 mb1">
                 <div class="clearfix">
                     <span class="btn black h5">Interactive Academic Planner: </span>
@@ -68,7 +68,7 @@
                 <div class="clearfix border-top" v-for="(matrix, year) in table">
                     <div class="inline-block col col-2">
                         <div class="p1 col col-12 parent-cell">
-                            <div class="child-cell h6" @click="focusEdit">
+                            <div class="child-cell h6" v-bind:class="{'clickable': year == 1}" @click="focusEdit">
                                 <span v-if="year == 1 && editingYear === true">
                                     <input id="editingYear" class="inline-block field" size="4" v-model.lazy="plannerYear" v-on:blur="finishEdit" /> - {{ parseInt(plannerYear) + parseInt(year) }}
                                 </span>
@@ -109,7 +109,7 @@
                 </div>
             </div>
         </div>
-        <div class="overflow-hidden bg-white rounded mb2 clearfix" key="export" v-show="historicDataLoaded">
+        <div class="overflow-hidden bg-white rounded mb2 clearfix" key="export">
             <div class="m0 p2">
                 <div class="clearfix">
                     <!--<div class="left">
@@ -130,13 +130,6 @@
                 </div>
             </div>
         </div>
-        <div class="overflow-hidden bg-white rounded mb2" key="loading" v-show="!historicDataLoaded">
-            <div class="m0 p2">
-                <div class="clearfix">
-                    Loading data and GUI...
-                </div>
-            </div>
-        </div>
     </transition-group>
 </template>
 
@@ -148,7 +141,6 @@ module.exports = {
             lock: false,
             quarters: ['fall', 'winter', 'spring', 'summer'],
             table: {},
-            historicDataLoaded: false,
             selectizeRef: {},
             modifyingTable: false,
             plannerYear: '2016',
@@ -159,9 +151,6 @@ module.exports = {
     computed: {
         alert: function() {
             return this.$store.getters.alert;
-        },
-        loading: function() {
-            return this.$store.getters.loading;
         },
         route: function() {
             return this.$store.getters.route;
@@ -384,13 +373,12 @@ module.exports = {
         },
         savePlannerAsImage: function() {
             var self = this;
-            this.$store.getters.loading.go(30);
+            self.$store.dispatch('showSpinner')
             html2canvas(document.getElementById('planner-container'), {
                 useCORS: true
             }).then(function(canvas) {
-                self.$store.getters.loading.go(60);
                 canvas.toBlob(function(blob) {
-                    self.$store.getters.loading.go(100);
+                    self.$store.dispatch('hideSpinner')
                     saveAs(blob, 'Academic Planner.png');
                     if (self.$store.getters.Tracker !== null) {
                         self.$store.getters.Tracker.trackEvent('savePlannerAsImage', 'clicked')
@@ -493,9 +481,9 @@ module.exports = {
                 //self.editingYear = true;
             }
             self.$nextTick(function() {
-                self.historicDataLoaded = true;
                 self.$nextTick(function() {
                     if (shouldInitSelectize) self.initSelectize();
+                    self.$store.dispatch('hideSpinner')
                 })
             })
         })
