@@ -189,6 +189,7 @@ module.exports = {
                 this.graphData = [];
                 this.sectionsData = [];
                 this.sectionsCanvasId = [];
+                this.$store.dispatch('hideSpinner')
                 this.$nextTick(function() {
                     return this.loadGraph({
                         termId: this.route.params.termId || this.termCode,
