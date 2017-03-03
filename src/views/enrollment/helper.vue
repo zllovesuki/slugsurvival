@@ -392,6 +392,8 @@ module.exports = {
         var self = this;
         this.$store.dispatch('setTitle', 'Tracker');
 
+        this.$store.dispatch('showDisclaimer')
+
         return self.$store.dispatch('fetchAvailableTerms')
         .then(function(list) {
             self.availableTerms = list.filter(function(term) {
@@ -404,6 +406,8 @@ module.exports = {
             self.ready = true;
             self.$nextTick(function() {
                 self.initSelectize()
+                // TODO: don't hard code this
+                $('#quarters-selectized').prop('readonly', true)
                 self.selectizeRef[0].selectize.setValue(self.termCode)
                 self.$store.dispatch('hideSpinner')
             })

@@ -388,14 +388,16 @@ module.exports = {
         this.$store.dispatch('setTitle', 'Analytics');
         return this.$store.dispatch('fetchAvailableTerms')
         .then(function(list) {
-            self.availableTerms = list;
+            self.availableTerms = list.filter(function(term) {
+                return self.termDates[term.code].start !== null;
+            });
             self.termCode = self.route.params.termId || self.availableTerms[self.availableTerms.length - 1].code;
             return self.switchTerm();
         })
         .then(function() {
             self.initSelectize()
-        })
-        .then(function() {
+            // TODO: don't hard code this
+            $('#quarters-selectized').prop('readonly', true)
             self.selectizeRef[0].selectize.setValue(self.termCode)
             self.$store.dispatch('hideSpinner')
         })
