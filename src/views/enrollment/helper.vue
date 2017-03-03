@@ -392,6 +392,8 @@ module.exports = {
         var self = this;
         this.$store.dispatch('setTitle', 'Tracker');
 
+        this.$store.dispatch('showDisclaimer')
+
         return self.$store.dispatch('fetchAvailableTerms')
         .then(function(list) {
             self.availableTerms = list.filter(function(term) {
