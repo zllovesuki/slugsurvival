@@ -75,7 +75,7 @@ var self = module.exports = {
         }.bind(this))
     },
     loadBasicDataFromLocal: function(_) {
-        var online;
+        var online = [];
         var self = this;
         var loadOnlineTimestamp = function() {
             return new Bluebird(function(resolve, reject) {
@@ -147,7 +147,7 @@ var self = module.exports = {
                     mm: false,
                     historicData: false
                 }
-                if (typeof online !== 'undefined') {
+                if (online.length > 0) {
                     // loadOnlineTimestamp() success
                     if (online[0] !== offline[0]) {
                         invalid.yes = true;
@@ -186,7 +186,10 @@ var self = module.exports = {
                             mm: true,
                             historicData: true
                         }
-                        return Bluebird.reject(invalid)
+                        return Bluebird.reject({
+                            invalid: invalid,
+                            online: offline
+                        })
                     }
                 }
 
@@ -279,7 +282,7 @@ var self = module.exports = {
         })
     },
     loadCourseDataFromLocal: function(_, termId) {
-        var online;
+        var online = [];
         var self = this;
         var loadOnlineTimestamp = function() {
             return new Bluebird(function(resolve, reject) {
@@ -336,7 +339,7 @@ var self = module.exports = {
                     coursesData: false,
                     courseInfo: false
                 }
-                if (typeof online !== 'undefined') {
+                if (online.length > 0) {
                     // loadOnlineTimestamp() success
                     if (online[0] !== offline[0]) {
                         invalid.yes = true;
@@ -359,7 +362,10 @@ var self = module.exports = {
                             coursesData: true,
                             courseInfo: true
                         }
-                        return Bluebird.reject(invalid)
+                        return Bluebird.reject({
+                            invalid: invalid,
+                            online: offline
+                        })
                     }
                 }
 
@@ -1507,5 +1513,18 @@ var self = module.exports = {
     },
     hideSpinner: function(_) {
         $('.spinner').spin(false);
+    },
+    getFinalTime: function(_, course) {
+        if (_.state.finalSchedule !== null) return _.state.finalSchedule;
+
+        var timestamp = Date.now() / 1000;
+        fetch(config.dbURL + '/final.json?' + timestamp)
+        .then(function(res) {
+            return res.json();
+        })
+        .then(function(finals) {
+            _.commit('saveFinalSchedule', finals);
+            console.log(course);
+        })
     }
 }

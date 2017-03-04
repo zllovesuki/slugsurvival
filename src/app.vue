@@ -20,17 +20,6 @@
                     <transition name="fade" mode="out-in">
                         <router-view></router-view>
                     </transition>
-                    <div class="mt2 mb1">
-                        <transition name="fade" mode="out-in">
-                            <div class="overflow-hidden bg-white rounded mb2" v-show="!basicDataLoaded">
-                                <div class="m0 p2">
-                                    <div class="clearfix h5">
-                                        Loading Terms List and Historical Data...
-                                    </div>
-                                </div>
-                            </div>
-                        </transition>
-                    </div>
                 </div>
             </div>
         </section>
@@ -70,9 +59,6 @@ module.exports = {
         },
         colorMap: function() {
             return this.$store.getters.colorMap;
-        },
-        basicDataLoaded: function() {
-            return this.$store.getters.basicDataLoaded;
         }
     },
     methods: {
