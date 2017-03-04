@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div class="mt2 mb1">
+        <div class="mt1 mb1">
             <div class="overflow-hidden bg-white rounded mb2">
                 <div class="m0 p1">
                     <div class="clearfix">

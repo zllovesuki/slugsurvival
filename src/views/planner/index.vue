@@ -4,22 +4,22 @@
             <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'termsList' }" tag="span">P</router-link>
             <chevron-right></chevron-right>
             <span v-if="route.name === 'termsList'">
-                <span class="btn button-narrow mxn1">
+                <span class="btn button-narrow mxn1 h5">
                     Terms List
                 </span>
             </span>
             <span v-if="route.name === 'term'">
-                <span class="btn button-narrow mxn1">
+                <span class="btn button-narrow mxn1 h5">
                     Schedule for {{ termName }}
                 </span>
             </span>
             <span v-if="route.name === 'viewList'">
-                <span class="btn button-narrow mxn1">
+                <span class="btn button-narrow mxn1 h5">
                     All {{ termName }} Classes
                 </span>
             </span>
         </div>
-        <div class="mt2 mb1">
+        <div class="mt1 mb1">
             <transition name="fade" mode="out-in">
                 <router-view></router-view>
             </transition>
@@ -37,6 +37,9 @@ module.exports = {
         },
         termName: function() {
             return this.$store.getters.termName;
+        },
+        showFinal: function() {
+            return this.$store.getters.showFinal;
         }
     }
 }
