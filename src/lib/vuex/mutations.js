@@ -192,5 +192,8 @@ module.exports = {
     },
     flipLockMinMax: function(state) {
         state.lockMinMax = !state.lockMinMax;
+    },
+    saveFinalSchedule: function(state, final) {
+        state.finalSchedule = final;
     }
 }

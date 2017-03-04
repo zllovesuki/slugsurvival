@@ -71,5 +71,7 @@ module.exports = {
     blockCheckVersion: false,
     shouldAddMargin: false,
 
+    finalSchedule: null,
+
     alert: alertify.reset().closeLogOnClick(true).logPosition("bottom left").maxLogItems(1)
 }

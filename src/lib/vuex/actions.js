@@ -31,7 +31,6 @@ var self = module.exports = {
         }
         return sugar()
         .then(function(rmp) {
-            console.log(rmp)
             var stats = {
                 tid: tid,
                 stats: {
@@ -1219,39 +1218,51 @@ var self = module.exports = {
             return ['<p>', '<span class="muted h6">', key, ': </span><b class="h5">', value, '</b>', '</p>'].join('');
         }
 
-        if (course.custom) {
-            html += template('Title', course.c);
-            html += template('Desc', course.n);
-        }
+        return _.dispatch('getFinalTime', {
+            termId: termId,
+            course: course
+        }).then(function(final) {
+            if (course.custom) {
+                html += template('Title', course.c);
+                html += template('Desc', course.n);
+            }
 
-        if (isSection) {
-            html += template('Section', 'DIS - ' + course.sec);
-            html += template('TA', course.ins);
-        }else if (course.custom !== true){
-            html += template('Course Number', course.num + (courseInfo.re === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCoursePreReq\', \'' + termId + '+' + course.num + '\')">Pre-Req</sup>') );
-            html += template(course.c, (courseHasSections ? 'has sections': 'has NO sections') + (materialLink === false ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.open(\'' + materialLink  + '\')">Books</sup>'));
-            html += template('Course Name', course.n + (courseInfo.desc === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCourseDesc\', \'' + termId + '+' + course.num + '\')">Desc.</sup>'));
-            html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + termId + '+' + course.num + '\')">RateMyProfessors</sup>') );
-        }
+            if (isSection) {
+                html += template('Section', 'DIS - ' + course.sec);
+                html += template('TA', course.ins);
+            }else if (course.custom !== true){
+                html += template('Course Number', course.num + (courseInfo.re === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCoursePreReq\', \'' + termId + '+' + course.num + '\')">Pre-Req</sup>') );
+                html += template(course.c, (courseHasSections ? 'has sections': 'has NO sections') + (materialLink === false ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.open(\'' + materialLink  + '\')">Books</sup>'));
+                html += template('Course Name', course.n + (courseInfo.desc === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCourseDesc\', \'' + termId + '+' + course.num + '\')">Desc.</sup>'));
+                html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + termId + '+' + course.num + '\')">RateMyProfessors</sup>') );
+            }
 
-        html += '<hr />';
+            html += '<hr />';
 
-        var loctTmpl = function(index) {
-            html += template('Location', course.loct[index].t === false ? 'Cancelled' : !!!course.loct[index].loc ? 'TBA': course.loct[index].loc);
-            html += template('Meeting Day', course.loct[index].t === false ? 'Cancelled' : course.loct[index].t === null ? 'TBA' : course.loct[index].t.day.length === 0 ? 'Tentative' : course.loct[index].t.day.join(', '));
-            html += template('Meeting Time', course.loct[index].t === false ? 'Cancelled' : course.loct[index].t === null ? 'TBA' : helper.tConvert(course.loct[index].t.time.start) == 'Tentative' ? 'Tentative' : helper.tConvert(course.loct[index].t.time.start) + '-' + helper.tConvert(course.loct[index].t.time.end));
-        }
+            var loctTmpl = function(index) {
+                html += template('Location', course.loct[index].t === false ? 'Cancelled' : !!!course.loct[index].loc ? 'TBA': course.loct[index].loc);
+                html += template('Meeting Day', course.loct[index].t === false ? 'Cancelled' : course.loct[index].t === null ? 'TBA' : course.loct[index].t.day.length === 0 ? 'Tentative' : course.loct[index].t.day.join(', '));
+                html += template('Meeting Time', course.loct[index].t === false ? 'Cancelled' : course.loct[index].t === null ? 'TBA' : helper.tConvert(course.loct[index].t.time.start) == 'Tentative' ? 'Tentative' : helper.tConvert(course.loct[index].t.time.start) + '-' + helper.tConvert(course.loct[index].t.time.end));
+            }
 
-        for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
-            loctTmpl(j);
-            html += '<hr />'
-        }
+            for (var j = 0, locts = course.loct, length1 = locts.length; j < length1; j++) {
+                loctTmpl(j);
+                if (j !== length1 - 1) html += '<hr />'
+            }
 
-        if (course.custom !== true) {
-            html += template('Is It Open', '<span class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showRealTimeEnrollment\', \'' + termId + (courseNum ? '+' + courseNum : '') + '+' + course.num + '\')">Check Real Time</span>');
-        }
+            if (course.custom !== true) {
 
-        return html;
+                html += '<hr />';
+
+                if (!isSection && final.date) {
+                    html += template('Final', final.date + '; ' + final.time)
+                }
+
+                html += template('Is It Open', '<span class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showRealTimeEnrollment\', \'' + termId + (courseNum ? '+' + courseNum : '') + '+' + course.num + '\')">Check Real Time</span>');
+            }
+
+            return html;
+        })
     },
     updateWatch: function(_, payload) {
         var self = this, recipient = payload.recipient, code = payload.code, courses = payload.courses, termId = payload.termId;
@@ -1514,17 +1525,64 @@ var self = module.exports = {
     hideSpinner: function(_) {
         $('.spinner').spin(false);
     },
-    getFinalTime: function(_, course) {
-        if (_.state.finalSchedule !== null) return _.state.finalSchedule;
+    getFinalTime: function(_, payload) {
+        var dataLoaded = function() {
+            return new Bluebird(function(resolve, reject) {
+                if (_.state.finalSchedule === null) {
+                    var timestamp = Date.now() / 1000;
+                    fetch(config.dbURL + '/final.json?' + timestamp)
+                    .then(function(res) {
+                        return res.json();
+                    })
+                    .then(function(finals) {
+                        _.commit('saveFinalSchedule', finals);
+                        resolve();
+                    })
+                    .catch(reject)
+                }else{
+                    resolve()
+                }
+            });
+        }
 
-        var timestamp = Date.now() / 1000;
-        fetch(config.dbURL + '/final.json?' + timestamp)
-        .then(function(res) {
-            return res.json();
-        })
-        .then(function(finals) {
-            _.commit('saveFinalSchedule', finals);
-            console.log(course);
+        var termId = payload.termId, course = payload.course;
+
+        return dataLoaded().then(function() {
+            if (!_.state.finalSchedule[termId]) return;
+
+            // Edge cases, TODO require
+            if (course.loct.length > 1) return;
+
+            var loct = course.loct[0];
+            // TBA/TBD
+            if (!loct.t) return;
+
+            var courseInfo = _.state.courseInfo[termId][course.num];
+            if (!courseInfo) return;
+
+            var hash = [loct.t.day.join('-'), loct.t.time.start].join('-');
+            var search = _.state.finalSchedule[termId].filter(function(obj) {
+                return obj.hash === hash && courseInfo.ty === 'Lecture';
+            })
+            if (search.length === 0 && courseInfo.ty === 'Lecture') {
+                if (helper.intersect(loct.t.day, ['Monday', 'Wednesday', 'Friday']).length > 0) {
+                    // Non standard 1
+                    hash = 'Non-Standard 1';
+                }else if (helper.intersect(loct.t.day, ['Tuesday', 'Thursday']).length > 0) {
+                    // Non standard 2
+                    hash = 'Non-Standard 2';
+                }else{
+                    hash = null;
+                }
+                search = _.state.finalSchedule[termId].filter(function(obj) {
+                    return obj.hash === hash;
+                })
+                return search[0]
+            }
+            return search[0]
+        }).then(function(actual) {
+            if (typeof actual === 'undefined') return {};
+            else return actual;
         })
     }
 }
