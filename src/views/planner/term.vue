@@ -1,8 +1,8 @@
 <template>
     <div>
-        <div class="fixed bottom-0 left-0 m2" style="z-index: 2000">
-            <a class="btn block muted" @click="$store.commit('flipLockMinMax')" v-tooltip="!lockMinMax ? 'Show 07:00am-11:00pm': 'Show concise time'">
-                <i class="fa" v-bind:class="{'fa-minus-circle': lockMinMax, 'fa-plus-circle': !lockMinMax}">&nbsp;</i>
+        <div class="fixed bottom-0 left-0 m2" style="z-index: 2000" v-show="hasFinalSchedule">
+            <a class="btn block muted" @click="$store.dispatch('filpSchedule')" v-tooltip="!showFinal ? 'Show Final Schedule' : 'Show Class Schedule'">
+                <i class="fa" v-bind:class="{'fa-minus-circle': showFinal, 'fa-plus-circle': !showFinal}">&nbsp;</i>
             </a>
         </div>
         <transition-group name="list-complete" appear>
@@ -45,7 +45,7 @@
                 </div>
             </div>
         </div>
-        <div class="overflow-hidden bg-white rounded mb2 clearfix">
+        <div class="overflow-hidden bg-white rounded mb2 clearfix" v-show="!showFinal">
             <div class="m0 p1">
                 <div class="clearfix">
                     <div class="right">
@@ -89,17 +89,11 @@ module.exports = {
         flatCourses: function() {
             return this.$store.getters.flatCourses;
         },
-        lockMinMax: function() {
-            return this.$store.getters.lockMinMax;
-        }
-    },
-    watch: {
-        'lockMinMax': function(old, oldVal) {
-            var self = this;
-            self.$store.dispatch('refreshCalendar')
-            .then(function() {
-                self.scrollToTop()
-            })
+        showFinal: function() {
+            return this.$store.getters.showFinal;
+        },
+        hasFinalSchedule: function() {
+            return (typeof this.$store.getters.finalSchedule[this.termId] !== 'undefined')
         }
     },
     methods: {
@@ -148,7 +142,6 @@ module.exports = {
             .then(function(currentAwait) {
                 if (currentAwait === false) return;
                 // Of course restore any missing color first
-                self.scrollToTop()
                 return self.$store.dispatch('restoreEventsColor', termId)
                 .then(function() {
                     return Bluebird.mapSeries(currentAwait, function(evt) {
@@ -168,12 +161,6 @@ module.exports = {
                     })
                 })
             })
-        },
-        scrollToTop: function() {
-            if (this.lockMinMax) return;
-            $('html, body').animate({
-                scrollTop: $("#calendar-container").offset().top - 60
-            }, 250);
         },
         promptForAction: function(calEvent) {
             if (this.inflight) return;
@@ -219,7 +206,6 @@ module.exports = {
                 .then(function() {
                     self.$store.dispatch('refreshCalendar')
                     self.alert.success(self.flatCourses[termId][calEvent.number].c + ' added to the planner!');
-                    self.scrollToTop();
                 })
             }
 
@@ -248,7 +234,7 @@ module.exports = {
                         isSection: isSection
                     })
                     .then(function(html) {
-                        if (self.lock === true) {
+                        if (self.lock === true || self.showFinal) {
                             return self.alert.okBtn('OK').alert(html);
                         }else{
                             return self.alert
@@ -492,9 +478,9 @@ module.exports = {
             })
         }).then(function() {
             self.ready = true;
-            self.$store.dispatch('lockMinMax').then(function() {
+            self.$nextTick(function() {
                 self.initializeCalendar();
-                self.$store.dispatch('refreshCalendar', self.scrollToTop)
+                self.$store.dispatch('refreshCalendar')
             })
         }).catch(function(e) {
             console.log(e);

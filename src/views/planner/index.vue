@@ -10,7 +10,7 @@
             </span>
             <span v-if="route.name === 'term'">
                 <span class="btn button-narrow mxn1 h5">
-                    Schedule for {{ termName }}
+                    <span v-show="showFinal">Final </span>Schedule for {{ termName }}
                 </span>
             </span>
             <span v-if="route.name === 'viewList'">

@@ -36,8 +36,6 @@ module.exports = {
 
     title: 'Index',
 
-    lockMinMax: false,
-
     colorMap: {
         // Buttons
         regular: '#509ACC',
@@ -72,6 +70,8 @@ module.exports = {
     shouldAddMargin: false,
 
     finalSchedule: null,
+    showFinal: false,
+    eventSnapshot: [],
 
     alert: alertify.reset().closeLogOnClick(true).logPosition("bottom left").maxLogItems(1)
 }

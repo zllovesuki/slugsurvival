@@ -190,10 +190,13 @@ module.exports = {
     changeOnlineState: function(state, status) {
         state.onlineState = status;
     },
-    flipLockMinMax: function(state) {
-        state.lockMinMax = !state.lockMinMax;
+    saveFinalSchedule: function(state, payload) {
+        state.finalSchedule = payload.finalSchedule;
     },
-    saveFinalSchedule: function(state, final) {
-        state.finalSchedule = final;
+    flipFinalSchedule: function(state) {
+        state.showFinal = !state.showFinal;
+    },
+    saveEventSnapshot: function(state, events) {
+        state.eventSnapshot = events;
     }
 }

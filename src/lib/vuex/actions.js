@@ -88,7 +88,10 @@ var self = module.exports = {
                         base.terms,
                         base.rmp,
                         base.subjects,
-                        base['major-minor']
+                        base['major-minor'],
+                        // reusing termsList timestamp for historic data and final
+                        base.terms,
+                        base.terms
                     ]
                 })
                 .then(resolve)
@@ -101,6 +104,8 @@ var self = module.exports = {
                 storage.getItem('rmpTimestamp'),
                 storage.getItem('subjectsTimestamp'),
                 storage.getItem('mmTimestamp'),
+                storage.getItem('historicDataTimestamp'),
+                storage.getItem('finalScheduleTimestamp')
             ])
         }
         var loadFromStorage = function(invalid, online) {
@@ -109,20 +114,23 @@ var self = module.exports = {
                 !invalid.rmp ? storage.getItem('rmp') : null,
                 !invalid.subjects ? storage.getItem('subjects') : null,
                 !invalid.mm ? storage.getItem('majorMinor') : null,
-                // reusing termsList timestamp for historic data
-                !invalid.termsList ? storage.getItem('historicData') : null
-            ]).spread(function(termsList, rmp, subjects, mm, historicData) {
+                !invalid.historicData ? storage.getItem('historicData') : null,
+                !invalid.finalSchedule ? storage.getItem('finalSchedule') : null
+            ]).spread(function(termsList, rmp, subjects, mm, historicData, finalSchedule) {
                 return _.dispatch('saveBasicData', {
                     termsList: termsList,
                     rmp: rmp,
                     subjects: subjects,
                     mm: mm,
                     historicData: historicData,
+                    finalSchedule: finalSchedule,
                     timestamp: {
                         termsList: online[0],
                         rmp: online[1],
                         subjects: online[2],
-                        mm: online[3]
+                        mm: online[3],
+                        historicData: online[4],
+                        finalSchedule: online[5]
                     },
                     skipSaving: true
                 })
@@ -144,14 +152,14 @@ var self = module.exports = {
                     rmp: false,
                     subjects: false,
                     mm: false,
-                    historicData: false
+                    historicData: false,
+                    finalSchedule: false
                 }
                 if (online.length > 0) {
                     // loadOnlineTimestamp() success
                     if (online[0] !== offline[0]) {
                         invalid.yes = true;
                         invalid.termsList = true;
-                        invalid.historicData = true;
                         console.log('terms list timestamp differs');
                     }
                     if (online[1] !== offline[1]) {
@@ -169,12 +177,24 @@ var self = module.exports = {
                         invalid.mm = true;
                         console.log('major minor timestamp differs');
                     }
+                    if (online[4] !== offline[4]) {
+                        invalid.yes = true;
+                        invalid.historicData = true;
+                        console.log('historic data timestamp differs');
+                    }
+                    if (online[5] !== offline[5]) {
+                        invalid.yes = true;
+                        invalid.finalSchedule = true;
+                        console.log('final schedule timestamp differs');
+                    }
                 }else{
                     // possibly no connectivity
                     if (offline[0] === null
                         || offline[1] === null
                         || offline[2] === null
-                        || offline[3] === null) {
+                        || offline[3] === null
+                        || offline[4] === null
+                        || offline[5] === null) {
                         // We don't have a local copy
                         console.log(('no local copies to fallback'));
                         invalid = {
@@ -183,7 +203,8 @@ var self = module.exports = {
                             rmp: true,
                             subjects: true,
                             mm: true,
-                            historicData: true
+                            historicData: true,
+                            finalSchedule: true
                         }
                         return Bluebird.reject({
                             invalid: invalid,
@@ -232,21 +253,25 @@ var self = module.exports = {
                     summer: base.summer,
                     fall: base.fall,
                     winter: base.winter
-                } : null
+                } : null,
+                invalid.finalSchedule ? base.final : null
             ]
         })
-        .spread(function(termsList, rmp, subjects, mm, historicData) {
+        .spread(function(termsList, rmp, subjects, mm, historicData, finalSchedule) {
             return _.dispatch('saveBasicData', {
                 termsList: termsList,
                 rmp: rmp,
                 subjects: subjects,
                 mm: mm,
                 historicData: historicData,
+                finalSchedule: finalSchedule,
                 timestamp: {
                     termsList: online[0],
                     rmp: online[1],
                     subjects: online[2],
-                    mm: online[3]
+                    mm: online[3],
+                    historicData: online[4],
+                    finalSchedule: online[5]
                 },
                 skipSaving: false
             })
@@ -266,6 +291,7 @@ var self = module.exports = {
         if (payload.subjects !== null) _.commit('saveSubjects', payload);
         if (payload.mm !== null) _.commit('saveMajorMinor', payload);
         if (payload.historicData !== null) _.commit('saveHistoricData', payload);
+        if (payload.final !== null) _.commit('saveFinalSchedule', payload);
     },
     fetchBasicData: function(_) {
         if (_.state.flatTermsList.length !== 0) {
@@ -589,30 +615,28 @@ var self = module.exports = {
 
         var calendarStart = '07:00', calendarEnd = '23:00';
 
-        if (_.state.lockMinMax !== true) {
-            var startTime = new Date(), endTime = new Date(), minStart = Infinity, maxEnd = -Infinity;
-            var split = null;
-            var events = _.getters.eventSource[termId];
+        var startTime = new Date(), endTime = new Date(), minStart = Infinity, maxEnd = -Infinity;
+        var split = null;
+        var events = _.getters.eventSource[termId];
 
-            if (typeof events === 'undefined') events = [];
+        if (typeof events === 'undefined') events = [];
 
-            events.forEach(function(e) {
-                split = e.start.split(' ');
-                if (split && split[1]) startTime = new Date(moment(dateMap.Monday + ' ' + split[1]));
-                else return;
-                split = e.end.split(' ');
-                if (split && split[1]) endTime = new Date(moment(dateMap.Monday + ' ' + split[1]));
-                else return;
+        events.forEach(function(e) {
+            split = e.start.split(' ');
+            if (split && split[1]) startTime = new Date(moment(dateMap.Monday + ' ' + split[1]));
+            else return;
+            split = e.end.split(' ');
+            if (split && split[1]) endTime = new Date(moment(dateMap.Monday + ' ' + split[1]));
+            else return;
 
-                if (endTime.getTime() <= startTime.getTime()) return;
-                if (startTime.getTime() < minStart) minStart = startTime.getTime();
-                if (endTime.getTime() > maxEnd) maxEnd = endTime.getTime();
-            })
+            if (endTime.getTime() <= startTime.getTime()) return;
+            if (startTime.getTime() < minStart) minStart = startTime.getTime();
+            if (endTime.getTime() > maxEnd) maxEnd = endTime.getTime();
+        })
 
-            if (minStart !== Infinity || maxEnd !== -Infinity) {
-                calendarStart = (new Date(minStart).getMinutes()) > 0 ? new Date(minStart).getHours() + ':00' : new Date(minStart).getHours() + ':' + new Date(minStart).getMinutes()
-                calendarEnd = (new Date(maxEnd).getMinutes()) > 0 ? (new Date(maxEnd).getHours() + 1) + ':00' : new Date(maxEnd).getHours() + ':' + new Date(maxEnd).getMinutes()
-            }
+        if (minStart !== Infinity || maxEnd !== -Infinity) {
+            calendarStart = (new Date(minStart).getMinutes()) > 0 ? new Date(minStart).getHours() + ':00' : new Date(minStart).getHours() + ':' + new Date(minStart).getMinutes()
+            calendarEnd = (new Date(maxEnd).getMinutes()) > 0 ? (new Date(maxEnd).getHours() + 1) + ':00' : new Date(maxEnd).getHours() + ':' + new Date(maxEnd).getMinutes()
         }
 
         $('#calendar-' + termId).fullCalendar('option', {
@@ -1048,6 +1072,7 @@ var self = module.exports = {
         return results;
     },
     exportICS: function(_) {
+        // TODO: add final to ICS as well
         var termId = _.getters.termId;
         var termDates = _.state.termDates[termId];
         var events = _.state.events[termId];
@@ -1526,28 +1551,8 @@ var self = module.exports = {
         $('.spinner').spin(false);
     },
     getFinalTime: function(_, payload) {
-        var dataLoaded = function() {
-            return new Bluebird(function(resolve, reject) {
-                if (_.state.finalSchedule === null) {
-                    var timestamp = Date.now() / 1000;
-                    fetch(config.dbURL + '/final.json?' + timestamp)
-                    .then(function(res) {
-                        return res.json();
-                    })
-                    .then(function(finals) {
-                        _.commit('saveFinalSchedule', finals);
-                        resolve();
-                    })
-                    .catch(reject)
-                }else{
-                    resolve()
-                }
-            });
-        }
-
         var termId = payload.termId, course = payload.course;
-
-        return dataLoaded().then(function() {
+        return Bluebird.resolve().then(function() {
             if (!_.state.finalSchedule[termId]) return;
 
             // Edge cases, TODO require
@@ -1584,5 +1589,70 @@ var self = module.exports = {
             if (typeof actual === 'undefined') return {};
             else return actual;
         })
+    },
+    getEventObjectsFromFinal: function(_, payload) {
+        var termId = payload.termId;
+        var events = _.state.events[termId], dateMap = _.state.dateMap, colorMap = _.state.colorMap;
+        if (typeof events === 'undefined') events = [];
+
+        var day = null, start = null, end = null, obj = {}, course = {}, eventSource = [];;
+        var compact = helper.compact(events);
+        return Bluebird.map(compact, function(string) {
+            split = string.split('-');
+            course = _.state.flatCourses[termId][split[0]];
+            return _.dispatch('getFinalTime', {
+                termId: termId,
+                course: course
+            }).then(function(final) {
+                if (!final.date) return;
+                split = final.date.split(',');
+                day = split[0];
+                split = final.time.split(/[^A-Za-z0-9.:]/);
+                start = moment(split[0] + ' ' + split[2], ['hh:mm A']).format('HH:mm');
+                end = moment(split[1] + ' ' + split[2], ['hh:mm A']).format('HH:mm');
+
+                obj.title = [course.c + ' - ' + course.s, 'Final'].join("\n");
+                obj.number = course.num;
+                obj.course = course;
+                obj.color = colorMap.course;
+                obj.awaitSelection = false;
+                obj.conflict = false;
+                obj.multiple = false;
+                obj.start = dateMap[day] + ' ' + start;
+                obj.end = dateMap[day] + ' ' + end;
+                eventSource.push(obj)
+                obj = {};
+            })
+        }, { concurrency: 1 })
+        .then(function() {
+            return eventSource;
+        })
+    },
+    showFinalSchedule: function(_, payload) {
+        return _.dispatch('getEventObjectsFromFinal', payload)
+        .then(function(eventSource) {
+            _.commit('restoreEventSourceSnapshot', {
+                termId: termId,
+                events: eventSource
+            });
+            _.dispatch('refreshCalendar')
+        })
+    },
+    filpSchedule: function(_) {
+        var termId = _.getters.termId;
+        if (!_.state.showFinal) {
+            _.commit('saveEventSnapshot', _.state.events[termId]);
+            _.dispatch('showFinalSchedule', {
+                termId: termId
+            })
+        }else{
+            _.commit('restoreEventSourceSnapshot', {
+                termId: termId,
+                events: _.state.eventSnapshot
+            })
+            _.commit('saveEventSnapshot', []);
+            _.dispatch('refreshCalendar')
+        }
+        _.commit('flipFinalSchedule')
     }
 }

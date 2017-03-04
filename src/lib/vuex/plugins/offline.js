@@ -99,17 +99,30 @@ module.exports = function(storage) {
                 case 'saveHistoricData':
 
                 var historicData = mutation.payload.historicData;
+                var onlineTimestamp = mutation.payload.timestamp.term;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
-                return storage.setItem('historicData', historicData)
+                return Bluebird.all([
+                    storage.setItem('historicDataTimestamp', onlineTimestamp),
+                    storage.setItem('historicData', historicData)
+                ])
 
                 break;
 
-                case 'flipLockMinMax':
+                case 'saveFinalSchedule':
 
-                storage.setItem('lockMinMax', state.lockMinMax)
+                var final = mutation.payload.finalSchedule;
+                var onlineTimestamp = mutation.payload.timestamp.term;
+                var skipSaving = mutation.payload.skipSaving || false;
+
+                if (skipSaving) return;
+
+                return Bluebird.all([
+                    storage.setItem('finalScheduleTimestamp', onlineTimestamp),
+                    storage.setItem('finalSchedule', final)
+                ])
 
                 break;
 

@@ -83,7 +83,10 @@ module.exports = {
     onlineState: function(state) {
         return state.onlineState;
     },
-    lockMinMax: function(state) {
-        return state.lockMinMax;
+    showFinal: function(state) {
+        return state.showFinal
+    },
+    finalSchedule: function(state) {
+        return state.finalSchedule
     }
 }
