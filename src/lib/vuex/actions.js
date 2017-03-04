@@ -1100,7 +1100,16 @@ var self = module.exports = {
             }
         }
 
-        cal.download('Schedule for ' + _.state.termName);
+        _.dispatch('getEventObjectsFromFinal', {
+            termId: termId,
+            realDate: true
+        }).then(function(events) {
+            events.forEach(function(ev) {
+                cal.addEvent(ev.course.c + ' - ' + 'Final', ev.course.n, ev.course.loct[0].loc, ev.start, ev.end)
+            })
+
+            cal.download('Schedule for ' + _.state.termName);
+        })
     },
     fetchRealTimeEnrollment: function(_, payload) {
         var timestamp = Date.now() / 1000;
@@ -1592,6 +1601,7 @@ var self = module.exports = {
     },
     getEventObjectsFromFinal: function(_, payload) {
         var termId = payload.termId;
+        var realDate = (payload.realDate === true);
         var events = _.state.events[termId], dateMap = _.state.dateMap, colorMap = _.state.colorMap;
         if (typeof events === 'undefined') events = [];
 
@@ -1606,10 +1616,20 @@ var self = module.exports = {
             }).then(function(final) {
                 if (!final.date) return;
                 split = final.date.split(',');
-                day = split[0];
-                split = final.time.split(/[^A-Za-z0-9.:]/);
-                start = moment(split[0] + ' ' + split[2], ['hh:mm A']).format('HH:mm');
-                end = moment(split[1] + ' ' + split[2], ['hh:mm A']).format('HH:mm');
+
+                if (realDate) {
+                    day = helper.calculateTermName(termId).split(' ')[0] + split[1] + ' ';
+                    split = final.time.split(/[^A-Za-z0-9.:]/);
+                    obj.start = moment(day + split[0] + ' ' + split[2].split('.').join(''), ['YYYY MMMM D h:mm A']).format('MM/DD/YYYY HH:mm')
+                    obj.end = moment(day + split[1] + ' ' + split[2].split('.').join('') + ':01', ['YYYY MMMM D h:mm A']).format('MM/DD/YYYY HH:mm')
+                }else{
+                    day = split[0];
+                    split = final.time.split(/[^A-Za-z0-9.:]/);
+                    start = moment(split[0] + ' ' + split[2].split('.').join(''), ['h:mm A']).format('HH:mm');
+                    end = moment(split[1] + ' ' + split[2].split('.').join(''), ['h:mm A']).format('HH:mm');
+                    obj.start = dateMap[day] + ' ' + start;
+                    obj.end = dateMap[day] + ' ' + end;
+                }
 
                 obj.title = [course.c + ' - ' + course.s, 'Final'].join("\n");
                 obj.number = course.num;
@@ -1618,8 +1638,7 @@ var self = module.exports = {
                 obj.awaitSelection = false;
                 obj.conflict = false;
                 obj.multiple = false;
-                obj.start = dateMap[day] + ' ' + start;
-                obj.end = dateMap[day] + ' ' + end;
+
                 eventSource.push(obj)
                 obj = {};
             })

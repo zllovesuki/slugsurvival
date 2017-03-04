@@ -48,6 +48,41 @@ var self = module.exports = {
         }
     },
 
+    calculateTermName: function(termCode) {
+        termCode = termCode % 2000;
+        termCode = self.pad(termCode, 3, 0);
+        var quarter = '';
+        var name = '';
+        switch (termCode[termCode.length - 1]) {
+            case '0': // Winter
+
+            quarter = 'Winter';
+
+            break;
+
+            case '2': // Spring
+
+            quarter = 'Spring';
+
+            break;
+
+            case '8': // Fall
+
+            quarter = 'Fall';
+
+            break;
+
+            case '4': // Summer
+
+            quarter = 'Summer';
+
+            break;
+        }
+        var year = '20' + termCode.substring(0, 2);
+        name = year + ' ' + quarter + ' Quarter';
+        return name;
+    },
+
     getYears: function(flatTermsList) {
         var tmp;
         var years = {};
