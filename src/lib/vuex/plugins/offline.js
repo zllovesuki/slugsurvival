@@ -12,118 +12,87 @@ module.exports = function(storage) {
                 case 'saveTermCourses':
 
                 var coursesData = mutation.payload.coursesData;
+                var onlineTimestamp = mutation.payload.timestamp.term;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/terms/' + termId + '.json?' + timestamp)
-                .then(function(res) {
-                    return res.json();
-                })
-                .then(function(onlineTimestamp) {
-                    return Bluebird.all([
-                        storage.setItem('termCourseTimestamp-' + termId, onlineTimestamp),
-                        storage.setItem('termCourse-' + termId, coursesData)
-                    ])
-                })
-
+                return Bluebird.all([
+                    storage.setItem('termCourseTimestamp-' + termId, onlineTimestamp),
+                    storage.setItem('termCourse-' + termId, coursesData)
+                ])
                 break;
 
                 case 'saveCourseInfo':
 
                 var courseInfo = mutation.payload.courseInfo;
+                var onlineTimestamp = mutation.payload.timestamp.courses;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/courses/' + termId + '.json?' + timestamp)
-                .then(function(res) {
-                    return res.json();
-                })
-                .then(function(onlineTimestamp) {
-                    return Bluebird.all([
-                        storage.setItem('termCourseInfoTimestamp-' + termId, onlineTimestamp),
-                        storage.setItem('termCourseInfo-' + termId, courseInfo)
-                    ])
-                })
+                return Bluebird.all([
+                    storage.setItem('termCourseInfoTimestamp-' + termId, onlineTimestamp),
+                    storage.setItem('termCourseInfo-' + termId, courseInfo)
+                ])
 
                 break;
 
                 case 'saveInstructorNameToTidMapping':
 
                 var rmp = mutation.payload.rmp;
+                var onlineTimestamp = mutation.payload.timestamp.rmp;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/rmp.json?' + timestamp)
-                .then(function(res) {
-                    return res.json();
-                })
-                .then(function(onlineTimestamp) {
-                    return Bluebird.all([
-                        storage.setItem('rmpTimestamp', onlineTimestamp),
-                        storage.setItem('rmp', rmp)
-                    ])
-                })
+                return Bluebird.all([
+                    storage.setItem('rmpTimestamp', onlineTimestamp),
+                    storage.setItem('rmp', rmp)
+                ])
 
                 break;
 
                 case 'saveTermsList':
 
                 var termsList = mutation.payload.termsList;
+                var onlineTimestamp = mutation.payload.timestamp.termsList;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/terms.json?' + timestamp)
-                .then(function(res) {
-                    return res.json();
-                })
-                .then(function(onlineTimestamp) {
-                    return Bluebird.all([
-                        storage.setItem('termsListTimestamp', onlineTimestamp),
-                        storage.setItem('termsList', termsList)
-                    ])
-                })
+                return Bluebird.all([
+                    storage.setItem('termsListTimestamp', onlineTimestamp),
+                    storage.setItem('termsList', termsList)
+                ])
 
                 break;
 
                 case 'saveSubjects':
 
                 var subjects = mutation.payload.subjects;
+                var onlineTimestamp = mutation.payload.timestamp.subjects;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/subjects.json?' + timestamp)
-                .then(function(res) {
-                    return res.json();
-                })
-                .then(function(onlineTimestamp) {
-                    return Bluebird.all([
-                        storage.setItem('subjectsTimestamp', onlineTimestamp),
-                        storage.setItem('subjects', subjects)
-                    ])
-                })
+                return Bluebird.all([
+                    storage.setItem('subjectsTimestamp', onlineTimestamp),
+                    storage.setItem('subjects', subjects)
+                ])
 
                 case 'saveMajorMinor':
 
                 var mm = mutation.payload.mm;
+                var onlineTimestamp = mutation.payload.timestamp.mm;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/major-minor.json?' + timestamp)
-                .then(function(res) {
-                    return res.json();
-                })
-                .then(function(onlineTimestamp) {
-                    return Bluebird.all([
-                        storage.setItem('mmTimestamp', onlineTimestamp),
-                        storage.setItem('majorMinor', mm)
-                    ])
-                })
+                return Bluebird.all([
+                    storage.setItem('mmTimestamp', onlineTimestamp),
+                    storage.setItem('majorMinor', mm)
+                ])
 
                 break;
 
@@ -134,16 +103,7 @@ module.exports = function(storage) {
 
                 if (skipSaving) return;
 
-                return fetch(config.dbURL + '/timestamp/terms.json?' + timestamp)
-                .then(function(res) {
-                    return res.json();
-                })
-                .then(function(onlineTimestamp) {
-                    return Bluebird.all([
-                        storage.setItem('historicDataTimestamp', onlineTimestamp),
-                        storage.setItem('historicData', historicData)
-                    ])
-                })
+                return storage.setItem('historicData', historicData)
 
                 break;
 

@@ -17,25 +17,27 @@ var self = module.exports = {
         if (typeof _.state.instructorStats[tid] !== 'undefined') {
             return Bluebird.resolve(_.state.instructorStats[tid]);
         }
-        var timestamp = Date.now() / 1000;
-        return Bluebird.all([
-            fetch(config.dbURL + '/rmp/ratings/' + tid + '.json?' + timestamp),
-            fetch(config.dbURL + '/rmp/scores/' + tid + '.json?' + timestamp),
-            fetch(config.dbURL + '/rmp/stats/' + tid + '.json?' + timestamp)
-        ])
-        .spread(function(ratingsRes, scoresRes, statsRes){
-            return Bluebird.all([
-                ratingsRes.json(),
-                scoresRes.json(),
-                statsRes.json()
-            ])
-        }).spread(function(ratings, scores, stats){
+
+        var sugar = function() {
+            return new Bluebird(function(resolve, reject) {
+                var timestamp = Date.now() / 1000;
+                fetch(config.dbURL + '/rmp/' + tid + '.json?' + timestamp)
+                .then(function(res) {
+                    return res.json();
+                })
+                .then(resolve)
+                .catch(reject)
+            });
+        }
+        return sugar()
+        .then(function(rmp) {
+            console.log(rmp)
             var stats = {
                 tid: tid,
                 stats: {
-                    ratings: ratings,
-                    scores: scores,
-                    stats: stats
+                    //ratings: rmp.ratings,
+                    scores: rmp.scores,
+                    stats: rmp.stats
                 }
             };
             _.commit('saveInstructorStats', stats);
@@ -76,19 +78,22 @@ var self = module.exports = {
         var online;
         var self = this;
         var loadOnlineTimestamp = function() {
-            var timestamp = Date.now() / 1000;
-            return Bluebird.all([
-                fetch(config.dbURL + '/timestamp/terms.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/rmp.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/subjects.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/major-minor.json?' + timestamp)
-            ]).spread(function(termsRes, rmpRes, subjectsRes, mmRes){
-                return Bluebird.all([
-                    termsRes.json(),
-                    rmpRes.json(),
-                    subjectsRes.json(),
-                    mmRes.json()
-                ])
+            return new Bluebird(function(resolve, reject) {
+                var timestamp = Date.now() / 1000;
+                return fetch(config.dbURL + '/timestamp/base?' + timestamp)
+                .then(function(res) {
+                    return res.json()
+                })
+                .then(function(base) {
+                    return [
+                        base.terms,
+                        base.rmp,
+                        base.subjects,
+                        base['major-minor']
+                    ]
+                })
+                .then(resolve)
+                .catch(reject)
             })
         }
         var loadOfflineTimestamp = function() {
@@ -96,21 +101,30 @@ var self = module.exports = {
                 storage.getItem('termsListTimestamp'),
                 storage.getItem('rmpTimestamp'),
                 storage.getItem('subjectsTimestamp'),
-                storage.getItem('mmTimestamp')
+                storage.getItem('mmTimestamp'),
             ])
         }
-        var loadFromStorage = function(invalid) {
+        var loadFromStorage = function(invalid, online) {
             return Bluebird.all([
                 !invalid.termsList ? storage.getItem('termsList') : null,
                 !invalid.rmp ? storage.getItem('rmp') : null,
                 !invalid.subjects ? storage.getItem('subjects') : null,
-                !invalid.mm ? storage.getItem('majorMinor') : null
-            ]).spread(function(termsList, rmp, subjects, mm) {
-                return _.dispatch('saveTermsAndRMP', {
+                !invalid.mm ? storage.getItem('majorMinor') : null,
+                // reusing termsList timestamp for historic data
+                !invalid.termsList ? storage.getItem('historicData') : null
+            ]).spread(function(termsList, rmp, subjects, mm, historicData) {
+                return _.dispatch('saveBasicData', {
                     termsList: termsList,
                     rmp: rmp,
                     subjects: subjects,
                     mm: mm,
+                    historicData: historicData,
+                    timestamp: {
+                        termsList: online[0],
+                        rmp: online[1],
+                        subjects: online[2],
+                        mm: online[3]
+                    },
                     skipSaving: true
                 })
             })
@@ -129,14 +143,16 @@ var self = module.exports = {
                     yes: false,
                     termsList: false,
                     rmp: false,
+                    subjects: false,
                     mm: false,
-                    subjects: false
+                    historicData: false
                 }
                 if (typeof online !== 'undefined') {
                     // loadOnlineTimestamp() success
                     if (online[0] !== offline[0]) {
                         invalid.yes = true;
                         invalid.termsList = true;
+                        invalid.historicData = true;
                         console.log('terms list timestamp differs');
                     }
                     if (online[1] !== offline[1]) {
@@ -167,7 +183,8 @@ var self = module.exports = {
                             termsList: true,
                             rmp: true,
                             subjects: true,
-                            mm: true
+                            mm: true,
+                            historicData: true
                         }
                         return Bluebird.reject(invalid)
                     }
@@ -176,35 +193,59 @@ var self = module.exports = {
                 if (invalid.yes) console.log('some or all local copies are outdated')
                 else console.log('local copies valid')
 
-                return loadFromStorage(invalid).then(function () {
-                    return Bluebird.reject(invalid);
+                return loadFromStorage(invalid, online).then(function () {
+                    return Bluebird.reject({
+                        invalid: invalid,
+                        online: online
+                    });
                 })
             })
         })
     },
-    loadBasicDataFromOnline: function(_, invalid) {
-        var self = this;
+    loadBasicDataFromOnline: function(_, payload) {
+        var self = this, invalid = payload.invalid, online = payload.online;
         var timestamp = Date.now() / 1000;
-        return Bluebird.all([
-            invalid.termsList ? fetch(config.dbURL + '/terms.json?' + timestamp) : null,
-            invalid.rmp ? fetch(config.dbURL + '/rmp.json?' + timestamp) : null,
-            invalid.subjects ? fetch(config.dbURL + '/subjects.json?' + timestamp) : null,
-            invalid.mm ? fetch(config.dbURL + '/major-minor.json?' + timestamp) : null
-        ])
-        .spread(function(termsRes, rmpRes, subjectsRes, mmRes){
-            return Bluebird.all([
-                invalid.termsList ? termsRes.json() : null,
-                invalid.rmp ? rmpRes.json() : null,
-                invalid.subjects ? subjectsRes.json() : null,
-                invalid.mm ? mmRes.json() : null
-            ])
+        var sugar = function() {
+            return new Bluebird(function(resolve, reject) {
+                if (Object.keys(invalid).reduce(function(skip, key) {
+                    if (invalid[key] === true) skip = false;
+                    return skip;
+                }, true)) return resolve({});
+
+                fetch(config.dbURL + '/base?' + timestamp)
+                .then(function(res) {
+                    return res.json();
+                }).then(resolve).catch(reject)
+            });
+        }
+        return sugar()
+        .then(function(base) {
+            return [
+                invalid.termsList ? base.terms : null,
+                invalid.rmp ? base.rmp : null,
+                invalid.subjects ? base.subjects : null,
+                invalid.mm ? base['major-minor'] : null,
+                invalid.historicData ? {
+                    spring: base.spring,
+                    summer: base.summer,
+                    fall: base.fall,
+                    winter: base.winter
+                } : null
+            ]
         })
-        .spread(function(termsList, rmp, subjects, mm) {
-            return _.dispatch('saveTermsAndRMP', {
+        .spread(function(termsList, rmp, subjects, mm, historicData) {
+            return _.dispatch('saveBasicData', {
                 termsList: termsList,
                 rmp: rmp,
                 subjects: subjects,
                 mm: mm,
+                historicData: historicData,
+                timestamp: {
+                    termsList: online[0],
+                    rmp: online[1],
+                    subjects: online[2],
+                    mm: online[3]
+                },
                 skipSaving: false
             })
         })
@@ -217,38 +258,44 @@ var self = module.exports = {
             return false;
         })
     },
-    saveTermsAndRMP: function(_, payload) {
+    saveBasicData: function(_, payload) {
         if (payload.termsList !== null) _.commit('saveTermsList', payload);
         if (payload.rmp !== null) _.commit('saveInstructorNameToTidMapping', payload);
         if (payload.subjects !== null) _.commit('saveSubjects', payload);
         if (payload.mm !== null) _.commit('saveMajorMinor', payload);
+        if (payload.historicData !== null) _.commit('saveHistoricData', payload);
     },
     fetchBasicData: function(_) {
         if (_.state.flatTermsList.length !== 0) {
             return Bluebird.resolve();
         }
         return _.dispatch('loadBasicDataFromLocal')
-        .catch(function(invalid) {
-            if (!invalid.yes) return true;
-            return _.dispatch('loadBasicDataFromOnline', invalid)
+        .catch(function(result) {
+            if (!result.invalid.yes) return true;
+            return _.dispatch('loadBasicDataFromOnline', result)
         })
         .then(function(success) {
-            if (success) return _.dispatch('fetchHistoricData')
+            if (success) return _.dispatch('buildHistoricFrequency')
         })
     },
     loadCourseDataFromLocal: function(_, termId) {
         var online;
         var self = this;
         var loadOnlineTimestamp = function() {
-            var timestamp = Date.now() / 1000;
-            return Bluebird.all([
-                fetch(config.dbURL + '/timestamp/terms/' + termId + '.json?' + timestamp),
-                fetch(config.dbURL + '/timestamp/courses/' + termId + '.json?' + timestamp)
-            ]).spread(function(termsRes, InfoRes){
-                return Bluebird.all([
-                    termsRes.json(),
-                    InfoRes.json()
-                ])
+            return new Bluebird(function(resolve, reject) {
+                var timestamp = Date.now() / 1000;
+                fetch(config.dbURL + '/timestamp/term/' + termId + '.json?' + timestamp)
+                .then(function(res) {
+                    return res.json()
+                })
+                .then(function(base) {
+                    return [
+                        base.term,
+                        base.courses
+                    ]
+                })
+                .then(resolve)
+                .catch(reject)
             })
         }
         var loadOfflineTimestamp = function() {
@@ -266,6 +313,10 @@ var self = module.exports = {
                     termId: termId,
                     coursesData: coursesData,
                     courseInfo: courseInfo,
+                    timestamp: {
+                        term: online[0],
+                        courses: online[1]
+                    },
                     skipSaving: true
                 })
             })
@@ -316,30 +367,49 @@ var self = module.exports = {
                 else console.log('local copies valid')
 
                 return loadFromStorage(invalid).then(function () {
-                    return Bluebird.reject(invalid);
+                    return Bluebird.reject({
+                        invalid: invalid,
+                        online: online
+                    });
                 })
             })
         })
     },
     loadCourseDataFromOnline: function(_, payload) {
-        var invalid = payload.invalid, termId = payload.termId;
+        var invalid = payload.invalid, online = payload.online, termId = payload.termId;
         var self = this;
         var timestamp = Date.now() / 1000;
-        return Bluebird.all([
-            invalid.coursesData ? fetch(config.dbURL + '/terms/' + termId + '.json?' + timestamp) : null,
-            invalid.courseInfo ? fetch(config.dbURL + '/courses/' + termId + '.json?' + timestamp) : null
-        ])
-        .spread(function(courseDataRes, courseInfoRes){
-            return Bluebird.all([
-                invalid.coursesData ? courseDataRes.json() : null,
-                invalid.courseInfo ? courseInfoRes.json() : null
-            ])
+        var sugar = function() {
+            return new Bluebird(function(resolve, reject) {
+                if (Object.keys(invalid).reduce(function(skip, key) {
+                    if (invalid[key] === true) skip = false;
+                    return skip;
+                }, true)) return resolve({});
+
+                return fetch(config.dbURL + '/term/' + termId + '.json?' + timestamp)
+                .then(function(res) {
+                    return res.json()
+                })
+                .then(resolve)
+                .catch(reject)
+            });
+        }
+        return sugar()
+        .then(function(base) {
+            return [
+                invalid.coursesData ? base.term : null,
+                invalid.courseInfo ? base.courses : null
+            ]
         })
         .spread(function(coursesData, courseInfo) {
             return _.dispatch('saveCourseData', {
                 termId: termId,
                 coursesData: coursesData,
                 courseInfo: courseInfo,
+                timestamp: {
+                    term: online[0],
+                    courses: online[1]
+                },
                 skipSaving: false
             })
         })
@@ -369,10 +439,11 @@ var self = module.exports = {
             return Bluebird.resolve();
         }
         return _.dispatch('loadCourseDataFromLocal', termId)
-        .catch(function(invalid) {
-            if (!invalid.yes) return true;
+        .catch(function(result) {
+            if (!result.invalid.yes) return true;
             return _.dispatch('loadCourseDataFromOnline', {
-                invalid: invalid,
+                invalid: result.invalid,
+                online: result.online,
                 termId: termId
             })
         })
@@ -1271,129 +1342,6 @@ var self = module.exports = {
         } else {
             document.body.className = '';
         }
-    },
-    loadHistoricDataFromLocal: function(_) {
-        var online;
-        var self = this;
-        var timestamp = Date.now() / 1000;
-        var loadOnlineTimestamp = function() {
-            return Bluebird.all([
-                fetch(config.dbURL + '/timestamp/terms.json?' + timestamp)
-            ]).spread(function(res) {
-                return Bluebird.all([
-                    res.json()
-                ])
-            })
-        }
-        var loadOfflineTimestamp = function() {
-            return Bluebird.all([
-                storage.getItem('historicDataTimestamp')
-            ])
-        }
-        var loadFromStorage = function(invalid) {
-            return Bluebird.all([
-                !invalid.historicData ? storage.getItem('historicData') : null
-            ]).spread(function(historicData) {
-                return _.dispatch('saveHistoricData', {
-                    historicData: historicData,
-                    skipSaving: true
-                })
-            })
-        }
-        return loadOnlineTimestamp()
-        .then(function(timestamp) {
-            online = timestamp;
-            console.log('fetched online timestamp')
-        })
-        .catch(function(e) {
-            console.log('fail to fetch online timestamp, checking local copy');
-        })
-        .finally(function() {
-            return loadOfflineTimestamp().then(function(offline) {
-                var invalid = {
-                    yes: false,
-                    historicData: false
-                }
-                if (typeof online !== 'undefined') {
-                    // loadOnlineTimestamp() success
-                    if (online[0] !== offline[0]) {
-                        invalid.yes = true;
-                        invalid.historicData = true;
-                        console.log('historic data timestamp differs');
-                    }
-                }else{
-                    // possibly no connectivity
-                    if (offline[0] === null) {
-                        // We don't have a local copy
-                        console.log(('no local copies to fallback'));
-                        invalid = {
-                            yes: true,
-                            historicData: true
-                        }
-                        return Bluebird.reject(invalid)
-                    }
-                }
-
-                if (invalid.yes) console.log('some or all local copies are outdated')
-                else console.log('local copies valid')
-
-                return loadFromStorage(invalid).then(function() {
-                    return Bluebird.reject(invalid)
-                })
-            })
-        })
-    },
-    loadHistoricDataFromOnline: function(_) {
-        var timestamp = Date.now() / 1000;
-        return Bluebird.all([
-            fetch(config.dbURL + '/offered/spring.json?' + timestamp),
-            fetch(config.dbURL + '/offered/summer.json?' + timestamp),
-            fetch(config.dbURL + '/offered/fall.json?' + timestamp),
-            fetch(config.dbURL + '/offered/winter.json?' + timestamp)
-        ])
-        .spread(function(springRes, summerRes, fallRes, winterRes){
-            return Bluebird.all([
-                springRes.json(),
-                summerRes.json(),
-                fallRes.json(),
-                winterRes.json()
-            ])
-        })
-        .spread(function(spring, summer, fall, winter){
-            return _.dispatch('saveHistoricData', {
-                historicData: {
-                    spring: spring,
-                    summer: summer,
-                    fall: fall,
-                    winter: winter
-                },
-                skipSaving: false
-            });
-        })
-        .then(function() {
-            return true;
-        })
-        .catch(function(e) {
-            console.log('loadHistoricDataFromOnline rejection')
-            console.log(e);
-            return false;
-        })
-    },
-    fetchHistoricData: function(_) {
-        if (typeof _.state.historicData.spring !== 'undefined') {
-            return Bluebird.resolve();
-        }
-        return _.dispatch('loadHistoricDataFromLocal')
-        .catch(function(invalid) {
-            if (!invalid.yes) return true;
-            return _.dispatch('loadHistoricDataFromOnline')
-        })
-        .then(function(success) {
-            if (success) _.dispatch('buildHistoricFrequency')
-        })
-    },
-    saveHistoricData: function(_, payload) {
-        if (payload.historicData !== null) _.commit('saveHistoricData', payload)
     },
     buildHistoricFrequency: function(_) {
         _.commit('saveHistoricFrequency', helper.windowFrequency(_.getters.flatTermsList, _.getters.historicData, 4));
