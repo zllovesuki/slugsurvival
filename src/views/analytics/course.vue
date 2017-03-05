@@ -313,18 +313,11 @@ module.exports = {
                     return {
                         course: self.flatCourses[self.termCode][obj.group],
                         seats: obj.reduction.seats,
-                        ratio: self.ratio(obj.reduction.seats)
+                        ratio: obj.reduction.ratio
                     }
-                }).sort(function(a, b) {
-                    return b.ratio - a.ratio;
-                });
+                })
                 else self.compacted = [];
             })
-        },
-        ratio: function(obj) {
-            if (obj.enrolled < obj.cap || obj.enrolled === 0 || obj.enrolled < 10) return 0;
-            //if (obj.cap === 0) return 1;
-            return (obj.cap > 0 ? (obj.waitTotal + obj.enrolled) / obj.cap : (obj.waitTotal + obj.enrolled) / obj.enrolled) - 1;
         },
         switchTerm: function() {
             var self = this;
