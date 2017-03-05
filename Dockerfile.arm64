@@ -2,7 +2,7 @@ FROM owlab/alpine-arm64:latest
 
 RUN apk add --no-cache nodejs git libgcj pdftk
 
-RUN npm install pm2 gulp -g
+RUN npm config set unsafe-perm true && npm install pm2 gulp -g
 
 RUN cd $(npm root -g)/npm \
  && npm install fs-extra \
