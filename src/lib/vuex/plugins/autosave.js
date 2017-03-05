@@ -7,7 +7,7 @@ var helper = require('../helper')
 module.exports = function(storage) {
     return function(store) {
         store.subscribe(function(mutation, state) {
-            if (mutation.payload.skipSaving === true) return;
+            if (!mutation.payload || mutation.payload.skipSaving === true) return;
             switch(mutation.type) {
                 case 'saveAcademicPlanner':
                 return Bluebird.reduce(Object.keys(mutation.payload.table), function(yearTotal, year) {
