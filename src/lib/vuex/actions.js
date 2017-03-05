@@ -20,8 +20,7 @@ var self = module.exports = {
 
         var sugar = function() {
             return new Bluebird(function(resolve, reject) {
-                var timestamp = Date.now() / 1000;
-                fetch(config.dbURL + '/rmp/' + tid + '.json?' + timestamp)
+                fetch(config.dbURL + '/rmp/' + tid)
                 .then(function(res) {
                     return res.json();
                 })
@@ -78,8 +77,7 @@ var self = module.exports = {
         var self = this;
         var loadOnlineTimestamp = function() {
             return new Bluebird(function(resolve, reject) {
-                var timestamp = Date.now() / 1000;
-                return fetch(config.dbURL + '/timestamp/base?' + timestamp)
+                return fetch(config.dbURL + '/timestamp/base')
                 .then(function(res) {
                     return res.json()
                 })
@@ -227,7 +225,6 @@ var self = module.exports = {
     },
     loadBasicDataFromOnline: function(_, payload) {
         var self = this, invalid = payload.invalid, online = payload.online;
-        var timestamp = Date.now() / 1000;
         var sugar = function() {
             return new Bluebird(function(resolve, reject) {
                 if (Object.keys(invalid).reduce(function(skip, key) {
@@ -235,7 +232,7 @@ var self = module.exports = {
                     return skip;
                 }, true)) return resolve({});
 
-                fetch(config.dbURL + '/base?' + timestamp)
+                fetch(config.dbURL + '/base')
                 .then(function(res) {
                     return res.json();
                 }).then(resolve).catch(reject)
@@ -311,8 +308,7 @@ var self = module.exports = {
         var self = this;
         var loadOnlineTimestamp = function() {
             return new Bluebird(function(resolve, reject) {
-                var timestamp = Date.now() / 1000;
-                fetch(config.dbURL + '/timestamp/term/' + termId + '.json?' + timestamp)
+                fetch(config.dbURL + '/timestamp/term/' + termId)
                 .then(function(res) {
                     return res.json()
                 })
@@ -409,7 +405,6 @@ var self = module.exports = {
     loadCourseDataFromOnline: function(_, payload) {
         var invalid = payload.invalid, online = payload.online, termId = payload.termId;
         var self = this;
-        var timestamp = Date.now() / 1000;
         var sugar = function() {
             return new Bluebird(function(resolve, reject) {
                 if (Object.keys(invalid).reduce(function(skip, key) {
@@ -417,7 +412,7 @@ var self = module.exports = {
                     return skip;
                 }, true)) return resolve({});
 
-                return fetch(config.dbURL + '/term/' + termId + '.json?' + timestamp)
+                return fetch(config.dbURL + '/term/' + termId)
                 .then(function(res) {
                     return res.json()
                 })
@@ -1123,8 +1118,7 @@ var self = module.exports = {
         })
     },
     fetchRealTimeEnrollment: function(_, payload) {
-        var timestamp = Date.now() / 1000;
-        return fetch(config.trackingURL + '/fetch/' + payload.termCode + '/' + payload.courseNum + '/latestOne?' + timestamp)
+        return fetch(config.trackingURL + '/fetch/' + payload.termCode + '/' + payload.courseNum + '/latestOne')
         .then(function(res) {
             return res.json();
         })
@@ -1347,8 +1341,7 @@ var self = module.exports = {
         _.commit('appendCourseInfo', payload);
     },
     fetchGE: function(_) {
-        var timestamp = Date.now() / 1000;
-        return fetch(config.dbURL + '/ge.json?' + timestamp)
+        return fetch(config.dbURL + '/ge')
         .then(function(res) {
             return res.json();
         })

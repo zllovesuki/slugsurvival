@@ -3,7 +3,6 @@ module.exports = function(storage) {
         store.subscribe(function(mutation, state) {
 
             var termId;
-            var timestamp = Date.now() / 1000;
             if (mutation.payload && mutation.payload.termId) termId = mutation.payload.termId;
 
             switch (mutation.type) {
