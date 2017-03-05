@@ -288,8 +288,11 @@ module.exports = {
         switchTerm: function() {
             var self = this;
             self.courses = [];
+            self.$store.dispatch('showSpinner')
             self.$store.commit('setTermName', self.$store.getters.termsList[self.termCode])
-            return self.$store.dispatch('fetchTermCourses', self.termCode)
+            return self.$store.dispatch('fetchTermCourses', self.termCode).then(function() {
+                self.$store.dispatch('hideSpinner')
+            })
         },
         initSelectize: function() {
             var self = this;

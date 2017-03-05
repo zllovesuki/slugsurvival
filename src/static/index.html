@@ -14,27 +14,18 @@
     </head>
     <body>
         <div id="loading" style="font-family: 'Lato'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); -ms-transform: translate(-50%, -50%); -webkit-transform: translate(-50%, -50%);">
-            Loading...
+            Loading assets and interface...
         </div>
         <span class="spinner"></span>
         <div id="app">
 
         </div>
-        <script type="text/javascript" src="https://rachel.s3.fmt01.sdapi.net/dist/js/script.js/2.5.8/script.min.js"></script>
         <script type="text/javascript" src="https://rachel.s3.fmt01.sdapi.net/dist/js/bluebird/v3.4.6/bluebird.min.js"></script>
         <script type="text/javascript">
             window.Bluebird = Promise.noConflict();
-            var loadingDiv = document.getElementById('loading');
-            var loadingText = function(text) {
-                loadingDiv.innerHTML = text;
-            }
-            var dist = 'https://rachel.s3.fmt01.sdapi.net/dist/js/';
-            loadingText('Loading assets...')
-            $script('/public/assets.min.js', function() {
-                loadingText('Initializing interface...')
-                $script('/public/__JS__')
-            })
         </script>
+        <script type="text/javascript" src="/public/assets.min.js"></script>
+        <script type="text/javascript" src="/public/__JS__"></script>
         __ANALYTICS__
         __DRIFT__
     </body>
