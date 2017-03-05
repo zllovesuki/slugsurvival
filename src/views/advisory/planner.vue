@@ -384,32 +384,30 @@ module.exports = {
             })
         },
         bookmarkPlanner: function() {
+            var self = this;
             var html = '';
-            this.$store.dispatch('dispatchReplaceHashPlanner');
+            this.$store.dispatch('getPlannerHash').then(function(hash) {
+                html += ['<p>', '<i>', 'Now you can bookmark this page!', '</i>', '</p>'].join('');
+                html += ['<p>', 'Your planner will show up when you visit this URL on another device.', '</p>'].join('');
+                html += ['<p>', '(That means you can share this URL to your friends!)', '</p>'].join('');
+                html += ['<p class="pt1 px2 mt1">', '<input type="text" class="field block bookmark-planner" onmouseover="this.select();">', '</p>'].join('');
 
-            html += ['<p>', '<i>', 'Now you can bookmark this page!', '</i>', '</p>'].join('');
-            html += ['<p>', 'Your planner will show up when you visit this URL on another device.', '</p>'].join('');
-            html += ['<p>', '(That means you can share this URL to your friends!)', '</p>'].join('');
-            html += ['<p class="pt1 px2 mt1">', '<input type="text" class="field block bookmark-planner" onmouseover="this.select();">', '</p>'].join('');
+                self.alert
+                .okBtn('I\'m Done!')
+                .alert(html)
 
-            this.alert
-            .okBtn('I\'m Done!')
-            .alert(html)
-            .then(function(resolved) {
-                window.location.hash = '';
+                if (self.$store.getters.Tracker !== null) {
+                    self.$store.getters.Tracker.trackEvent('bookmarkPlanner', 'clicked')
+                }
+
+                setTimeout(function() {
+                    try {
+                        var element = document.getElementsByClassName('bookmark-planner')[0];
+                        element.value = (window.location.href.slice(-1) === '#' ? window.location.href : window.location.href + '#') + hash;
+                        element.select();
+                    }catch(e) {}
+                }, 500);
             })
-
-            if (this.$store.getters.Tracker !== null) {
-                this.$store.getters.Tracker.trackEvent('bookmarkPlanner', 'clicked')
-            }
-
-            setTimeout(function() {
-                try {
-                    var element = document.getElementsByClassName('bookmark-planner')[0];
-                    element.value = window.location.href;
-                    element.select();
-                }catch(e) {}
-            }, 500);
         },
         showShareMenu: function() {
             window._vueContext = {};

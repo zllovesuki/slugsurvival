@@ -22,7 +22,6 @@ var router = new VueRouter({
         },
         {
             path: '/analytics',
-            name: 'analytics',
             component: require('./views/analytics/index.vue'),
             children: [
                 {
@@ -34,7 +33,6 @@ var router = new VueRouter({
         },
         {
             path: '/explain',
-            name: 'explain',
             component: require('./views/explain/index.vue'),
             children: [
                 {
@@ -64,7 +62,6 @@ var router = new VueRouter({
         },
         {
             path: '/planner',
-            name: 'planner',
             component: require('./views/planner/index.vue'),
             children: [
                 {
@@ -86,7 +83,6 @@ var router = new VueRouter({
         },
         {
             path: '/enrollment',
-            name: 'enrollment',
             component: require('./views/enrollment/index.vue'),
             children: [
                 {
@@ -103,7 +99,6 @@ var router = new VueRouter({
         },
         {
             path: '/advisory',
-            name: 'advisory',
             component: require('./views/advisory/index.vue'),
             children: [
                 {
@@ -134,7 +129,6 @@ var router = new VueRouter({
 
 require('./lib/init.js')(store, router)
 require('./lib/registerComponents.js')(Vue)
-//require('./lib/registerTransistions.js')(Vue)
 
 sync(store, router);
 

@@ -11,7 +11,7 @@ var self = module.exports = {
         _.getters.alert.okBtn('OK').alert('Coming soon')
     },
     ensureDataLoaded: function(_) {
-        return _.dispatch('fetchBasicData');
+        return _.dispatch('fetchBasicData')
     },
     fetchThreeStatsByTid: function(_, tid) {
         if (typeof _.state.instructorStats[tid] !== 'undefined') {
@@ -489,12 +489,23 @@ var self = module.exports = {
         }
         return _.dispatch('fetchThreeStatsByTid', tid);
     },
-    dispatchReplaceHash: function(_) {
+    getCalendarHash: function(_) {
         var termId = _.getters.termId;
-        _.commit('replaceHash', termId);
+        if (typeof _.state.events[termId] === 'undefined') {
+            return '';
+        }
+
+        var array = helper.compact(_.state.events[termId]);
+
+        return LZString.compressToEncodedURIComponent(JSON.stringify(array));
     },
-    dispatchReplaceHashPlanner: function(_) {
-        _.commit('replaceHashPlanner');
+    getPlannerHash: function(_) {
+        if (!_.state.academicPlanner) return '';
+
+        return LZString.compressToEncodedURIComponent(JSON.stringify({
+           plannerYear: _.state.academicPlanner.plannerYear,
+           table: _.state.academicPlanner.table
+       }));
     },
     parseFromCompact: function(_, payload) {
         var object = {
