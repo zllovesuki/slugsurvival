@@ -19,6 +19,18 @@ SlugSurvival's development is not possible without the help and support of (no p
 11. Rashimi S.
 12. etc (I will update this list...)
 
+## Open API
+
+For anyone who is interested in doing something course watching (e.g. need up to date enrollment data for its Slack bot), you can use my API.
+
+Basic help: `https://tracking.slugsurvival.com/help`
+
+Caveat: API endpoint is not CORS-enabled for domains other than SlugSurvival. Please use it in the backend.
+
+Examples:
+1. Fetch compacted classes for Spring 2017: `https://tracking.slugsurvival.com/fetch/2172/compacted`
+2. Fetch hot classes in the last 3600 seconds (1 hours): `https://tracking.slugsurvival.com/fetch/2172/heat/3600`
+
 ## Functionalities
 
 ### Disclaimer
