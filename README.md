@@ -25,11 +25,17 @@ For anyone who is interested in doing something course watching (e.g. need up to
 
 Basic help: `https://tracking.slugsurvival.com/help`
 
-Caveat: API endpoint is not CORS-enabled for domains other than SlugSurvival. Please use it in the backend.
+Caveat:
+
+1. API endpoint is not CORS-enabled for domains other than SlugSurvival. Please use it in the backend.
+2. Some queries return a very *huge* dataset. Please be careful on your backend when processing the returned JSON.
 
 Examples:
+
 1. Fetch compacted classes for Spring 2017: `https://tracking.slugsurvival.com/fetch/2172/compacted`
 2. Fetch hot classes in the last 3600 seconds (1 hours): `https://tracking.slugsurvival.com/fetch/2172/heat/3600`
+3. Get the latest enrollment data for CMPS 102: `https://tracking.slugsurvival.com/fetch/2172/60679/latestOne`
+4. Get the enrollment data for CMPS 102 in the last 3600 seconds (1 hours): `https://tracking.slugsurvival.com/fetch/2172/60679/3600`
 
 ## Functionalities
 
