@@ -29,6 +29,7 @@ Caveat:
 
 1. API endpoint is not CORS-enabled for domains other than SlugSurvival. Please use it in the backend.
 2. Some queries return a very *huge* dataset. Please be careful on your backend when processing the returned JSON.
+3. List of available quarters can be listed with: `https://tracking.slugsurvival.com/fetch/available`
 
 Examples:
 
