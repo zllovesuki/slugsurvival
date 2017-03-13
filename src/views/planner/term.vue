@@ -459,6 +459,7 @@ module.exports = {
     mounted: function() {
         var self = this;
         this.$store.dispatch('setTitle', 'Planner');
+        if (self.showFinal) self.$store.dispatch('filpSchedule');
         return self.$store.dispatch('fetchTermCourses').then(function() {
             self.$store.commit('setTermName', self.$store.getters.termsList[self.$store.getters.termId])
             return self.$store.dispatch('decodeHash')
