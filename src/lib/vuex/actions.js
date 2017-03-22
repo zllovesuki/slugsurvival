@@ -1652,6 +1652,7 @@ var self = module.exports = {
         })
     },
     showFinalSchedule: function(_, payload) {
+        var termId = _.getters.termId;
         return _.dispatch('getEventObjectsFromFinal', payload)
         .then(function(eventSource) {
             _.commit('restoreEventSourceSnapshot', {
