@@ -96,7 +96,7 @@ module.exports = function(storage) {
                 case 'saveHistoricData':
 
                 var historicData = mutation.payload.historicData;
-                var onlineTimestamp = mutation.payload.timestamp.term;
+                var onlineTimestamp = mutation.payload.timestamp.historicData;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
@@ -111,7 +111,7 @@ module.exports = function(storage) {
                 case 'saveFinalSchedule':
 
                 var final = mutation.payload.finalSchedule;
-                var onlineTimestamp = mutation.payload.timestamp.term;
+                var onlineTimestamp = mutation.payload.timestamp.finalSchedule;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
