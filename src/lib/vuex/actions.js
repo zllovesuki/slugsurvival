@@ -1340,6 +1340,15 @@ var self = module.exports = {
         _.commit('appendCourse', payload);
         _.commit('appendCourseInfo', payload);
     },
+    findExtraWithTheSameName: function(_, payload) {
+        var termId = payload.termId, title = [payload.title, 'Other'].join('\n');
+        var courseNum = null, events = _.state.events[termId];
+        if (typeof events === 'undefined') return courseNum;
+        for (var i = 0, length = events.length; i < length; i++) {
+            if (events[i].title === title) courseNum = events[i].number;
+        }
+        return courseNum;
+    },
     fetchGE: function(_) {
         return fetch(config.dbURL + '/ge')
         .then(function(res) {

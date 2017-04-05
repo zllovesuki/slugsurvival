@@ -293,25 +293,56 @@ module.exports = {
         parseAndAddExtra: function() {
             var self = this;
             var termId = this.termId;
-            var courseNum = helper.findNextCourseNum(this.$store.getters.flatCourses[termId], 100000)
-            var course = helper.generateCourseObjectFromExtra(courseNum, this.extra);
-            var code = helper.checkForConflict(this.dateMap, this.$store.getters.eventSource[termId], course);
+            var courseNum = 0;
+            var course = {};
+            var courseInfo = {};
+            var code = helper.checkForConflict(
+                this.dateMap,
+                this.$store.getters.eventSource[termId],
+                helper.generateCourseObjectFromExtra(0, this.extra)
+            );
             if (code !== false) {
                 return this.alert.error('Conflict with ' + code)
             }
-            var courseInfo = helper.generateCourseInfoObjectFromExtra(courseNum, this.extra);
-            return this.$store.dispatch('populateLocalEntriesWithExtra', {
+            return self.$store.dispatch('findExtraWithTheSameName', {
                 termId: termId,
-                courseNum: courseNum,
-                courseObj: course,
-                courseInfo: courseInfo
-            }).then(function() {
+                title: self.extra.title
+            }).then(function(num) {
+                if (num !== null) {
+                    // We should merge course object with the same name
+                    courseNum = num;
+                    course = helper.generateCourseObjectFromExtra(courseNum, self.extra);
+                    courseInfo = self.$store.getters.courseInfo[termId][courseNum];
+                    course.loct = [].concat(course.loct, self.$store.getters.flatCourses[termId][courseNum].loct);
+                }else{
+                    courseNum = helper.findNextCourseNum(self.$store.getters.flatCourses[termId], 100000)
+                    course = helper.generateCourseObjectFromExtra(courseNum, self.extra);
+                    courseInfo = helper.generateCourseInfoObjectFromExtra(courseNum, self.extra);
+                }
+            })
+            .then(function() {
+                return self.$store.dispatch('populateLocalEntriesWithExtra', {
+                    termId: termId,
+                    courseNum: courseNum,
+                    courseObj: course,
+                    courseInfo: courseInfo
+                })
+            })
+            .then(function() {
+                return self.$store.dispatch('removeFromSource', {
+                    termId: termId,
+                    courseNum: courseNum,
+                    skipSaving: true
+                })
+            })
+            .then(function() {
                 return self.$store.dispatch('pushToEventSource', {
                     termId: termId,
                     courseObj: course,
                     custom: true
                 })
-            }).then(function() {
+            })
+            .then(function() {
                 return self.$store.dispatch('refreshCalendar')
             }).then(function() {
                 self.extraModal = false;
