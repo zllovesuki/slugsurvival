@@ -1261,6 +1261,7 @@ var self = module.exports = {
             termId: termId,
             course: course
         }).then(function(final) {
+
             if (course.custom) {
                 html += template('Title', course.c);
                 html += template('Desc', course.n);
@@ -1273,6 +1274,13 @@ var self = module.exports = {
                 html += template('Course Number', course.num + (courseInfo.re === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCoursePreReq\', \'' + termId + '+' + course.num + '\')">Pre-Req</sup>') );
                 html += template(course.c, (courseHasSections ? 'has sections': 'has NO sections') + (materialLink === false ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.open(\'' + materialLink  + '\')">Books</sup>'));
                 html += template('Course Name', course.n + (courseInfo.desc === null ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showCourseDesc\', \'' + termId + '+' + course.num + '\')">Desc.</sup>'));
+
+                var summer = helper.summerDecipher(course.l);
+
+                if (summer !== null) {
+                    html += template('Summer Info', summer)
+                }
+                
                 html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + termId + '+' + course.num + '\')">RateMyProfessors</sup>') );
             }
 

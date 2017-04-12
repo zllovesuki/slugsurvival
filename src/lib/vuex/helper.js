@@ -28,6 +28,30 @@ var self = module.exports = {
         }
     },
 
+    summerDecipher: function(l) {
+        switch (l) {
+            case '5S1':
+            return 'Session 1 (5 weeks)';
+            break;
+            case '5S2':
+            return 'Session 2 (5 weeks)';
+            break;
+            case 'S8W':
+            return '8-week Session';
+            break;
+            case 'S10':
+            return '10-week Session';
+            break;
+            case 'ED1':
+            case 'ED2':
+            return 'Education Masters';
+            break;
+            default:
+            return null;
+            break;
+        }
+    },
+
     quarterToNum: function(quarter) {
         switch (quarter.toLowerCase()) {
             case 'fall':
