@@ -275,7 +275,7 @@ module.exports = {
                 if (code !== false || code === null) {
                     alertHandle = function() {
                         return self.alert
-                        .okBtn(code === null ? 'Taking the same class twice?' : 'Conflict with ' + code)
+                        .okBtn(code === null ? 'Taking the same class twice?' : 'Conflict with ' + (code.length > 20 ? code.slice(0, 20) + '...' : code))
                         .alert(html)
                     }
                 }else{
