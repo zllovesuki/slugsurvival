@@ -37,15 +37,15 @@
         <div class="overflow-hidden bg-white rounded mb2">
             <div class="m0 p1">
                 <div class="clearfix">
-                    <a class="btn black h5" v-on:click="hideHistoric = !hideHistoric"><i class="fa fa-question fa-2x">&nbsp;</i> Wondering what classes will be offered next? </a>
+                    <a class="btn black h5"><i class="fa fa-question fa-2x">&nbsp;</i> Wondering what classes will be offered next? </a>
                 </div>
-                <div class="clearfix" v-bind:class="{ 'hide': hideHistoric }">
+                <div class="clearfix">
                     <span class="ml1 btn black h6 muted not-clickable">
                         Look up the frequency of classes offered historically.
                     </span>
                 </div>
             </div>
-            <div class="m0 p2 border-top" v-bind:class="{ 'hide': hideHistoric }">
+            <div class="m0 p2 border-top">
                 <div class="clearfix">
                     <input type="text" class="field block mb2 search-box" v-model="search.string" placeholder="EE 177, ECON 117B, ..." onmouseover="this.focus()">
                     <div v-show="search.dirty">
@@ -87,7 +87,6 @@ var storage = require('../../lib/vuex/plugins/storage')
 module.exports = {
     data: function() {
         return {
-            hideHistoric: true,
             hidePrior: true,
             saved: [],
             search: {
