@@ -8,7 +8,7 @@
                     </div>
                     <div class="clearfix">
                         <span class="ml2 btn black h5 muted not-clickable">
-                            Look up classes by code (e.g. ECON 101), and the availbility likelihood.
+                            Look up classes by code (e.g. ECON 101), and the availability likelihood.
                         </span>
                     </div>
                 </div>
