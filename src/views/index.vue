@@ -8,17 +8,17 @@
                     </div>
                     <div class="clearfix">
                         <span class="ml2 btn black h5 muted not-clickable">
-                            Look up classes by code (e.g. ECON 101), and the historical frequency.
+                            Look up classes by code (e.g. ECON 101), and the availbility likelihood.
                         </span>
                     </div>
                 </div>
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
                         <input type="text" class="ml1 field block mb2 search-box" v-model="search.string" placeholder="EE 177, ECON 117B, ..." onmouseover="this.focus()">
-                        <div class="ml1" v-show="search.insufficient">
+                        <div class="ml1" v-show="search.insufficient && search.string.length > 0">
                             ...Need three or more characters
                         </div>
-                        <div class="ml1" v-show="search.dirty">
+                        <div class="ml1" v-show="!search.insufficient && search.dirty">
                             ...Typing
                         </div>
                         <div class="overflow-scroll" v-show="search.results.length > 0 && !search.dirty">
@@ -31,7 +31,7 @@
                                     <th>Occurence</th>
                                 </thead>
                                 <tbody class="h5">
-                                    <tr v-for="result in search.results">
+                                    <tr v-for="result in search.results" @click="promptShowCourse(result)" class="clickable">
                                         <td class="nowrap">{{ result.code }}</td>
                                         <td>{{ result.qtr }}</td>
                                         <td>{{ result.pos }}</td>
@@ -88,17 +88,22 @@
 </template>
 <script>
 var debounce = require('lodash.debounce')
+var helper = require('../lib/vuex/helper')
 module.exports = {
     data: function() {
         return {
             search: {
                 string: '',
                 results: [],
+                insufficient: false,
                 dirty: false
             }
         }
     },
     computed: {
+        alert: function() {
+            return this.$store.getters.alert;
+        },
         title: function() {
             return this.$store.getters.title;
         },
@@ -113,9 +118,54 @@ module.exports = {
         },
         historicFrequency: function() {
             return this.$store.getters.historicFrequency;
+        },
+        sortedCourses: function() {
+            return this.$store.getters.sortedCourses;
+        },
+        flatCourses: function() {
+            return this.$store.getters.flatCourses;
         }
     },
     methods: {
+        promptShowCourse: function(result) {
+            var self = this;
+            self.$store.dispatch('showSpinner')
+            var quarter = result.qtr;
+            var year = result.occur.slice(0, result.occur.indexOf(','))
+            var termId = helper.nameToCode([year, quarter].join(' '))
+
+            var department = result.code.slice(0, result.code.indexOf(' '))
+            var number = result.code.slice(result.code.indexOf(' ') + 1)
+
+            return self.$store.dispatch('fetchTermCourses', termId)
+            .then(function() {
+                self.$store.dispatch('hideSpinner')
+                try {
+                    var course = self.sortedCourses[termId][department].filter(function(course) {
+                        return course.c === result.code;
+                    })[0];
+                }catch (e) {
+                    console.log(e)
+                    return;
+                }
+
+                return self.$store.dispatch('getCourseDom', {
+                    termId: termId,
+                    courseNum: course.num,
+                    courseObj: course,
+                    isSection: false,
+                    showQuarterYear: true
+                }).then(function(html) {
+                    return self.alert
+                    .okBtn('OK')
+                    .alert(html)
+                    .then(function(resolved) {
+                        resolved.event.preventDefault();
+                    })
+                })
+            })
+
+        },
         groupBy: function(xs, key) {
             return xs.reduce(function(rv, x) {
                 (rv[x[key]] = rv[x[key]] || []).push(x);
@@ -125,6 +175,7 @@ module.exports = {
         findHistorical: debounce(function() {
             var self = this;
             var results = [];
+            if (this.search.insufficient) return;
             // TODO: let's not brute force it
             for (var quarter in this.historicData){
                 for (var code in this.historicData[quarter]) {
@@ -132,7 +183,7 @@ module.exports = {
                         var keys = Object.keys(this.historicData[quarter][code]);
                         results.push({
                             code: code,
-                            qtr: quarter,
+                            qtr: quarter.charAt(0).toUpperCase() + quarter.slice(1),
                             pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
                             fre: keys.length + '/' + this.numOfYears,
                             occur: keys.length > 4 ? keys.reverse().slice(0, 4).join(', ') + '...' : keys.reverse().join(', ')
@@ -150,13 +201,14 @@ module.exports = {
             if (this.$store.getters.Tracker !== null) {
                 this.$store.getters.Tracker.trackSiteSearch(this.search.string, 'findHistorical', this.search.results.length)
             }
-        }, 1000)
+        }, 750)
     },
     watch: {
         'search.string': function(val, oldVal) {
             if (val.length < 3) {
                 this.search.results = [];
                 this.search.insufficient = true;
+                this.search.dirty = false;
                 return;
             }
             this.search.insufficient = false;
@@ -166,7 +218,9 @@ module.exports = {
     },
     mounted: function() {
         this.$store.dispatch('setTitle', 'Main')
-        this.$store.dispatch('hideSpinner')
+        this.$nextTick(function() {
+            this.$store.dispatch('hideSpinner')
+        })
     }
 }
 </script>
