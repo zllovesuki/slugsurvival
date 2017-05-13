@@ -34,128 +34,23 @@
                 </div>
             </div>
         </div>
-        <div class="overflow-hidden bg-white rounded mb2">
-            <div class="m0 p1">
-                <div class="clearfix">
-                    <a class="btn black h5"><i class="fa fa-question fa-2x">&nbsp;</i> Wondering what classes will be offered next? </a>
-                </div>
-                <div class="clearfix">
-                    <span class="ml1 btn black h6 muted not-clickable">
-                        Look up the frequency of classes offered historically.
-                    </span>
-                </div>
-            </div>
-            <div class="m0 p2 border-top">
-                <div class="clearfix">
-                    <input type="text" class="field block mb2 search-box" v-model="search.string" placeholder="EE 177, ECON 117B, ..." onmouseover="this.focus()">
-                    <div v-show="search.dirty">
-                        ...Typing
-                    </div>
-                    <div class="overflow-scroll" v-show="search.results.length > 0 && !search.dirty">
-                        <table class="table-light">
-                            <thead class="bg-darken-1 h6">
-                                <th>Course</th>
-                                <th>Quarter</th>
-                                <th>Likely?</th>
-                                <th>Frequency</th>
-                                <th>Occurence</th>
-                            </thead>
-                            <tbody class="h5">
-                                <tr v-for="result in search.results">
-                                    <td class="nowrap">{{ result.code }}</td>
-                                    <td>{{ result.qtr }}</td>
-                                    <td>{{ result.pos }}</td>
-                                    <td>{{ result.fre }}</td>
-                                    <td class="nowrap">{{ result.occur }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div v-show="search.string.length > 0 && search.results.length === 0 && !search.dirty">
-                        No results.
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 </template>
 
 <script>
-var debounce = require('lodash.debounce')
 var storage = require('../../lib/vuex/plugins/storage')
 
 module.exports = {
     data: function() {
         return {
             hidePrior: true,
-            saved: [],
-            search: {
-                string: '',
-                results: [],
-                dirty: false
-            }
+            saved: []
         }
     },
     computed: {
-        numOfYears: function() {
-            return this.$store.getters.numOfYears
-        },
-        historicData: function() {
-            return this.$store.getters.historicData;
-        },
         flatTermsList: function() {
             return this.$store.getters.flatTermsList;
         },
-        historicFrequency: function() {
-            return this.$store.getters.historicFrequency;
-        }
-    },
-    methods: {
-        groupBy: function(xs, key) {
-            return xs.reduce(function(rv, x) {
-                (rv[x[key]] = rv[x[key]] || []).push(x);
-                return rv;
-            }, {});
-        },
-        findHistorical: debounce(function() {
-            var self = this;
-            var results = [];
-            // TODO: let's not brute force it
-            for (var quarter in this.historicData){
-                for (var code in this.historicData[quarter]) {
-                    if (code.toLowerCase().replace(/\s/g, '').indexOf(this.search.string.toLowerCase().replace(/\s/g, '')) !== -1) {
-                        var keys = Object.keys(this.historicData[quarter][code]);
-                        results.push({
-                            code: code,
-                            qtr: quarter,
-                            pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
-                            fre: keys.length + '/' + this.numOfYears,
-                            occur: keys.length > 4 ? keys.reverse().slice(0, 4).join(', ') + '...' : keys.reverse().join(', ')
-                        })
-                    }
-                }
-            }
-            results = this.groupBy(results, 'code');
-            var _results = [];
-            for (var code in results) {
-                _results = _results.concat(results[code]);
-            }
-            this.search.results = _results;
-            this.search.dirty = false;
-            if (this.$store.getters.Tracker !== null) {
-                this.$store.getters.Tracker.trackSiteSearch(this.search.string, 'findHistorical', this.search.results.length)
-            }
-        }, 750)
-    },
-    watch: {
-        'search.string': function(val, oldVal) {
-            if (val.length < 1) {
-                this.search.results = [];
-                return;
-            }
-            this.search.dirty = true;
-            this.findHistorical();
-        }
     },
     created: function() {
         var self = this;
