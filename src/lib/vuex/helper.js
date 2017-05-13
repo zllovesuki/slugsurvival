@@ -52,6 +52,15 @@ var self = module.exports = {
         }
     },
 
+    nameToCode: function(name) {
+        // e.g. 2017 Fall
+        name = name.toLowerCase()
+        var year = name.slice(0, name.indexOf(' '))
+        var quarter = name.slice(name.indexOf(' ') + 1)
+        var num = self.quarterToNum(quarter);
+        return '2' + year.slice(-2) + num;
+    },
+
     quarterToNum: function(quarter) {
         switch (quarter.toLowerCase()) {
             case 'fall':

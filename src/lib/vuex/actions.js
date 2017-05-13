@@ -1245,9 +1245,10 @@ var self = module.exports = {
         })
     },
     getCourseDom: function(_, payload) {
-        var termId = payload.termId, course = payload.courseObj, isSection = payload.isSection, courseNum = payload.courseNum;
+        var termId = payload.termId, course = payload.courseObj, isSection = payload.isSection, courseNum = payload.courseNum, showQuarterYear = payload.showQuarterYear;
         var courseInfo = courseNum ? _.getters.courseInfo[termId][courseNum] : _.getters.courseInfo[termId][course.num];
         isSection = isSection || false;
+        showQuarterYear = showQuarterYear || false;
         if (!isSection && !course.custom) {
             var courseHasSections = _.getters.courseInfo[termId][course.num].sec.length > 0;
             var materialLink = helper.getMaterialsLink(termId, course);
@@ -1261,6 +1262,10 @@ var self = module.exports = {
             termId: termId,
             course: course
         }).then(function(final) {
+
+            if (showQuarterYear) {
+                html += '<p class="h6"><b>' + helper.calculateTermName(termId) + '</b></p>'
+            }
 
             if (course.custom) {
                 html += template('Title', course.c);
@@ -1280,7 +1285,7 @@ var self = module.exports = {
                 if (summer !== null) {
                     html += template('Summer Info', summer)
                 }
-                
+
                 html += template('Instructor(s)', course.ins.d.join(', ') + (!!!course.ins.f ? '' : '&nbsp;<sup class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showInstructorRMP\', \'' + termId + '+' + course.num + '\')">RateMyProfessors</sup>') );
             }
 
