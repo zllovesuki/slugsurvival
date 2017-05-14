@@ -8,20 +8,20 @@
                     </div>
                     <div class="clearfix">
                         <span class="ml2 btn black h5 muted not-clickable">
-                            Look up classes by code (e.g. ECON 101), and the availbility likelihood.
+                            Look up classes by code, and the availbility predictions.
                         </span>
                     </div>
                 </div>
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
-                        <input type="text" class="ml1 field block mb2 search-box" v-model="search.string" placeholder="EE 177, ECON 117B, ..." onmouseover="this.focus()">
-                        <div class="ml1" v-show="search.insufficient && search.string.length > 0">
+                        <input type="text" style="border: 0 !important" class="field black block col col-12 mb2 search-box" v-model="search.string" placeholder="e.g. EE 177, ECON 117B, ..." onmouseover="this.focus()">
+                        <div class="ml1 block" v-show="search.insufficient && search.string.length > 0">
                             ...Need three or more characters
                         </div>
-                        <div class="ml1" v-show="!search.insufficient && search.dirty">
+                        <div class="ml1 block" v-show="!search.insufficient && search.dirty">
                             ...Typing
                         </div>
-                        <div class="overflow-scroll" v-show="search.results.length > 0 && !search.dirty">
+                        <div class="overflow-scroll col col-12 block" v-show="search.results.length > 0 && !search.dirty">
                             <table class="table-light">
                                 <thead class="bg-darken-1 h6">
                                     <th>Course</th>
@@ -41,7 +41,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="ml1" v-show="search.string.length >= 3 && search.results.length === 0 && !search.dirty">
+                        <div class="ml1 col col-12 block" v-show="search.string.length >= 3 && search.results.length === 0 && !search.dirty">
                             No results.
                         </div>
                     </div>
@@ -131,7 +131,7 @@ module.exports = {
             var self = this;
             self.$store.dispatch('showSpinner')
             var quarter = result.qtr;
-            var year = result.occur.slice(0, result.occur.indexOf(','))
+            var year = result.occur.indexOf(',') === -1 ? result.occur : result.occur.slice(0, result.occur.indexOf(','))
             var termId = helper.nameToCode([year, quarter].join(' '))
 
             var department = result.code.slice(0, result.code.indexOf(' '))
@@ -139,13 +139,14 @@ module.exports = {
 
             return self.$store.dispatch('fetchTermCourses', termId)
             .then(function() {
-                self.$store.dispatch('hideSpinner')
                 try {
+                    console.log(self.sortedCourses)
                     var course = self.sortedCourses[termId][department].filter(function(course) {
                         return course.c === result.code;
                     })[0];
                 }catch (e) {
                     console.log(e)
+                    self.$store.dispatch('hideSpinner')
                     return;
                 }
 
@@ -156,6 +157,7 @@ module.exports = {
                     isSection: false,
                     showQuarterYear: true
                 }).then(function(html) {
+                    self.$store.dispatch('hideSpinner')
                     return self.alert
                     .okBtn('OK')
                     .alert(html)
