@@ -27,9 +27,9 @@ module.exports = function() {
 
     if (config.analytics && config.analytics.piwik && config.analytics.piwik.enabled) {
         analytics = fs.readFileSync(__dirname + '/src/static/piwik.tmpl').toString('utf-8');
-        analytics = analytics.replace('__ENDPOINT__', config.analytics.piwik.endpoint);
-        analytics = analytics.replace('__DOMAIN__', config.analytics.piwik.domain);
-        analytics = analytics.replace('__SITEID__', config.analytics.piwik.siteId);
+        analytics = analytics.replace(new RegExp('__ENDPOINT__', 'g'), config.analytics.piwik.endpoint);
+        analytics = analytics.replace(new RegExp('__DOMAIN__', 'g'), config.analytics.piwik.domain);
+        analytics = analytics.replace(new RegExp('__SITEID__', 'g'), config.analytics.piwik.siteId);
         html = html.replace('__ANALYTICS__', analytics);
     }else{
         html = html.replace('__ANALYTICS__', '');
