@@ -103,21 +103,21 @@ module.exports = {
             this.field('la');
             this.field('d');
             this.ref('b');
+
+            for (var courseNum in state.flatCourses[termId]) {
+                obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNum]));
+
+                _obj.b = obj.num;
+                _obj.c = obj.c.split(/(\d+)/).map(function(el) { return el.replace(/\s+/g, ''); }).join(' ')
+                _obj.n = obj.n;
+                _obj.f = obj.ins.f;
+                _obj.la = obj.ins.l;
+                _obj.d = obj.ins.d[0];
+                this.add(_obj);
+                obj = {};
+                _obj = {};
+            }
         })
-
-        for (var courseNum in state.flatCourses[termId]) {
-            obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNum]));
-
-            _obj.b = obj.num;
-            _obj.c = obj.c.split(/(\d+)/).map(function(el) { return el.replace(/\s+/g, ''); }).join(' ')
-            _obj.n = obj.n;
-            _obj.f = obj.ins.f;
-            _obj.la = obj.ins.l;
-            _obj.d = obj.ins.d[0];
-            state.search[termId].add(_obj);
-            obj = {};
-            _obj = {};
-        }
     },
     mergeEventSource: function(state, payload) {
         var termId = payload.termId, events = payload.events, skipSaving = payload.skipSaving;
