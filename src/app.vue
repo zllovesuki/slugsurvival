@@ -63,7 +63,7 @@ module.exports = {
     },
     methods: {
         egg: function() {
-            this.$store.getters.alert.okBtn('WTF').alert('<img src="https://rachel.s3.fmt01.sdapi.net/img/16360519.gif" alt="" />')
+            this.$store.getters.alert.okBtn('WTF').alert('<img src="https://rachel.objectstore.co/img/16360519.gif" alt="" />')
         },
         showFeedback: function() {
             this.$store.getters.alert.okBtn('OK').alert('<a class="btn" href="https://goo.gl/forms/LuDkBkoQodzQLJz92" target="_blank">Found a problem? Click here to report!</a>')
