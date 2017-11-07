@@ -12,7 +12,9 @@ module.exports = function(_, router) {
         }
 
         if (_.getters.Tracker !== null) {
-            _.getters.Tracker.trackEvent('pageView', 'triggered', from.name + '_' + to.name)
+            _.getters.Tracker.setCustomURL(window.location.origin + to.path)
+            _.getters.Tracker.setDocumentTitle(to.name)
+            _.getters.Tracker.trackPageView()
         }
 
         _.commit('shouldAddMargin', false);
