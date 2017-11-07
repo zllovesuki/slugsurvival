@@ -12,7 +12,7 @@ module.exports = function(_, router) {
         }
 
         if (_.getters.Tracker !== null) {
-            _.getters.Tracker.setCustomURL(window.location.origin + to.path)
+            _.getters.Tracker.setCustomUrl(window.location.origin + to.path)
             _.getters.Tracker.setDocumentTitle(to.name)
             _.getters.Tracker.trackPageView()
         }
