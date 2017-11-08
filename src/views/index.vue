@@ -150,7 +150,6 @@ module.exports = {
             return self.$store.dispatch('fetchTermCourses', termId)
             .then(function() {
                 try {
-                    console.log(self.sortedCourses)
                     var course = self.sortedCourses[termId][department].filter(function(course) {
                         return course.c === result.code;
                     })[0];
