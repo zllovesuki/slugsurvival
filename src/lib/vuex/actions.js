@@ -288,7 +288,7 @@ var self = module.exports = {
         if (payload.subjects !== null) _.commit('saveSubjects', payload);
         if (payload.mm !== null) _.commit('saveMajorMinor', payload);
         if (payload.historicData !== null) _.commit('saveHistoricData', payload);
-        if (payload.final !== null) _.commit('saveFinalSchedule', payload);
+        if (payload.finalSchedule !== null) _.commit('saveFinalSchedule', payload);
     },
     fetchBasicData: function(_) {
         if (_.state.flatTermsList.length !== 0) {
@@ -1582,6 +1582,7 @@ var self = module.exports = {
     getFinalTime: function(_, payload) {
         var termId = payload.termId, course = payload.course;
         return Bluebird.resolve().then(function() {
+            if (!_.state.finalSchedule) return;
             if (!_.state.finalSchedule[termId]) return;
 
             // Edge cases, TODO require
