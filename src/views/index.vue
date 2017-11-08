@@ -8,7 +8,7 @@
                     </div>
                     <div class="clearfix">
                         <span class="ml2 btn black h5 muted not-clickable">
-                            Look up the latest classes by code, and the availbility predictions.
+                            Look up the current classes by code, and view classes from the past quarters.
                         </span>
                     </div>
                 </div>
@@ -26,17 +26,27 @@
                                 <thead class="bg-darken-1 h6">
                                     <th>Course</th>
                                     <th>Quarter</th>
-                                    <th>Likely?</th>
-                                    <th>Frequency</th>
-                                    <th>Occurence</th>
+                                    <th>Current</th>
+                                    <th>Past</th>
+                                    <!--<th>Likely?</th>
+                                    <th>Frequency</th>-->
                                 </thead>
                                 <tbody class="h5">
-                                    <tr v-for="result in search.results" @click="promptShowCourse(result)" class="clickable">
-                                        <td class="nowrap">{{ result.code }}</td>
-                                        <td>{{ result.qtr }}</td>
-                                        <td>{{ result.pos }}</td>
-                                        <td>{{ result.fre }}</td>
-                                        <td class="nowrap">{{ result.occur }}</td>
+                                    <tr v-for="result in search.results">
+                                        <td class="nowrap clickable" @click="promptShowCourse(result, result.occur[0])">{{ result.code }}</td>
+                                        <td class="nowrap clickable" @click="promptShowCourse(result, result.occur[0])">{{ result.qtr }}</td>
+                                        <td class="nowrap clickable" @click="promptShowCourse(result, result.occur[0])">{{ result.occur[0] }}</td>
+                                        <td class="nowrap">
+                                            <span
+                                                v-for="(year, index) in result.occur.slice(1)"
+                                                @click="promptShowCourse(result, year)"
+                                                class="clickable rainbow"
+                                            >
+                                                {{ year }}{{ index < result.occur.length - 2 ? ', ' : '' }}
+                                            </span>
+                                        </td>
+                                        <!--<td>{{ result.pos }}</td>
+                                        <td>{{ result.fre }}</td>-->
                                     </tr>
                                 </tbody>
                             </table>
@@ -127,11 +137,11 @@ module.exports = {
         }
     },
     methods: {
-        promptShowCourse: function(result) {
+        promptShowCourse: function(result, year) {
+            if (year === '...') return
             var self = this;
             self.$store.dispatch('showSpinner')
             var quarter = result.qtr;
-            var year = result.occur.indexOf(',') === -1 ? result.occur : result.occur.slice(0, result.occur.indexOf(','))
             var termId = helper.nameToCode([year, quarter].join(' '))
 
             var department = result.code.slice(0, result.code.indexOf(' '))
@@ -186,9 +196,9 @@ module.exports = {
                         results.push({
                             code: code,
                             qtr: quarter.charAt(0).toUpperCase() + quarter.slice(1),
-                            pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
-                            fre: keys.length + '/' + this.numOfYears,
-                            occur: keys.length > 4 ? keys.reverse().slice(0, 4).join(', ') + '...' : keys.reverse().join(', ')
+                            //pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
+                            //fre: keys.length + '/' + this.numOfYears,
+                            occur: keys.length > 5 ? keys.reverse().slice(0, 5).concat('...')/*.join(', ') + '...'*/ : keys.reverse()/*.join(', ')*/
                         })
                     }
                 }
