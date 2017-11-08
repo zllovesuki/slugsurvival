@@ -1047,6 +1047,11 @@ var self = module.exports = {
                 if (_.getters.Tracker !== null) {
                     _.getters.Tracker.trackEvent('RateMyProfessors', 'empty', course.ins.f + course.ins.l)
                 }
+                if (typeof drift !== 'undefined') {
+                    drift.api.showWelcomeMessage({
+                        message: 'Problem with RateMyProfessors? Let me know!'
+                    })
+                }
             }
         }.bind(this))
         .catch(function(e) {
