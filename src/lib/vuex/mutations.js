@@ -182,5 +182,8 @@ module.exports = {
     },
     saveEventSnapshot: function(state, events) {
         state.eventSnapshot = events;
+    },
+    incRMPEmptyCounter: function(state) {
+        state.rmpEmptyCounter++
     }
 }

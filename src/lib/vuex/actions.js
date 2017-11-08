@@ -1047,7 +1047,10 @@ var self = module.exports = {
                 if (_.getters.Tracker !== null) {
                     _.getters.Tracker.trackEvent('RateMyProfessors', 'empty', course.ins.f + course.ins.l)
                 }
-                if (typeof drift !== 'undefined') {
+
+                _.commit('incRMPEmptyCounter')
+
+                if (typeof drift !== 'undefined' && _.getters.rmpEmptyCounter > 2) {
                     drift.api.showWelcomeMessage({
                         message: 'Problem with RateMyProfessors? Let me know!'
                     })

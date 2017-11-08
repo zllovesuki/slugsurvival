@@ -88,5 +88,8 @@ module.exports = {
     },
     finalSchedule: function(state) {
         return state.finalSchedule
+    },
+    rmpEmptyCounter: function(state) {
+        return state.rmpEmptyCounter
     }
 }
