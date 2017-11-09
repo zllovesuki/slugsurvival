@@ -244,18 +244,17 @@ module.exports = {
                 if (typeof this.historicData.ge !== 'undefined') {
                     // TODO: Extremely inefficient
                     for (var geQuarter in this.historicData.ge) {
-                        for (var geCode in this.historicData.ge[geQuarter]) {
-                            for (var code in this.historicData.ge[geQuarter][geCode]) {
-                                if (code.toLowerCase().replace(/\s/g, '').indexOf(this.search.code.toLowerCase().replace(/\s/g, '')) !== -1) {
-                                    var keys = Object.keys(this.historicData.ge[geQuarter][geCode][code]);
-                                    results.push({
-                                        code: code,
-                                        qtr: geQuarter.charAt(0).toUpperCase() + geQuarter.slice(1),
-                                        //pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
-                                        //fre: keys.length + '/' + this.numOfYears,
-                                        occur: keys.length > 5 ? keys.reverse().slice(0, 5).concat('...')/*.join(', ') + '...'*/ : keys.reverse()/*.join(', ')*/
-                                    })
-                                }
+                        if (typeof this.historicData.ge[geQuarter][this.search.geCode] === 'undefined') continue
+                        for (var code in this.historicData.ge[geQuarter][this.search.geCode]) {
+                            if (code.toLowerCase().replace(/\s/g, '').indexOf(this.search.code.toLowerCase().replace(/\s/g, '')) !== -1) {
+                                var keys = Object.keys(this.historicData.ge[geQuarter][this.search.geCode][code]);
+                                results.push({
+                                    code: code,
+                                    qtr: geQuarter.charAt(0).toUpperCase() + geQuarter.slice(1),
+                                    //pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
+                                    //fre: keys.length + '/' + this.numOfYears,
+                                    occur: keys.length > 5 ? keys.reverse().slice(0, 5).concat('...')/*.join(', ') + '...'*/ : keys.reverse()/*.join(', ')*/
+                                })
                             }
                         }
                     }
