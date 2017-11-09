@@ -6,20 +6,17 @@ module.exports = function(_, router) {
     _.dispatch('addOnlineOfflineListener')
 
     router.beforeEach(function(to, from, next) {
-        if (typeof Piwik !== 'undefined' && _.getters.Tracker === null) {
-            _.commit('setTracker', Piwik.getAsyncTracker())
-            _.getters.Tracker.enableHeartBeatTimer(10);
-        }
+        _.commit('shouldAddMargin', false);
+        _.dispatch('showSpinner').then(function() {
+            _.dispatch('ensureDataLoaded').then(next);
+        });
+    })
 
+    router.afterEach(function(to, from) {
         if (_.getters.Tracker !== null) {
             _.getters.Tracker.setCustomUrl(window.location.origin + to.path)
             _.getters.Tracker.setDocumentTitle(to.name)
             _.getters.Tracker.trackPageView()
         }
-
-        _.commit('shouldAddMargin', false);
-        _.dispatch('showSpinner').then(function() {
-            _.dispatch('ensureDataLoaded').then(next);
-        });
     })
 }

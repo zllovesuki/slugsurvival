@@ -68,10 +68,6 @@ module.exports = {
         showFeedback: function() {
             this.$store.getters.alert.okBtn('OK').alert('<a class="btn" href="https://goo.gl/forms/LuDkBkoQodzQLJz92" target="_blank">Found a problem? Click here to report!</a>')
         }
-    },
-    mounted: function() {
-        // global context
-        window.App = this;
     }
 }
 </script>

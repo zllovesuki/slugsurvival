@@ -136,3 +136,5 @@ var vm = new App({
     router: router,
     store: store
 }).$mount('#app')
+
+window.App = vm;
