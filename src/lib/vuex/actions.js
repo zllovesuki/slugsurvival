@@ -249,7 +249,13 @@ var self = module.exports = {
                     spring: base.spring,
                     summer: base.summer,
                     fall: base.fall,
-                    winter: base.winter
+                    winter: base.winter,
+                    ge: {
+                        spring: base.ge_spring,
+                        summer: base.ge_summer,
+                        fall: base.ge_fall,
+                        winter: base.ge_winter
+                    }
                 } : null,
                 invalid.finalSchedule ? base.final : null
             ]
