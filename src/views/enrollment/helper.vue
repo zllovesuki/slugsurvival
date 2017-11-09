@@ -302,6 +302,9 @@ module.exports = {
                         if (resolved.buttonClicked !== 'ok') return;
                         self.removeFromList(course);
                         self.alert.success('Removed!');
+                        if (self.$store.getters.Tracker !== null) {
+                            self.$store.getters.Tracker.trackEvent('enrollment', 'remove', termId + '_' + course.num)
+                        }
                     });
                 });
             })
@@ -354,6 +357,9 @@ module.exports = {
                     if (resolved.buttonClicked !== 'ok') return;
                     self.alert.success(course.c + ' added to the list!');
                     self.courses.push(course);
+                    if (self.$store.getters.Tracker !== null) {
+                        self.$store.getters.Tracker.trackEvent('enrollment', 'add', self.termCode + '_' + course.num)
+                    }
                 });
             })
         },

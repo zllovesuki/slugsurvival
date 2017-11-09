@@ -229,7 +229,16 @@ module.exports = {
                         .confirm(html)
                         .then(function(resolved) {
                             resolved.event.preventDefault();
-                            if (resolved.buttonClicked !== 'ok') return;
+                            if (resolved.buttonClicked !== 'ok') {
+                                if (self.$store.getters.Tracker !== null) {
+                                    self.$store.getters.Tracker.trackEvent('searchCb', 'back', course.c)
+                                }
+                                return
+                            }
+
+                            if (self.$store.getters.Tracker !== null) {
+                                self.$store.getters.Tracker.trackEvent('searchCb', 'add', course.c)
+                            }
 
                             return self.$store.dispatch('pushToEventSource', {
                                 termId: termId,

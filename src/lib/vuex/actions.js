@@ -1031,8 +1031,16 @@ var self = module.exports = {
                 .confirm(html)
                 .then(function(resolved) {
                     resolved.event.preventDefault();
-                    if (resolved.buttonClicked !== 'ok') return;
+                    if (resolved.buttonClicked !== 'ok') {
+                        if (_.getters.Tracker !== null) {
+                            _.getters.Tracker.trackEvent('RateMyProfessors', 'back', rmp.tid)
+                        }
+                        return
+                    }
                     window.open('http://www.ratemyprofessors.com/ShowRatings.jsp?tid=' + rmp.tid);
+                    if (_.getters.Tracker !== null) {
+                        _.getters.Tracker.trackEvent('RateMyProfessors', 'external', rmp.tid)
+                    }
                 })
                 if (_.getters.Tracker !== null) {
                     _.getters.Tracker.trackEvent('RateMyProfessors', 'success',  rmp.tid)

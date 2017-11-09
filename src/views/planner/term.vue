@@ -126,6 +126,9 @@ module.exports = {
             .then(function(resolved) {
                 resolved.event.preventDefault();
                 if (resolved.buttonClicked !== 'ok') return;
+                if (self.$store.getters.Tracker !== null) {
+                    self.$store.getters.Tracker.trackEvent('term', 'remove', termId + '_' + calEvent.number)
+                }
                 return self.$store.dispatch('removeFromSource', {
                     termId: termId,
                     courseNum: calEvent.number
@@ -287,7 +290,15 @@ module.exports = {
                         return alert.confirm(html)
                         .then(function(resolved) {
                             resolved.event.preventDefault();
-                            if (resolved.buttonClicked !== 'ok') throw new Error();
+                            if (resolved.buttonClicked !== 'ok') {
+                                if (self.$store.getters.Tracker !== null) {
+                                    self.$store.getters.Tracker.trackEvent('searchCb', 'back', course.c)
+                                }
+                                throw new Error();
+                            }
+                            if (self.$store.getters.Tracker !== null) {
+                                self.$store.getters.Tracker.trackEvent('term', 'add', termId + '_' + course.num)
+                            }
                             if (multiple.length > 1) {
                                 return self.displayMultipleOnCalendar(multiple)
                             }else{
