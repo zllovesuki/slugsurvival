@@ -76,7 +76,7 @@
                         </div>
                     </div>
                     <div class="h5 clearfix border clickable" @click="promptAddClass(course)" v-for="course in subjectCourses" :key="course.num" v-show="hideCourses[course.num] !== true">
-                        <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
+                        <div class="p1 sm-col sm-col-2 nowrap">
                             {{ course.c }} - {{ course.s }}
                         </div>
                         <div class="p1 sm-col sm-col-3 overflow-hidden nowrap bold">
@@ -85,7 +85,7 @@
                         <div class="p1 sm-col sm-col-2 overflow-hidden nowrap">
                             {{ course.ins.d.join(', ') }}
                         </div>
-                        <div class="p1 sm-col sm-col-5 overflow-hidden nowrap bold">
+                        <div class="p1 sm-col sm-col-5 overflow-hidden bold">
                             {{
                                 course.loct.map(function(el) {
                                     if (el.t === false) {
