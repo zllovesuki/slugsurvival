@@ -269,7 +269,7 @@ module.exports = {
             this.search.results = _results;
             this.search.dirty = false;
             if (this.$store.getters.Tracker !== null) {
-                this.$store.getters.Tracker.trackSiteSearch(searchString, 'findHistorical', this.search.results.length)
+                this.$store.getters.Tracker.trackSiteSearch(this.search.code + (this.search.geCode !== '' ? ';' + this.search.geCode : ''), 'findHistorical', this.search.results.length)
             }
         }, 750)
     },
