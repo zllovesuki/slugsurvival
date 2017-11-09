@@ -53,10 +53,10 @@
         <div class="bg-white rounded border mb3" v-for="(subjectCourses, subject) in courses" :key="subject" v-show="initialized && hideSubject[subject] !== true">
             <div class="m0 p1">
                 <div class="clearfix">
-                    <span class="btn black h4" @click="collapseSubject[subject] = !collapseSubject[subject]">{{ subject }}</span>
+                    <span class="btn black h4" @click="flipSubjectCollapse(subject)">{{ subject }}</span>
                 </div>
                 <div class="clearfix">
-                    <span class="ml1 btn black h5 muted clickable" @click="collapseSubject[subject] = !collapseSubject[subject]">{{ subjectList[subject] }}&nbsp;&nbsp;&nbsp;<i class="right fa fa-lg" v-bind:class="{ 'fa-angle-down': collapseSubject[subject], 'fa-angle-up': !collapseSubject[subject]}"></i></span>
+                    <span class="ml1 btn black h5 muted clickable" @click="flipSubjectCollapse(subject)">{{ subjectList[subject] }}&nbsp;&nbsp;&nbsp;<i class="right fa fa-lg" v-bind:class="{ 'fa-angle-down': collapseSubject[subject], 'fa-angle-up': !collapseSubject[subject]}"></i></span>
                 </div>
             </div>
             <transition name="fade" mode="out-in">
@@ -193,12 +193,22 @@ module.exports = {
             if (el == 'Saturday') return 'Sa';
             if (el == 'Sunday') return 'Su';
         },
+        flipSubjectCollapse: function(subject) {
+            this.collapseSubject[subject] = !this.collapseSubject[subject]
+            if (this.$store.getters.Tracker !== null) {
+                this.$store.getters.Tracker.trackEvent('subjectList', this.collapseSubject[subject] === true ? 'hide' : 'show', subject)
+            }
+        },
         promptAddClass: function(course) {
             var self = this;
             if (!this.initialized) return;
             var termId = this.termId;
             var code = helper.checkForConflict(this.dateMap, this.$store.getters.eventSource[termId], course);
             var alertHandle = function() {};
+
+            if (this.$store.getters.Tracker !== null) {
+                this.$store.getters.Tracker.trackEvent('searchCb', 'clicked', course.c)
+            }
 
             return this.$store.dispatch('getCourseDom', {
                 termId: termId,
