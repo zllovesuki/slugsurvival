@@ -1405,6 +1405,12 @@ var self = module.exports = {
             if (!isUpdated) {
                 _.commit('blockCheckVersion')
                 _.getters.alert.delay(0).success('A new version of SlugSurvival is available, please refresh this page.')
+                if (_.getters.Tracker !== null) {
+                    _.getters.Tracker.trackEvent('newVersion', 'notify')
+                    window.onbeforeunload = function(event) {
+                        _.getters.Tracker.trackEvent('newVersion', 'refresh')
+                    }
+                }
             }
             if (_.state.blockCheckVersion) return;
             setTimeout(function() {
