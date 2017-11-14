@@ -196,6 +196,9 @@ module.exports = {
                             if (string !== 'skipSave') self.savePlanner();
                         })
                     })
+                    if (self.$store.getters.Tracker !== null) {
+                        self.$store.getters.Tracker.trackEvent('advPlanner', 'addYear')
+                    }
                 }, 500)
             })
         },
@@ -212,12 +215,18 @@ module.exports = {
                 onItemAdd: function(value, $item) {
                     self.table[year][quarter].push(value);
                     self.savePlanner();
+                    if (self.$store.getters.Tracker !== null) {
+                        self.$store.getters.Tracker.trackEvent('advPlanner', 'add', value)
+                    }
                 },
                 onItemRemove: function(value) {
                     self.table[year][quarter] = self.table[year][quarter].filter(function(el) {
                         return el != value;
                     });
                     self.savePlanner();
+                    if (self.$store.getters.Tracker !== null) {
+                        self.$store.getters.Tracker.trackEvent('advPlanner', 'remove', value)
+                    }
                 },
                 render: {
                     option: function(item, escape) {
@@ -268,6 +277,9 @@ module.exports = {
                         })
                     }, 500)
                 })
+                if (self.$store.getters.Tracker !== null) {
+                    self.$store.getters.Tracker.trackEvent('advPlanner', 'delYear')
+                }
             })
         },
         savePlanner: function() {
@@ -330,6 +342,9 @@ module.exports = {
                     table: self.table
                 }).then(function(maps) {
                     self.alert.success('Import success...Greatness awaits!')
+                    if (self.$store.getters.Tracker !== null) {
+                        self.$store.getters.Tracker.trackEvent('advPlanner', 'import')
+                    }
                 })
             })
         },
