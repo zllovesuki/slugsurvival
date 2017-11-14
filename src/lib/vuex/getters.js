@@ -91,5 +91,8 @@ module.exports = {
     },
     rmpEmptyCounter: function(state) {
         return state.rmpEmptyCounter
+    },
+    MobileDetect: function(state) {
+        return state.MobileDetect
     }
 }

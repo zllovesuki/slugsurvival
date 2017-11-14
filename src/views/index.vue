@@ -14,11 +14,27 @@
                 </div>
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
-                        <input type="text" style="border: 0 !important" class="field black block col col-12 mb2 search-box" v-model="search.string" placeholder="e.g. EE 177, +CC, ECON +PR-S, ..." onmouseover="this.focus()">
-                        <div class="ml1 block" v-show="search.insufficient && search.code.length > 0">
+                        <input
+                            type="text"
+                            style="border: 0 !important"
+                            class="field black block col col-12 mb2 search-box"
+                            v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }"
+                            v-model="search.string"
+                            placeholder="e.g. EE 177, +CC, ECON +PR-S, ..."
+                            onmouseover="this.focus()"
+                        >
+                        <div
+                            class="ml1 block"
+                            v-show="search.insufficient && search.code.length > 0"
+                            v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }"
+                        >
                             ...Need three or more characters
                         </div>
-                        <div class="ml1 block" v-show="!search.insufficient && search.dirty">
+                        <div
+                            class="ml1 block"
+                            v-show="!search.insufficient && search.dirty"
+                            v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }"
+                        >
                             ...Typing
                         </div>
                         <div class="overflow-scroll col col-12 block" v-show="search.results.length > 0 && !search.dirty">
@@ -28,10 +44,10 @@
                                     <th>Quarter</th>
                                     <th>Current</th>
                                     <th>Past</th>
-                                    <!--<th>Likely?</th>
-                                    <th>Frequency</th>-->
+                                    <th>Likely Be Offered</th>
+                                    <!--<th>Frequency</th>-->
                                 </thead>
-                                <tbody class="h5">
+                                <tbody v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }">
                                     <tr v-for="result in search.results">
                                         <td class="nowrap clickable" @click="promptShowCourse(result, result.occur[0])">{{ result.code }}</td>
                                         <td class="nowrap clickable" @click="promptShowCourse(result, result.occur[0])">{{ result.qtr }}</td>
@@ -45,13 +61,20 @@
                                                 {{ year }}{{ index < result.occur.length - 2 ? ', ' : '' }}
                                             </span>
                                         </td>
-                                        <!--<td>{{ result.pos }}</td>
-                                        <td>{{ result.fre }}</td>-->
+                                        <td>{{ result.pos }}</td>
+                                        <!--<td>{{ result.fre }}</td>-->
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <div class="ml1 col col-12 block" v-show="(search.geCode.length > 0 || search.code.length >= 3) && search.results.length === 0 && !search.dirty">
+                        <div
+                            class="ml1 col col-12 block"
+                            v-show="
+                                (search.geCode.length > 0 || search.code.length >= 3)
+                                && search.results.length === 0 && !search.dirty
+                                "
+                            v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }"
+                        >
                             No results.
                         </div>
                     </div>
@@ -68,10 +91,10 @@
                 </div>
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
-                        <div class="md-flex">
-                            <router-link class="p2 flex-auto m1 h5 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'termsList' }" tag="div"><i class="fa fa-calendar fa-2x">&nbsp;</i>Interactive Quarter Planner</router-link>
-                            <router-link class="p2 flex-auto m1 h5 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'advMenu' }" tag="div"><i class="fa fa-check fa-2x">&nbsp;</i>Academic Career Advisory</router-link>
-                            <router-link class="p2 flex-auto m1 h5 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'enrollHelper' }" tag="div"><i class="fa fa-bell fa-2x">&nbsp;</i>Notify Me When My Classes Are Open</router-link>
+                        <div class="md-flex" v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }">
+                            <router-link class="p2 flex-auto m1 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.alert }" :to="{ name: 'termsList' }" tag="div"><i class="fa fa-calendar fa-2x">&nbsp;</i>Interactive Quarter Planner</router-link>
+                            <router-link class="p2 flex-auto m1 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'advMenu' }" tag="div"><i class="fa fa-check fa-2x">&nbsp;</i>Academic Career Advisory</router-link>
+                            <router-link class="p2 flex-auto m1 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'enrollHelper' }" tag="div"><i class="fa fa-bell fa-2x">&nbsp;</i>Notify Me When My Classes Are Open</router-link>
                         </div>
                     </div>
                 </div>
@@ -87,8 +110,8 @@
                 </div>
                 <div class="m0 p2 border-top">
                     <div class="clearfix">
-                        <div class="sm-flex">
-                            <router-link class="p2 flex-auto m1 h5 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'analyticsCourse' }" tag="div"><i class="fa fa-line-chart fa-2x">&nbsp;</i>Enrollment Analytics</router-link>
+                        <div class="sm-flex" v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }">
+                            <router-link class="p2 flex-auto m1 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'analyticsCourse' }" tag="div"><i class="fa fa-line-chart fa-2x">&nbsp;</i>Enrollment Analytics</router-link>
                         </div>
                     </div>
                 </div>
@@ -126,6 +149,7 @@ var helper = require('../lib/vuex/helper')
 module.exports = {
     data: function() {
         return {
+            isMobile: false,
             listOfGE: {},
             GEModal: false,
             search: {
@@ -233,7 +257,7 @@ module.exports = {
                             results.push({
                                 code: code,
                                 qtr: quarter.charAt(0).toUpperCase() + quarter.slice(1),
-                                //pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
+                                pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
                                 //fre: keys.length + '/' + this.numOfYears,
                                 occur: keys.length > 5 ? keys.reverse().slice(0, 5).concat('...')/*.join(', ') + '...'*/ : keys.reverse()/*.join(', ')*/
                             })
@@ -251,7 +275,7 @@ module.exports = {
                                 results.push({
                                     code: code,
                                     qtr: geQuarter.charAt(0).toUpperCase() + geQuarter.slice(1),
-                                    //pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
+                                    pos: self.historicFrequency[geQuarter].indexOf(code) !== -1 ? 'Yes' : 'No',
                                     //fre: keys.length + '/' + this.numOfYears,
                                     occur: keys.length > 5 ? keys.reverse().slice(0, 5).concat('...')/*.join(', ') + '...'*/ : keys.reverse()/*.join(', ')*/
                                 })
@@ -296,6 +320,9 @@ module.exports = {
         this.$nextTick(function() {
             this.$store.dispatch('hideSpinner')
         })
+    },
+    created: function() {
+        this.isMobile = this.$store.getters.MobileDetect.phone()
     }
 }
 </script>

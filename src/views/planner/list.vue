@@ -61,7 +61,7 @@
             </div>
             <transition name="fade" mode="out-in">
                 <div class="m0 p0 border-top" v-show="!collapseSubject[subject]">
-                    <div class="italic h5 clearfix" v-bind:class="{ 'bg-darken-1': md.phone() }">
+                    <div class="italic h5 clearfix" v-bind:class="{ 'bg-darken-1': $store.getters.MobileDetect.phone() }">
                         <div class="underline p1 sm-col sm-col-2 nowrap">
                             Class
                         </div>
@@ -107,11 +107,9 @@
 <script>
 var debounce = require('lodash.debounce')
 var helper = require('../../lib/vuex/helper')
-var MobileDetect = require('mobile-detect')
 module.exports = {
     data: function() {
         return {
-            md: null,
             searchModal: false,
             ready: false,
             show: true,
@@ -412,9 +410,6 @@ module.exports = {
                 if (this.show === false) this.doFilter();
             })
         }
-    },
-    created: function() {
-        this.md = new MobileDetect(window.navigator.userAgent);
     },
     mounted: function() {
         var self = this;

@@ -185,5 +185,8 @@ module.exports = {
     },
     incRMPEmptyCounter: function(state) {
         state.rmpEmptyCounter++
+    },
+    saveMobileDetect: function(state, md) {
+        state.MobileDetect = md;
     }
 }

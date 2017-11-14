@@ -2,6 +2,8 @@ var alertify = require('alertify.js');
 
 module.exports = {
 
+    MobileDetect: null,
+
     onlineState: 'online',
 
     Tracker: null,

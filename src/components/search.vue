@@ -2,11 +2,23 @@
     <span>
         <modal :show="show" :do-not-modify-class="doNotModifyClass" v-on:close="closeSearchModal">
             <h4 slot="header">
-                <input type="text" class="field block col-12 mb1 search-box" v-model="search.string" placeholder="ECON 197, Design, Mendes, etc...">
+                <input
+                    type="text"
+                    class="field block col-12 mb1 search-box"
+                    v-model="search.string"
+                    placeholder="ECON 197, Design, Mendes, etc..."
+                    v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }"
+                >
             </h4>
             <span slot="body">
-                <ul class="list-reset mt1">
-                    <li class="overflow-hidden btn h5 block" v-on:click.prevent.stop="cb(result)" v-for="result in search.results" :key="result.num" v-show="!search.dirty">
+                <ul class="list-reset mt1" v-bind:class="{ 'h6': isMobile, 'h5': !isMobile}">
+                    <li
+                        class="overflow-hidden btn block"
+                        v-on:click.prevent.stop="cb(result)"
+                        v-for="result in search.results"
+                        :key="result.num"
+                        v-show="!search.dirty"
+                    >
                         {{ result.c }} - {{ result.s }}  - {{ result.n }}
                     </li>
                     <li v-show="search.dirty">...Typing</li>
@@ -99,6 +111,7 @@ var debounce = require('lodash.debounce')
 var helper = require('../lib/vuex/helper')
 
 module.exports = {
+    isMobile: false,
     props: {
         show: {
             type: Boolean,
@@ -357,6 +370,7 @@ module.exports = {
     },
     created: function() {
         this.resetExtra();
+        this.isMobile = this.$store.getters.MobileDetect.phone()
     }
 }
 </script>

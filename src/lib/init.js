@@ -1,9 +1,13 @@
+var MobileDetect = require('mobile-detect')
+
 module.exports = function(_, router) {
     var element = document.getElementById('loading');
     element.parentNode.removeChild(element);
 
     _.dispatch('checkVersion')
     _.dispatch('addOnlineOfflineListener')
+
+    _.commit('saveMobileDetect', new MobileDetect(window.navigator.userAgent))
 
     router.beforeEach(function(to, from, next) {
         _.commit('shouldAddMargin', false);
