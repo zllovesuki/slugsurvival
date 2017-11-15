@@ -20,7 +20,7 @@
                             class="field black block col col-12 mb2 search-box"
                             v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }"
                             v-model="search.string"
-                            placeholder="e.g. EE 177, +CC, ECON +PR-S, ..."
+                            placeholder="e.g. EE 177, +CC, ECON +PE-H, ..."
                             onmouseover="this.focus()"
                         >
                         <div
@@ -44,8 +44,8 @@
                                     <th>Quarter</th>
                                     <th>Current</th>
                                     <th>Past</th>
-                                    <th>Likely Be Offered</th>
-                                    <!--<th>Frequency</th>-->
+                                    <!--<th>Likely Be Offered</th>
+                                    <th>Frequency</th>-->
                                 </thead>
                                 <tbody v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }">
                                     <tr v-for="result in search.results">
@@ -61,8 +61,8 @@
                                                 {{ year }}{{ index < result.occur.length - 2 ? ', ' : '' }}
                                             </span>
                                         </td>
-                                        <td>{{ result.pos }}</td>
-                                        <!--<td>{{ result.fre }}</td>-->
+                                        <!--<td>{{ result.pos }}</td>
+                                        <td>{{ result.fre }}</td>-->
                                     </tr>
                                 </tbody>
                             </table>
@@ -257,7 +257,7 @@ module.exports = {
                             results.push({
                                 code: code,
                                 qtr: quarter.charAt(0).toUpperCase() + quarter.slice(1),
-                                pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
+                                //pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
                                 //fre: keys.length + '/' + this.numOfYears,
                                 occur: keys.length > 5 ? keys.reverse().slice(0, 5).concat('...')/*.join(', ') + '...'*/ : keys.reverse()/*.join(', ')*/
                             })
@@ -275,7 +275,7 @@ module.exports = {
                                 results.push({
                                     code: code,
                                     qtr: geQuarter.charAt(0).toUpperCase() + geQuarter.slice(1),
-                                    pos: self.historicFrequency[geQuarter].indexOf(code) !== -1 ? 'Yes' : 'No',
+                                    //pos: self.historicFrequency[geQuarter].indexOf(code) !== -1 ? 'Yes' : 'No',
                                     //fre: keys.length + '/' + this.numOfYears,
                                     occur: keys.length > 5 ? keys.reverse().slice(0, 5).concat('...')/*.join(', ') + '...'*/ : keys.reverse()/*.join(', ')*/
                                 })
@@ -303,6 +303,10 @@ module.exports = {
                 this.search.code = val.substring(0, val.indexOf('+')).trim();;
             }else{
                 this.search.code = val
+            }
+            if (val === '') {
+                this.search.code = ''
+                this.search.geCode = ''
             }
             if (this.search.code.length < 3 && this.search.geCode === '') {
                 this.search.results = [];

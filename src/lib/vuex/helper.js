@@ -179,6 +179,7 @@ var self = module.exports = {
         };
 
         for (var quarter in historicData){
+            if (quarter === 'ge') continue
             for (var code in historicData[quarter]) {
                 if (typeof result[code] === 'undefined') {
                     result[code] = {
