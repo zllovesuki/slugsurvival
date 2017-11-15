@@ -292,7 +292,7 @@ module.exports = {
                             resolved.event.preventDefault();
                             if (resolved.buttonClicked !== 'ok') {
                                 if (self.$store.getters.Tracker !== null) {
-                                    self.$store.getters.Tracker.trackEvent('searchCb', 'back', course.c)
+                                    self.$store.getters.Tracker.trackEvent('searchCb', 'back', course.c + ' - ' + course.s)
                                 }
                                 throw new Error();
                             }

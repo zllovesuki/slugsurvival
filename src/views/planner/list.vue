@@ -205,7 +205,7 @@ module.exports = {
             var alertHandle = function() {};
 
             if (this.$store.getters.Tracker !== null) {
-                this.$store.getters.Tracker.trackEvent('searchCb', 'clicked', course.c)
+                this.$store.getters.Tracker.trackEvent('searchCb', 'clicked', course.c + ' - ' + course.s)
             }
 
             return this.$store.dispatch('getCourseDom', {
@@ -229,13 +229,13 @@ module.exports = {
                             resolved.event.preventDefault();
                             if (resolved.buttonClicked !== 'ok') {
                                 if (self.$store.getters.Tracker !== null) {
-                                    self.$store.getters.Tracker.trackEvent('searchCb', 'back', course.c)
+                                    self.$store.getters.Tracker.trackEvent('searchCb', 'back', course.c + ' - ' + course.s)
                                 }
                                 return
                             }
 
                             if (self.$store.getters.Tracker !== null) {
-                                self.$store.getters.Tracker.trackEvent('searchCb', 'add', course.c)
+                                self.$store.getters.Tracker.trackEvent('searchCb', 'add', course.c + ' - ' + course.s)
                             }
 
                             return self.$store.dispatch('pushToEventSource', {

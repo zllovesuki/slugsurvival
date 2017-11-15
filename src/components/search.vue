@@ -273,7 +273,7 @@ module.exports = {
         },
         cb: function(param) {
             if (this.$store.getters.Tracker !== null) {
-                this.$store.getters.Tracker.trackEvent('searchCb', 'clicked', param.c)
+                this.$store.getters.Tracker.trackEvent('searchCb', 'clicked', param.c + ' - ' + param.s)
             }
             this.callback(param)
         },
