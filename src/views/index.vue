@@ -211,6 +211,10 @@ module.exports = {
                     return;
                 }
 
+                if (self.$store.getters.Tracker !== null) {
+                    self.$store.getters.Tracker.trackEvent('searchCb', 'clicked', course.c + ' - ' + course.s)
+                }
+
                 return self.$store.dispatch('getCourseDom', {
                     termId: termId,
                     courseNum: course.num,
@@ -224,6 +228,9 @@ module.exports = {
                     .alert(html)
                     .then(function(resolved) {
                         resolved.event.preventDefault();
+                        if (self.$store.getters.Tracker !== null) {
+                            self.$store.getters.Tracker.trackEvent('searchCb', 'back', course.c + ' - ' + course.s)
+                        }
                     })
                 })
             })
