@@ -5,7 +5,7 @@ RUN apk add --no-cache git libgcj --repository http://dl-cdn.alpinelinux.org/alp
 
 RUN npm install pm2 gulp -g
 
-ADD package-lock.json package.json /tmp/package.json
+ADD package-lock.json package.json /tmp/
 RUN cd /tmp && npm install
 RUN mkdir -p /usr/src/app && cp -a /tmp/node_modules /usr/src/app/
 
