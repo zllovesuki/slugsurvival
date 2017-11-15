@@ -384,7 +384,10 @@ module.exports = {
         saveCalendarAsImage: function() {
             var self = this;
             self.$store.dispatch('showSpinner')
-            domtoimage.toBlob(document.getElementById('calendar-container'))
+
+            var node = document.getElementById('calendar-container')
+
+            domtoimage.toBlob(node)
             .then(function(blob) {
                 self.$store.dispatch('hideSpinner')
                 saveAs(blob, 'Schedule for ' + self.$store.getters.termName + '.png');
@@ -433,10 +436,16 @@ module.exports = {
             window._vueContext.bookmark = this.bookmark
 
             var html = '<p>Share...</p>';
-            html += '<span class="block mt2">';
-            html += '<a class="btn btn-outline h6 white" style="background-color: ' + this.colorMap.regular + '" onclick="window._vueContext.saveCalendarAsImage()">';
-            html += 'save as image';
-            html += '</a></span>';
+
+            var isSafari = /constructor/i.test(window.HTMLElement) || (function (p) { return p.toString() === "[object SafariRemoteNotification]"; })(!window['safari'] || (typeof safari !== 'undefined' && safari.pushNotification))
+
+            // TODO: fix dom-to-image safari bug
+            if (!isSafari){
+                html += '<span class="block mt2">';
+                html += '<a class="btn btn-outline h6 white" style="background-color: ' + this.colorMap.regular + '" onclick="window._vueContext.saveCalendarAsImage()">';
+                html += 'save as image';
+                html += '</a></span>';
+            }
 
             html += '<span class="block mt2">';
             html += '<a class="btn btn-outline h6 white" style="background-color: ' + this.colorMap.regular + '" onclick="window._vueContext.saveCalendarAsICS()">';

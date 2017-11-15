@@ -720,7 +720,7 @@ var self = module.exports = {
         return self.formattedDate(startingDate)
     },
     addCal: function(cal, termDates, course, type, loct) {
-        if (!loct.t.day) return;
+        if (!loct.t || !loct.t.day) return;
         var startDate = self.determineActualStartDate(termDates.start, loct.t.day);
         var endDate = termDates.end;
         var startTime = loct.t.time.start;
