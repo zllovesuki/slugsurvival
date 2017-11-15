@@ -212,7 +212,7 @@ module.exports = {
                 }
 
                 if (self.$store.getters.Tracker !== null) {
-                    self.$store.getters.Tracker.trackEvent('searchCb', 'clicked', course.c + ' - ' + course.s)
+                    self.$store.getters.Tracker.trackEvent('quickSearchCb', 'clicked', termId + '_' + course.c + '-' + course.s)
                 }
 
                 return self.$store.dispatch('getCourseDom', {
@@ -229,7 +229,7 @@ module.exports = {
                     .then(function(resolved) {
                         resolved.event.preventDefault();
                         if (self.$store.getters.Tracker !== null) {
-                            self.$store.getters.Tracker.trackEvent('searchCb', 'back', course.c + ' - ' + course.s)
+                            self.$store.getters.Tracker.trackEvent('quickSearchCb', 'back', termId + '_' + course.c + '-' + course.s)
                         }
                     })
                 })
