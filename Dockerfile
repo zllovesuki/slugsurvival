@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:latest
+FROM mhart/alpine-node:8.9.1
 
 RUN apk add --no-cache git libgcj --repository http://dl-cdn.alpinelinux.org/alpine/edge/main/ \
     && apk add --no-cache pdftk --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
