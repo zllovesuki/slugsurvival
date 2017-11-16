@@ -301,7 +301,7 @@ module.exports = {
             if (this.$store.getters.Tracker !== null) {
                 this.$store.getters.Tracker.trackSiteSearch(this.search.code + (this.search.geCode !== '' ? ';' + this.search.geCode : ''), 'findHistorical', this.search.results.length)
             }
-        }, 750)
+        }, 1250)
     },
     watch: {
         'search.string': function(val, oldVal) {

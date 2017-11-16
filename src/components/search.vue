@@ -267,7 +267,7 @@ module.exports = {
                 Tracker.trackSiteSearch(val + ';' + geCode, cat, this.search.results.length);
             }
             this.search.dirty = false;
-        }, 500),
+        }, 1250),
         closeSearchModal: function() {
             this.$emit('close')
         },
