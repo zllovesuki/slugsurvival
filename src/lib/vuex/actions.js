@@ -1566,19 +1566,19 @@ var self = module.exports = {
         })
     },
     showDisclaimer: function(_) {
-        return storage.getItem('disclaimerShown').then(function(yes) {
-            if (yes !== null) return;
+        //return storage.getItem('disclaimerShown').then(function(yes) {
+        //    if (yes !== null) return;
             var html = [
                 '<p>', '<i>', 'Disclaimer', '</i>', '</p>',
                 '<small>', 'SlugSurvival is not affiliated with UCSC or any of its family of sites.', '</small>',
                 '<hr>',
-                '<small>', '*Neither* selecting courses *nor* signing up for notifications on SlugSurvial will enroll you into the courses in the AIS (my.ucsc.edu).', '</small>'
+                '<small>', '*Neither* selecting courses *nor* signing up for notifications on SlugSurvival will enroll you into the courses in the AIS (my.ucsc.edu).', '</small>'
             ].join('')
             _.getters.alert.okBtn('Acknowledge').alert(html).then(function(resolved) {
                 resolved.event.preventDefault();
-                return storage.setItem('disclaimerShown', true)
+        //        return storage.setItem('disclaimerShown', true)
             })
-        })
+        //})
     },
     fetchAvailableTerms: function(_) {
         var self = this;
