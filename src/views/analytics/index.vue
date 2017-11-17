@@ -3,8 +3,15 @@
         <div class="ml1 mt1 mb1">
             <router-link class="btn button-narrow mxn2 muted" :to="{ name: 'analyticsCourse' }" tag="span">A</router-link>
             <chevron-right></chevron-right>
-            <span class="btn button-narrow mxn1 h5">
-                Analytics (alpha)
+            <span v-if="route.name === 'analyticsCourse'">
+                <span class="btn button-narrow mxn1 h5">
+                    Analytics (beta)
+                </span>
+            </span>
+            <span v-if="route.name === 'analyticsRealtime'">
+                <span class="btn button-narrow mxn1 h5">
+                    Analytics in Realtime (alpha)
+                </span>
             </span>
         </div>
         <div class="mt1 mb1">
@@ -18,6 +25,11 @@
 module.exports = {
     components: {
         chevronRight: require('../../lib/icons/chevron-right.vue')
+    },
+    computed: {
+        route: function() {
+            return this.$store.getters.route;
+        }
     }
 }
 </script>
