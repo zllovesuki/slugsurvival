@@ -17,7 +17,7 @@
 			<div class="m0 p1 border-top">
                 <div class="clearfix">
                     <table class="table-light">
-                        <thead class="bg-darken-1 h6">
+                        <thead class="bg-silver h6">
                             <th>Course</th>
                             <th>Quarter</th>
                             <th>Current</th>
