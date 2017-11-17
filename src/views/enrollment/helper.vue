@@ -82,13 +82,17 @@
 			<span slot="body">
 				<form v-on:submit.prevent class="h5">
                     <label for="recipient" class="mt2 block">
-                        <input type="text" class="col-8 mb2 field inline-block" v-model="sub.recipient" placeholder="15554443333 or hello@me.com">
-                        <button type="submit" v-bind:class="'col-3 btn ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.recipient.length > 0 || (sub.counter > 0 && sub.counter < 60) || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
+                        <input type="text" class="col-8 mb1 field inline-block" v-model="sub.recipient" placeholder="phone number or email">
+                        <button type="submit" v-bind:class="'col-3 btn ml1 mb1 inline-block ' + color" :disabled="sub.verified || !sub.recipient.length > 0 || (sub.counter > 0 && sub.counter < 60) || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
                     </label>
                     <label for="code" class="mt2 block" v-if="sub.sent">
-                        <input type="text" class="col-8 mb2 field inline-block" v-model="sub.code" placeholder="passcode received">
-                        <button type="submit" v-bind:class="'col-3 btn ml1 mb2 inline-block ' + color" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
+                        <input type="text" class="col-8 mb1 field inline-block" v-model="sub.code" placeholder="passcode received">
+                        <button type="submit" v-bind:class="'col-3 btn ml1 mb1 inline-block ' + color" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
                     </label>
+                    <span class="btn black h6 muted not-clickable">
+                        Please include country code for your phone number. <br />
+                        For example: 18314590111
+                    </span>
                     <hr />
 					<span class="block mb1">
                         We take privacy seriously.
