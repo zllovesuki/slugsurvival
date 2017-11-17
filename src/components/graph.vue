@@ -64,6 +64,11 @@ module.exports = {
             mode: 'markers',
             line: {
                 color: 'gray'
+            },
+            hoverlabel: {
+                font: {
+                    color: 'white'
+                }
             }
         }
         var avail = {

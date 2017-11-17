@@ -398,6 +398,13 @@ module.exports = {
     beforeDestroy: function() {
         // garbage collection
         this.selectizeRef[0].selectize.destroy()
+        if (this.canvasId !== null) {
+            Plotly.purge(document.getElementById(this.canvasId))
+        }
+        this.sectionsCanvasId.forEach(function(canvasId) {
+            Plotly.purge(document.getElementById(canvasId))
+        })
+        this.sectionsCanvasId = []
     }
 
 }
