@@ -311,7 +311,7 @@ module.exports = {
                     this.$store.getters.Tracker.trackEvent('searchCb', 'clicked', termId + '_' + course.c + '-' + course.s)
                 }
             }catch(e) {}
-            
+
             var code = helper.checkForConflict(this.dateMap, this.$store.getters.eventSource[termId], course);
             var alertHandle = function() {};
 
@@ -421,7 +421,7 @@ module.exports = {
                 contentHeight: 'auto',
                 eventSources: [{
                     events: function(start, end, timezone, callback) {
-                        callback(self.$store.getters.eventSource[termId]);
+                        callback(self.$store.getters.eventSource[termId] || []);
                     },
                 }],
                 eventClick: function(calEvent, jsEvent, view) {
