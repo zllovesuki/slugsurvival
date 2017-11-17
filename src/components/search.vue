@@ -272,9 +272,6 @@ module.exports = {
             this.$emit('close')
         },
         cb: function(param) {
-            if (this.$store.getters.Tracker !== null) {
-                this.$store.getters.Tracker.trackEvent('searchCb', 'clicked', this.selectedTermId + '_' + param.c + '-' + param.s)
-            }
             this.callback(param)
         },
         showGE: function() {

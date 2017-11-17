@@ -68,7 +68,9 @@ var self = module.exports = {
                         _.getters.Tracker.trackEvent('loadAutosave', 'removed', object.deferredRemoval.length)
                     }
                 }
-                return;
+                if (_.getters.Tracker !== null) {
+                    _.getters.Tracker.trackEvent('loadAutosave', 'success', object.events.length)
+                }
             })
         }.bind(this))
     },
@@ -1586,6 +1588,9 @@ var self = module.exports = {
             ].join('')
             _.getters.alert.okBtn('Acknowledge').alert(html).then(function(resolved) {
                 resolved.event.preventDefault();
+                if (_.getters.Tracker !== null) {
+                    _.getters.Tracker.trackEvent('disclaimer', 'shown')
+                }
         //        return storage.setItem('disclaimerShown', true)
             })
         //})

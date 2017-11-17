@@ -235,7 +235,7 @@ module.exports = {
                             }
 
                             if (self.$store.getters.Tracker !== null) {
-                                self.$store.getters.Tracker.trackEvent('searchCb', 'add', termId + '_' + course.c + '-' + course.s)
+                                self.$store.getters.Tracker.trackEvent('searchCb', 'addCourse', termId + '_' + course.c + '-' + course.s)
                             }
 
                             return self.$store.dispatch('pushToEventSource', {

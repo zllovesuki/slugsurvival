@@ -94,6 +94,9 @@ module.exports = {
         },
         hasFinalSchedule: function() {
             return (typeof this.$store.getters.finalSchedule[this.termId] !== 'undefined')
+        },
+        Tracker: function() {
+            return this.$store.getters.Tracker
         }
     },
     methods: {
@@ -125,9 +128,11 @@ module.exports = {
             .confirm('Remove ' + calEvent.course.c + ' from calendar?')
             .then(function(resolved) {
                 resolved.event.preventDefault();
-                if (resolved.buttonClicked !== 'ok') return;
-                if (self.$store.getters.Tracker !== null) {
-                    self.$store.getters.Tracker.trackEvent('term', 'remove', termId + '_' + calEvent.number)
+                if (resolved.buttonClicked !== 'ok') {
+                    if (self.Tracker !== null) {
+                        self.Tracker.trackEvent('term', 'removeBack', termId + '_' + calEvent.number)
+                    }
+                    return
                 }
                 return self.$store.dispatch('removeFromSource', {
                     termId: termId,
@@ -135,6 +140,9 @@ module.exports = {
                 }).then(function() {
                     self.$store.dispatch('refreshCalendar')
                     self.alert.success('Removed!');
+                    if (self.Tracker !== null) {
+                        self.Tracker.trackEvent('term', 'removeCourse', termId + '_' + calEvent.number)
+                    }
                 })
             });
         },
@@ -162,6 +170,11 @@ module.exports = {
                             })
                         })
                     })
+                })
+                .then(function() {
+                    if (self.Tracker !== null) {
+                        self.Tracker.trackEvent('term', 'jumpOutAwait')
+                    }
                 })
             })
         },
@@ -198,17 +211,27 @@ module.exports = {
                             termId: termId,
                             courseNum: calEvent.number
                         })
+                        .then(function() {
+                            if (self.Tracker !== null) {
+                                self.Tracker.trackEvent('term', 'addCourse', termId + '_' + calEvent.number)
+                            }
+                        })
                     } else {
                         return self.$store.dispatch('pushSectionToEventSource', {
                             termId: termId,
                             courseNum: calEvent.number,
                             sectionNum: calEvent.sectionNum
                         })
+                        .then(function() {
+                            if (self.Tracker !== null) {
+                                self.Tracker.trackEvent('term', 'addSection', termId + '_' + calEvent.number + '_' + calEvent.sectionNum)
+                            }
+                        })
                     }
                 })
                 .then(function() {
                     self.$store.dispatch('refreshCalendar')
-                    self.alert.success(self.flatCourses[termId][calEvent.number].c + ' added to the planner!');
+                    self.alert.success(self.flatCourses[termId][calEvent.number].c + ' added to the planner!')
                 })
             }
 
@@ -240,14 +263,35 @@ module.exports = {
                         if (self.lock === true || self.showFinal) {
                             return self.alert.okBtn('OK').alert(html);
                         }else{
+                            try {
+                                if (self.Tracker !== null) {
+                                    if (typeof calEvent.sectionNum === 'undefined') {
+                                        self.Tracker.trackEvent('termEvent', 'courseClicked', termId + '_' + calEvent.number)
+                                    }else{
+                                        self.Tracker.trackEvent('termEvent', 'sectionClicked', termId + '_' + calEvent.number + '_' + calEvent.sectionNum)
+                                    }
+                                }
+                            }catch(e) {}
+
                             return self.alert
                             .okBtn(isSection ? 'Change Section' : 'Remove')
                             .cancelBtn("Go Back")
                             .confirm(html)
                             .then(function(resolved) {
                                 resolved.event.preventDefault();
-                                if (resolved.buttonClicked !== 'ok') return;
+                                if (resolved.buttonClicked !== 'ok') {
+                                    if (self.Tracker !== null) {
+                                        self.Tracker.trackEvent('termEvent', 'back', termId + '_' + calEvent.number)
+                                    }
+                                    return
+                                }
                                 if (isSection) {
+                                    try {
+                                        if (self.Tracker !== null) {
+                                            self.Tracker.trackEvent('termEvent', 'changeSection', termId + '_' + calEvent.number)
+                                        }
+                                    }catch(e) {}
+
                                     return self.displaySectionsOnCalendar(calEvent.number);
                                 }else{
                                     return self.promptToRemove(calEvent);
@@ -261,6 +305,13 @@ module.exports = {
         promptAddClass: function(course) {
             var self = this;
             var termId = this.termId;
+
+            try {
+                if (this.$store.getters.Tracker !== null) {
+                    this.$store.getters.Tracker.trackEvent('searchCb', 'clicked', termId + '_' + course.c + '-' + course.s)
+                }
+            }catch(e) {}
+            
             var code = helper.checkForConflict(this.dateMap, this.$store.getters.eventSource[termId], course);
             var alertHandle = function() {};
 
@@ -291,20 +342,23 @@ module.exports = {
                         .then(function(resolved) {
                             resolved.event.preventDefault();
                             if (resolved.buttonClicked !== 'ok') {
-                                if (self.$store.getters.Tracker !== null) {
-                                    self.$store.getters.Tracker.trackEvent('searchCb', 'back', termId + '_' + course.c + '-' + course.s)
+                                if (self.Tracker !== null) {
+                                    self.Tracker.trackEvent('searchCb', 'back', termId + '_' + course.c + '-' + course.s)
                                 }
                                 throw new Error();
                             }
-                            if (self.$store.getters.Tracker !== null) {
-                                self.$store.getters.Tracker.trackEvent('term', 'add', termId + '_' + course.num)
-                            }
                             if (multiple.length > 1) {
+                                // We will track the actual event when user actually clicks
                                 return self.displayMultipleOnCalendar(multiple)
                             }else{
                                 return self.$store.dispatch('pushToEventSource', {
                                     termId: termId,
                                     courseObj: course
+                                })
+                                .then(function() {
+                                    if (self.Tracker !== null) {
+                                        self.Tracker.trackEvent('term', 'addCourse', termId + '_' + course.num)
+                                    }
                                 })
                             }
                         }).then(function() {
@@ -391,16 +445,16 @@ module.exports = {
             .then(function(blob) {
                 self.$store.dispatch('hideSpinner')
                 saveAs(blob, 'Schedule for ' + self.$store.getters.termName + '.png');
-                if (self.$store.getters.Tracker !== null) {
-                    self.$store.getters.Tracker.trackEvent('saveCalendarAsImage', 'clicked')
+                if (self.Tracker !== null) {
+                    self.Tracker.trackEvent('saveCalendarAsImage', 'clicked')
                 }
             })
         },
         saveCalendarAsICS: function() {
             var self = this;
             self.$store.dispatch('exportICS');
-            if (self.$store.getters.Tracker !== null) {
-                self.$store.getters.Tracker.trackEvent('saveCalendarAsICS', 'clicked')
+            if (self.Tracker !== null) {
+                self.Tracker.trackEvent('saveCalendarAsICS', 'clicked')
             }
         },
         bookmark: function() {
@@ -416,8 +470,8 @@ module.exports = {
                 .okBtn('I\'m Done!')
                 .alert(html)
 
-                if (self.$store.getters.Tracker !== null) {
-                    self.$store.getters.Tracker.trackEvent('bookmark', 'clicked')
+                if (self.Tracker !== null) {
+                    self.Tracker.trackEvent('bookmark', 'clicked')
                 }
 
                 setTimeout(function() {
@@ -461,8 +515,8 @@ module.exports = {
             .okBtn('OK')
             .alert(html);
 
-            if (this.$store.getters.Tracker !== null) {
-                this.$store.getters.Tracker.trackEvent('showShareMenu', 'clicked')
+            if (this.Tracker !== null) {
+                this.Tracker.trackEvent('showShareMenu', 'clicked')
             }
         },
         whyReadOnly: function() {

@@ -342,6 +342,13 @@ module.exports = {
         },
         addToNotifyList: function(course) {
             var self = this;
+
+            try {
+                if (this.$store.getters.Tracker !== null) {
+                    this.$store.getters.Tracker.trackEvent('searchCb', 'clicked', termId + '_' + course.c + '-' + course.s)
+                }
+            }catch(e) {}
+
             return self.$store.dispatch('getCourseDom', {
                 termId: self.termCode,
                 courseObj: course,
@@ -354,7 +361,10 @@ module.exports = {
                 .confirm(html)
                 .then(function(resolved) {
                     resolved.event.preventDefault();
-                    if (resolved.buttonClicked !== 'ok') return;
+                    if (resolved.buttonClicked !== 'ok') {
+                        self.$store.getters.Tracker.trackEvent('enrollment', 'back', self.termCode + '_' + course.num)
+                        return
+                    }
                     self.alert.success(course.c + ' added to the list!');
                     self.courses.push(course);
                     if (self.$store.getters.Tracker !== null) {
