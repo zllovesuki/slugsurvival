@@ -94,5 +94,8 @@ module.exports = {
     },
     MobileDetect: function(state) {
         return state.MobileDetect
+    },
+    inflight: function(state) {
+        return state.inflight
     }
 }

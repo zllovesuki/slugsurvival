@@ -188,5 +188,8 @@ module.exports = {
     },
     saveMobileDetect: function(state, md) {
         state.MobileDetect = md;
+    },
+    inflight: function(state, isInflight) {
+        state.inflight = (isInflight === true)
     }
 }

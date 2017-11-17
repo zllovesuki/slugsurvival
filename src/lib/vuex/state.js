@@ -71,6 +71,7 @@ module.exports = {
 
     blockCheckVersion: false,
     shouldAddMargin: false,
+    inflight: false,
 
     finalSchedule: null,
     showFinal: false,

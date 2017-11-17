@@ -1004,6 +1004,10 @@ var self = module.exports = {
         _.commit('removeFromSource', payload);
     },
     _showInstructorRMP: function(_, string) {
+        if (_.getters.inflight) return
+
+        _.commit('inflight', true)
+
         _.dispatch('showSpinner')
         var split = string.split('+');
         var termId = split[0], courseNum = split[1];
@@ -1079,6 +1083,7 @@ var self = module.exports = {
             }
         }.bind(this))
         .finally(function() {
+            _.commit('inflight', false)
             _.dispatch('hideSpinner')
         }.bind(this))
     },
@@ -1149,6 +1154,10 @@ var self = module.exports = {
         })
     },
     _showRealTimeEnrollment: function(_, string) {
+        if (_.getters.inflight) return
+
+        _.commit('inflight', true)
+
         _.dispatch('showSpinner')
         var getSeatBySectionNum = function(seats, secNum) {
             return seats.filter(function(el) {
@@ -1229,6 +1238,7 @@ var self = module.exports = {
                     _.getters.Tracker.trackEvent('realTimeEnrollment', 'empty', termCode + '_' + courseNum)
                 }
             }
+            _.commit('inflight', false)
             _.dispatch('hideSpinner')
         }.bind(this))
     },
