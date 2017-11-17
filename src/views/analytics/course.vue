@@ -48,7 +48,7 @@
     				<div class="clearfix">
                         <div class="overflow-hidden" v-show="compacted.length > 0">
                             <table class="table-light">
-                                <thead class="bg-darken-1 h6">
+                                <thead class="bg-silver h6">
                                     <th>Course</th>
                                     <th>Excess Demand</th>
                                     <th>Waitlisted</th>
@@ -90,7 +90,7 @@
     				<div class="clearfix">
                         <div class="overflow-hidden" v-show="heat.length > 0">
                             <table class="table-light">
-                                <thead class="bg-darken-1 h6">
+                                <thead class="bg-silver h6">
                                     <th>Course</th>
                                     <th>Changes</th>
                                 </thead>
