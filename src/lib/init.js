@@ -17,6 +17,7 @@ module.exports = function(_, router) {
     })
 
     router.afterEach(function(to, from) {
+        if (from.name === null) return
         if (_.getters.Tracker !== null) {
             _.getters.Tracker.setCustomUrl(window.location.origin + to.path)
             _.getters.Tracker.setDocumentTitle(to.name)
