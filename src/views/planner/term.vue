@@ -548,6 +548,9 @@ module.exports = {
             .catch(function(e) {
                 // hash was used instead of local copy
                 self.lock = true;
+                if (self.Tracker !== null) {
+                    self.Tracker.trackEvent('term', 'loadBookmark')
+                }
             })
         }).then(function() {
             self.ready = true;
