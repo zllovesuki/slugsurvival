@@ -197,13 +197,14 @@ module.exports = {
             var termId = helper.nameToCode([year, quarter].join(' '))
 
             var department = result.code.slice(0, result.code.indexOf(' '))
-            var number = result.code.slice(result.code.indexOf(' ') + 1)
+            var number = result.code.slice(result.code.indexOf(' ') + 1, result.code.lastIndexOf('-') - 1)
+            var section = result.code.slice(result.code.lastIndexOf('-') + 2)
 
             return self.$store.dispatch('fetchTermCourses', termId)
             .then(function() {
                 try {
                     var course = self.sortedCourses[termId][department].filter(function(course) {
-                        return course.c === result.code;
+                        return course.c === [department, number].join(' ') && course.s === section;
                     })[0];
                 }catch (e) {
                     console.log(e)
@@ -262,6 +263,9 @@ module.exports = {
                         if (code.toLowerCase().replace(/\s/g, '').indexOf(this.search.code.toLowerCase().replace(/\s/g, '')) !== -1) {
                             var keys = Object.keys(this.historicData[quarter][code]);
                             results.push({
+                                department: code.slice(0, code.indexOf(' ')),
+                                number: code.slice(code.indexOf(' ') + 1, code.lastIndexOf('-') - 1),
+                                section: code.slice(code.lastIndexOf('-') + 2),
                                 code: code,
                                 qtr: quarter.charAt(0).toUpperCase() + quarter.slice(1),
                                 //pos: self.historicFrequency[quarter].indexOf(code) !== -1 ? 'Yes' : 'No',
@@ -280,6 +284,9 @@ module.exports = {
                             if (code.toLowerCase().replace(/\s/g, '').indexOf(this.search.code.toLowerCase().replace(/\s/g, '')) !== -1) {
                                 var keys = Object.keys(this.historicData.ge[geQuarter][this.search.geCode][code]);
                                 results.push({
+                                    department: code.slice(0, code.indexOf(' ')),
+                                    number: code.slice(code.indexOf(' ') + 1, code.lastIndexOf('-') - 1),
+                                    section: code.slice(code.lastIndexOf('-') + 2),
                                     code: code,
                                     qtr: geQuarter.charAt(0).toUpperCase() + geQuarter.slice(1),
                                     //pos: self.historicFrequency[geQuarter].indexOf(code) !== -1 ? 'Yes' : 'No',
