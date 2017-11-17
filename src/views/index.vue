@@ -28,7 +28,7 @@
                             v-show="search.insufficient && search.code.length > 0"
                             v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }"
                         >
-                            ...Need three or more characters
+                            ...Need two or more characters
                         </div>
                         <div
                             class="ml1 block"
@@ -39,7 +39,7 @@
                         </div>
                         <div class="overflow-scroll col col-12 block" v-show="search.results.length > 0 && !search.dirty">
                             <table class="table-light">
-                                <thead class="bg-darken-1 h6">
+                                <thead class="bg-silver h6">
                                     <th>Course</th>
                                     <th>Quarter</th>
                                     <th>Current</th>
@@ -48,7 +48,7 @@
                                     <th>Frequency</th>-->
                                 </thead>
                                 <tbody v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }">
-                                    <tr v-for="result in search.results">
+                                    <tr v-for="result in search.results" v-bind:class="{ 'bg-darken-1': result.darken }">
                                         <td class="nowrap clickable" @click="promptShowCourse(result, result.occur[0])">{{ result.code }}</td>
                                         <td class="nowrap clickable" @click="promptShowCourse(result, result.occur[0])">{{ result.qtr }}</td>
                                         <td class="nowrap clickable" @click="promptShowCourse(result, result.occur[0])">{{ result.occur[0] }}</td>
@@ -70,7 +70,7 @@
                         <div
                             class="ml1 col col-12 block"
                             v-show="
-                                (search.geCode.length > 0 || search.code.length >= 3)
+                                (search.geCode.length > 0 || search.code.length >= 2)
                                 && search.results.length === 0 && !search.dirty
                                 "
                             v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }"
@@ -298,10 +298,28 @@ module.exports = {
                     }
                 }
             }
-            results = this.groupBy(results, 'code');
             var _results = [];
-            for (var code in results) {
-                _results = _results.concat(results[code]);
+            var darken = false
+            var groupByDepartment = this.groupBy(results, 'department');
+            var groupByNumber = []
+            var groupBySection = []
+            for (var department in groupByDepartment) {
+                groupByNumber = this.groupBy(groupByDepartment[department], 'number')
+                for (var number in groupByNumber) {
+                    groupBySection = this.groupBy(groupByNumber[number], 'section')
+                    for (var section in groupBySection) {
+                        groupBySection[section].forEach(function(result) {
+                            result.darken = darken
+                            _results.push(result)
+                        })
+                        darken = !darken
+                    }
+                    /*groupByNumber[number].forEach(function(result) {
+                        result.darken = darken
+                        _results.push(result)
+                    })
+                    darken = !darken*/
+                }
             }
             this.search.results = _results;
             this.search.dirty = false;
@@ -322,7 +340,7 @@ module.exports = {
                 this.search.code = ''
                 this.search.geCode = ''
             }
-            if (this.search.code.length < 3 && this.search.geCode === '') {
+            if (this.search.code.length < 2 && this.search.geCode === '') {
                 this.search.results = [];
                 this.search.insufficient = true;
                 this.search.dirty = false;
