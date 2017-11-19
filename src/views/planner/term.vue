@@ -70,7 +70,8 @@ module.exports = {
             chooseSectionModal: false,
             sectionList: [],
             lock: false,
-            inflight: false
+            inflight: false,
+            unsubscribeRealtimeFn: function() {}
         }
     },
     computed: {
@@ -528,6 +529,26 @@ module.exports = {
             this.alert
             .okBtn('OK')
             .alert(html)
+        },
+        subscribeRealtime: function() {
+            var self = this
+            this.unsubscribeRealtimeFn = this.$store.subscribe(function(mutation) {
+                if (mutation.type !== 'pushChanges') return
+                var delta = mutation.payload
+                if (delta.termCode != self.termId) return
+                var events = self.$store.getters.eventSource[self.termId]
+                if (typeof events === 'undefined') return
+                var courseMap = self.$store.getters.eventSource[self.termId].reduce(function(numbers, evt) {
+                    if (numbers[evt.number] !== true) {
+                        numbers[evt.number] = evt.course
+                    }
+                    return numbers
+                }, {})
+                if (typeof courseMap[delta.courseNum] !== 'undefined') {
+                    // *explosion*
+                    self.alert.success('Enrollment changes on ' + courseMap[delta.courseNum].c + '!')
+                }
+            })
         }
     },
     mounted: function() {
@@ -535,7 +556,7 @@ module.exports = {
         this.$store.dispatch('setTitle', 'Planner');
         if (self.showFinal) self.$store.dispatch('filpSchedule');
         return self.$store.dispatch('fetchTermCourses').then(function() {
-            self.$store.commit('setTermName', self.$store.getters.termsList[self.$store.getters.termId])
+            self.$store.commit('setTermName', self.$store.getters.termsList[self.termId])
             return self.$store.dispatch('decodeHash')
             .then(function() {
                 // no valid was decoded
@@ -564,12 +585,14 @@ module.exports = {
             self.$store.getters.alert.error('Cannot load course data!')
         }).finally(function() {
             if (!self.lock && self.ready) self.$store.commit('shouldAddMargin', true);
+            self.subscribeRealtime()
             self.$store.dispatch('hideSpinner')
         })
     },
     beforeDestroy: function() {
         var termId = this.termId;
         $('#calendar-' + termId).fullCalendar('destroy')
+        this.unsubscribeRealtimeFn()
     }
 }
 </script>
