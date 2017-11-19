@@ -25,6 +25,11 @@ var router = new VueRouter({
             component: require('./views/analytics/index.vue'),
             children: [
                 {
+                    path: 'realtime',
+                    name: 'analyticsRealtime',
+                    component: require('./views/analytics/realtime.vue')
+                },
+                {
                     path: ':termId?/:courseNum?',
                     name: 'analyticsCourse',
                     component: require('./views/analytics/course.vue')

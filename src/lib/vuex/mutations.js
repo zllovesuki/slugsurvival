@@ -93,7 +93,7 @@ module.exports = {
         state.historicFrequency = frequency;
     },
     buildIndexedSearch: function(state, termId) {
-        console.log('building index on the fly')
+        console.log(termId + ': building index on the fly')
 
         var obj, _obj = {};
         state.search[termId] = lunr(function() {

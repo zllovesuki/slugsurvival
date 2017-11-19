@@ -139,10 +139,10 @@ var self = module.exports = {
         return loadOnlineTimestamp()
         .then(function(timestamp) {
             online = timestamp;
-            console.log('fetched online timestamp')
+            console.log('base: fetched online timestamp')
         })
         .catch(function(e) {
-            console.log('fail to fetch online timestamp, checking local copy');
+            console.log('base: fail to fetch online timestamp, checking local copy');
         })
         .finally(function() {
             return loadOfflineTimestamp().then(function(offline) {
@@ -160,32 +160,32 @@ var self = module.exports = {
                     if (online[0] !== offline[0]) {
                         invalid.yes = true;
                         invalid.termsList = true;
-                        console.log('terms list timestamp differs');
+                        console.log('base: terms list timestamp differs');
                     }
                     if (online[1] !== offline[1]) {
                         invalid.yes = true;
                         invalid.rmp = true;
-                        console.log('rmp mapping timestamp differs');
+                        console.log('base: rmp mapping timestamp differs');
                     }
                     if (online[2] !== offline[2]) {
                         invalid.yes = true;
                         invalid.subjects = true;
-                        console.log('subjects timestamp differs');
+                        console.log('base: subjects timestamp differs');
                     }
                     if (online[3] !== offline[3]) {
                         invalid.yes = true;
                         invalid.mm = true;
-                        console.log('major minor timestamp differs');
+                        console.log('base: major minor timestamp differs');
                     }
                     if (online[4] !== offline[4]) {
                         invalid.yes = true;
                         invalid.historicData = true;
-                        console.log('historic data timestamp differs');
+                        console.log('base: historic data timestamp differs');
                     }
                     if (online[5] !== offline[5]) {
                         invalid.yes = true;
                         invalid.finalSchedule = true;
-                        console.log('final schedule timestamp differs');
+                        console.log('base: final schedule timestamp differs');
                     }
                 }else{
                     // possibly no connectivity
@@ -196,7 +196,7 @@ var self = module.exports = {
                         || offline[4] === null
                         || offline[5] === null) {
                         // We don't have a local copy
-                        console.log(('no local copies to fallback'));
+                        console.log(('base: no local copies to fallback'));
                         invalid = {
                             yes: true,
                             termsList: true,
@@ -213,8 +213,8 @@ var self = module.exports = {
                     }
                 }
 
-                if (invalid.yes) console.log('some or all local copies are outdated')
-                else console.log('local copies valid')
+                if (invalid.yes) console.log('base: some or all local copies are outdated')
+                else console.log('base: local copies valid')
 
                 return loadFromStorage(invalid, online).then(function () {
                     return Bluebird.reject({
@@ -285,7 +285,7 @@ var self = module.exports = {
             return true;
         })
         .catch(function(e) {
-            console.log('loadBasicDataFromOnline rejection')
+            console.log('base: loadBasicDataFromOnline rejection')
             console.log(e);
             return false;
         })
@@ -356,10 +356,10 @@ var self = module.exports = {
         return loadOnlineTimestamp()
         .then(function(timestamp) {
             online = timestamp;
-            console.log('fetched online timestamp')
+            console.log(termId + ': fetched online timestamp')
         })
         .catch(function(e) {
-            console.log('fail to fetch online timestamp, checking local copy');
+            console.log(termId + ': fail to fetch online timestamp, checking local copy');
         })
         .finally(function() {
             return loadOfflineTimestamp().then(function(offline) {
@@ -373,19 +373,19 @@ var self = module.exports = {
                     if (online[0] !== offline[0]) {
                         invalid.yes = true;
                         invalid.coursesData = true;
-                        console.log('courses data timestamp differs');
+                        console.log(termId + ': courses data timestamp differs');
                     }
                     if (online[1] !== offline[1]) {
                         invalid.yes = true;
                         invalid.courseInfo = true;
-                        console.log('course info timestamp differs');
+                        console.log(termId + ': course info timestamp differs');
                     }
                 }else{
                     // possibly no connectivity
                     if (offline[0] === null
                         || offline[1] === null) {
                         // We don't have a local copy
-                        console.log(('no local copies to fallback'));
+                        console.log((termId + ': no local copies to fallback'));
                         invalid = {
                             yes: true,
                             coursesData: true,
@@ -398,8 +398,8 @@ var self = module.exports = {
                     }
                 }
 
-                if (invalid.yes) console.log('some or all local copies are outdated')
-                else console.log('local copies valid')
+                if (invalid.yes) console.log(termId + ': some or all local copies are outdated')
+                else console.log(termId + ': local copies valid')
 
                 return loadFromStorage(invalid).then(function () {
                     return Bluebird.reject({
@@ -451,7 +451,7 @@ var self = module.exports = {
             return true;
         })
         .catch(function(e) {
-            console.log('loadCourseDataFromOnline rejection')
+            console.log(termId + ': loadCourseDataFromOnline rejection')
             console.log(e);
             return false;
         })
@@ -581,7 +581,7 @@ var self = module.exports = {
     decodeHash: function(_) {
         var termId = _.getters.termId;
         try {
-            console.log('trying to restore events from hash')
+            console.log(termId + ': trying to restore events from hash')
             var hash = window.location.hash.substring(1);
             var string = LZString.decompressFromEncodedURIComponent(hash);
             if (string.length === 0) {
@@ -589,7 +589,7 @@ var self = module.exports = {
             }
             var array = JSON.parse(string);
             if (typeof array.forEach !== 'undefined') {
-                console.log('valid hash found')
+                console.log(termId + ': valid hash found')
                 var split;
                 var course;
 
@@ -614,12 +614,12 @@ var self = module.exports = {
                     return Bluebird.reject();
                 })
             }else{
-                console.log('fallback to local copy (inner)')
+                console.log(termId + ': fallback to local copy (inner)')
                 return Bluebird.resolve();
             }
         }catch(e) {
             console.log(e);
-            console.log('fallback to local copy (outer)')
+            console.log(termId + ': fallback to local copy (outer)')
             return Bluebird.resolve();
         }
     },
