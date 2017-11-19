@@ -83,15 +83,18 @@
 				<form v-on:submit.prevent class="h5">
                     <label for="recipient" class="mt2 block">
                         <input type="text" class="col-8 mb1 field inline-block" v-model="sub.recipient" placeholder="phone number or email">
-                        <button type="submit" v-bind:class="'col-3 btn ml1 mb1 inline-block ' + color" :disabled="sub.verified || !sub.recipient.length > 0 || (sub.counter > 0 && sub.counter < 60) || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
+                        <button type="submit" class="col-3 btn ml1 mb1 inline-block black" :disabled="sub.verified || sub.cooldown || !sub.recipient.length > 0 || (sub.counter > 0 && sub.counter < 60) || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
                     </label>
                     <label for="code" class="mt2 block" v-if="sub.sent">
                         <input type="text" class="col-8 mb1 field inline-block" v-model="sub.code" placeholder="passcode received">
-                        <button type="submit" v-bind:class="'col-3 btn ml1 mb1 inline-block ' + color" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
+                        <button type="submit" class="col-3 btn ml1 mb1 inline-block black" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
                     </label>
-                    <span class="btn black h6 muted not-clickable">
+                    <span class="btn black h6 muted not-clickable" v-show="!sub.sent">
                         Please include country code for your phone number. <br />
                         For example: 18314590111
+                    </span>
+                    <span class="btn black h6 clickable" @click="hasCode" v-show="!sub.sent">
+                        I already have a code
                     </span>
                     <hr />
 					<span class="block mb1">
@@ -121,9 +124,10 @@ module.exports = {
                 recipient: '',
                 code: '',
                 text: 'Get code',
-                counter: 60,
+                counter: 120,
                 sent: false,
                 sendInflight: false,
+                cooldown: false,
                 verified: false,
                 verifyInflight: false,
                 shouldResend: false,
@@ -159,6 +163,10 @@ module.exports = {
         }
     },
     methods: {
+        hasCode: function() {
+            this.sub.sent = true
+            this.sub.text = 'Sent'
+        },
         showSub: function() {
             if (this.courses.length === 0) return this.alert.error('Add classes first!')
             this.sub.recipient = '';
@@ -191,7 +199,8 @@ module.exports = {
             .then(function(res) {
                 self.$store.dispatch('hideSpinner')
                 self.sub.sendInflight = false;
-                self.sub.counter = 59;
+                self.sub.cooldown = true;
+                self.sub.counter -= 1;
                 if (!res.ok) {
                     return self.alert.error(res.message);
                 }
@@ -201,7 +210,8 @@ module.exports = {
                         self.$nextTick(function() {
                             self.sub.text = 'Resend';
                             self.sub.shouldResend = true;
-                            self.sub.counter = 60;
+                            self.sub.cooldown = false;
+                            self.sub.counter = 120;
                         })
                         return clearInterval(self.sub.timer);
                     }
@@ -258,6 +268,7 @@ module.exports = {
                     self.sub.verified = true;
                     self.sub.text = 'Verified';
                     self.sub.shouldResend = false;
+                    self.sub.cooldown = false;
                     self.sub.sent = false;
                     self.sub.counter = 300;
                     self.sub.modal = false;
