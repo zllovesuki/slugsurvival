@@ -257,6 +257,13 @@ module.exports = {
         },
         showCourse: function(termId, course) {
             var self = this;
+
+            try {
+                if (self.$store.getters.Tracker !== null) {
+                    self.$store.getters.Tracker.trackEvent('enrollment', 'click', termId + '_' + course.num)
+                }
+            }catch(e) {}
+
             return self.$store.dispatch('getCourseDom', {
                 termId: termId,
                 courseObj: course,
