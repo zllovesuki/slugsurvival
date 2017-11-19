@@ -200,5 +200,8 @@ module.exports = {
     },
     pushChanges: function(state, delta) {
         state.pushChanges.unshift(delta)
+    },
+    saveUnsubscribeRealtimeFn: function(state, fn) {
+        state.unsubscribeRealtimeFn = fn
     }
 }

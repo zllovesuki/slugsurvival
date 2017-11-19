@@ -434,6 +434,7 @@ module.exports = {
             self.ready = true;
             self.$nextTick(function() {
                 self.initSelectize();
+                self.$store.dispatch('subscribeRealtime')
                 self.$store.dispatch('hideSpinner')
             })
         })
@@ -443,6 +444,7 @@ module.exports = {
         Object.keys(self.IDs).forEach(function(id) {
             $('#' + self.IDs[id]).selectize()[0].selectize.destroy()
         })
+        this.$store.getters.unsubscribeRealtimeFn()
     }
 }
 </script>

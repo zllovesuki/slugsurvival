@@ -70,8 +70,7 @@ module.exports = {
             chooseSectionModal: false,
             sectionList: [],
             lock: false,
-            inflight: false,
-            unsubscribeRealtimeFn: function() {}
+            inflight: false
         }
     },
     computed: {
@@ -529,26 +528,6 @@ module.exports = {
             this.alert
             .okBtn('OK')
             .alert(html)
-        },
-        subscribeRealtime: function() {
-            var self = this
-            this.unsubscribeRealtimeFn = this.$store.subscribe(function(mutation) {
-                if (mutation.type !== 'pushChanges') return
-                var delta = mutation.payload
-                if (delta.termCode != self.termId) return
-                var events = self.$store.getters.eventSource[self.termId]
-                if (typeof events === 'undefined') return
-                var courseMap = self.$store.getters.eventSource[self.termId].reduce(function(numbers, evt) {
-                    if (numbers[evt.number] !== true) {
-                        numbers[evt.number] = evt.course
-                    }
-                    return numbers
-                }, {})
-                if (typeof courseMap[delta.courseNum] !== 'undefined') {
-                    // *explosion*
-                    self.alert.success('Enrollment changes on ' + courseMap[delta.courseNum].c + '!')
-                }
-            })
         }
     },
     mounted: function() {
@@ -575,6 +554,7 @@ module.exports = {
             })
         }).then(function() {
             self.ready = true;
+            self.$store.dispatch('subscribeRealtime')
             self.$nextTick(function() {
                 self.initializeCalendar();
                 self.$store.dispatch('refreshCalendar')
@@ -585,14 +565,13 @@ module.exports = {
             self.$store.getters.alert.error('Cannot load course data!')
         }).finally(function() {
             if (!self.lock && self.ready) self.$store.commit('shouldAddMargin', true);
-            self.subscribeRealtime()
             self.$store.dispatch('hideSpinner')
         })
     },
     beforeDestroy: function() {
         var termId = this.termId;
         $('#calendar-' + termId).fullCalendar('destroy')
-        this.unsubscribeRealtimeFn()
+        this.$store.getters.unsubscribeRealtimeFn()
     }
 }
 </script>

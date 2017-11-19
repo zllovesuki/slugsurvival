@@ -5,6 +5,7 @@ module.exports = {
     socket: null,
     pushReady: false,
     pushChanges: [],
+    unsubscribeRealtimeFn: function() {},
 
     MobileDetect: null,
 

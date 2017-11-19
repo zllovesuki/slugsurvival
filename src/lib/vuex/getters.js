@@ -106,5 +106,8 @@ module.exports = {
     },
     pushChanges: function(state) {
         return state.pushChanges
+    },
+    unsubscribeRealtimeFn: function(state) {
+        return state.unsubscribeRealtimeFn
     }
 }

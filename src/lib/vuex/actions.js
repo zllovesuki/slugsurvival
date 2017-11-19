@@ -1745,5 +1745,26 @@ var self = module.exports = {
             _.commit('pushChanges', data)
         })
         _.commit('saveSocket', socket)
+    },
+    subscribeRealtime: function(_) {
+        // TODO: this is an ugly hack
+        var unsubscribeRealtimeFn = window.App.$store.subscribe(function(mutation) {
+            if (mutation.type !== 'pushChanges') return
+            var delta = mutation.payload
+            if (delta.termCode != _.getters.termId) return
+            var events = _.getters.eventSource[_.getters.termId]
+            if (typeof events === 'undefined') return
+            var courseMap = _.getters.eventSource[_.getters.termId].reduce(function(numbers, evt) {
+                if (numbers[evt.number] !== true) {
+                    numbers[evt.number] = evt.course
+                }
+                return numbers
+            }, {})
+            if (typeof courseMap[delta.courseNum] !== 'undefined') {
+                // *explosion*
+                _.getters.alert.success('Enrollment changes on ' + courseMap[delta.courseNum].c + '!')
+            }
+        })
+        _.commit('saveUnsubscribeRealtimeFn', unsubscribeRealtimeFn)
     }
 }
