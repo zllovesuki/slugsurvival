@@ -92,14 +92,26 @@ module.exports = {
         var self = this;
         this.$store.dispatch('setTitle', 'Realtime');
 
-        self.socket = require('socket.io-client')(config.realtimeURL);
-        self.socket.on('connect', function() {
-            console.log('Feeds ready')
-            self.$store.dispatch('hideSpinner')
+        return this.$store.dispatch('fetchAvailableTerms')
+        .then(function(list) {
+            var terms = list.filter(function(term) {
+                return self.termDates[term.code].start !== null;
+            }).sort(function(a, b) {
+                if (a.code > b.code) return -1;
+                else if (a.code < b.code) return 1;
+                else return 0
+            }).slice(0, 2)
+            return Bluebird.map(terms, function(term) {
+                return self.$store.dispatch('fetchTermCourses', term.code)
+            })
         })
-        self.socket.on('delta', function(data) {
-            return self.$store.dispatch('fetchTermCourses', data.termCode)
-            .then(function() {
+        .then(function() {
+            self.socket = require('socket.io-client')(config.realtimeURL);
+            self.socket.on('connect', function() {
+                console.log('Feeds ready')
+                self.$store.dispatch('hideSpinner')
+            })
+            self.socket.on('delta', function(data) {
                 self.changes.unshift(data)
             })
         })
