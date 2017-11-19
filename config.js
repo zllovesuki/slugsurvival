@@ -5,6 +5,7 @@ module.exports = {
     dbURL: require('./config/config.json').dbURL,
     trackingURL: require('./config/config.json').trackingURL,
     notifyURL: require('./config/config.json').notifyURL,
+    realtimeURL: require('./config/config.json').realtimeURL,
     monitoredTerm: require('./config/config.json').monitoredTerm,
     analytics: require('./config/config.json').analytics
 }
