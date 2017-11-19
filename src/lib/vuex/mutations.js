@@ -191,5 +191,14 @@ module.exports = {
     },
     inflight: function(state, isInflight) {
         state.inflight = (isInflight === true)
+    },
+    saveSocket: function(state, socket) {
+        state.socket = socket
+    },
+    changePushReady: function(state, readyState) {
+        state.pushReady = readyState
+    },
+    pushChanges: function(state, delta) {
+        state.pushChanges.unshift(delta)
     }
 }

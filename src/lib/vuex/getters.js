@@ -97,5 +97,14 @@ module.exports = {
     },
     inflight: function(state) {
         return state.inflight
+    },
+    socket: function(state) {
+        return state.socket
+    },
+    pushReady: function(state) {
+        return state.pushReady
+    },
+    pushChanges: function(state) {
+        return state.pushChanges
     }
 }

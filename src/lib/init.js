@@ -6,6 +6,7 @@ module.exports = function(_, router) {
 
     _.dispatch('checkVersion')
     _.dispatch('addOnlineOfflineListener')
+    _.dispatch('realtime')
 
     _.commit('saveMobileDetect', new MobileDetect(window.navigator.userAgent))
 

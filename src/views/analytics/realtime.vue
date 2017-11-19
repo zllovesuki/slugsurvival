@@ -60,9 +60,7 @@ module.exports = {
     data: function () {
         return {
             helper: require('../../lib/vuex/helper'),
-            isMobile: false,
-            socket: null,
-            changes: []
+            isMobile: false
         }
     },
     computed: {
@@ -86,6 +84,9 @@ module.exports = {
         },
         termName: function() {
             return this.$store.getters.termName;
+        },
+        changes: function() {
+            return this.$store.getters.pushChanges;
         }
     },
     mounted: function() {
@@ -106,18 +107,8 @@ module.exports = {
             })
         })
         .then(function() {
-            self.socket = require('socket.io-client')(config.realtimeURL);
-            self.socket.on('connect', function() {
-                console.log('Feeds ready')
-                self.$store.dispatch('hideSpinner')
-            })
-            self.socket.on('delta', function(data) {
-                self.changes.unshift(data)
-            })
+            self.$store.dispatch('hideSpinner')
         })
-    },
-    beforeDestroy: function() {
-        this.socket.disconnect()
     },
     created: function() {
         this.isMobile = this.$store.getters.MobileDetect.phone()

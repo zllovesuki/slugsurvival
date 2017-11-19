@@ -1730,5 +1730,20 @@ var self = module.exports = {
             _.dispatch('refreshCalendar')
         }
         _.commit('flipFinalSchedule')
+    },
+    realtime: function(_) {
+        var socket = require('socket.io-client')(config.realtimeURL);
+        socket.on('connect', function() {
+            console.log('Push: Feeds ready')
+            _.commit('changePushReady', true)
+        })
+        socket.on('disconnect', function() {
+            console.log('Push: Feeds disconnected')
+            _.commit('changePushReady', false)
+        })
+        socket.on('delta', function(data) {
+            _.commit('pushChanges', data)
+        })
+        _.commit('saveSocket', socket)
     }
 }

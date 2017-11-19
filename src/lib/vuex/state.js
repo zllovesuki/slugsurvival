@@ -2,6 +2,10 @@ var alertify = require('alertify.js');
 
 module.exports = {
 
+    socket: null,
+    pushReady: false,
+    pushChanges: [],
+
     MobileDetect: null,
 
     onlineState: 'online',
@@ -77,5 +81,5 @@ module.exports = {
     showFinal: false,
     eventSnapshot: [],
 
-    alert: alertify.reset().closeLogOnClick(true).logPosition("bottom left").maxLogItems(1)
+    alert: alertify.reset().closeLogOnClick(true).logPosition("bottom left").maxLogItems(3)
 }
