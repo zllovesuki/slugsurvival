@@ -43,6 +43,14 @@
             </div>
             <div class="m0 p2 border-top">
                 <div class="clearfix">
+                    <h3 class="muted">Data Structure</h3>
+                    <p>
+                        Please refer to <pre>https://github.com/zllovesuki/ucsc/blob/master/README.md</pre>
+                    </p>
+                </div>
+            </div>
+            <div class="m0 p2 border-top">
+                <div class="clearfix">
                     <h3 class="muted">Data: Terms Information</h3>
                     <p>
                         <pre>https://data.slugsurvival.com/terms</pre> contains the list of terms in JSON format
