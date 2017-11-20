@@ -35,6 +35,7 @@ module.exports = {
     instructorNameToTidMapping: {},
     instructorStats: {},
     rmpEmptyCounter: 0,
+    enrollmentCheckCounter: {},
 
     historicData: {},
 

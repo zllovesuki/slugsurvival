@@ -92,6 +92,9 @@ module.exports = {
     rmpEmptyCounter: function(state) {
         return state.rmpEmptyCounter
     },
+    enrollmentCheckCounter: function(state) {
+        return state.enrollmentCheckCounter
+    },
     MobileDetect: function(state) {
         return state.MobileDetect
     },

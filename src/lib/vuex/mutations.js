@@ -186,6 +186,10 @@ module.exports = {
     incRMPEmptyCounter: function(state) {
         state.rmpEmptyCounter++
     },
+    incEnrollmentCheckCounter: function(state, courseNum) {
+        if (typeof state.enrollmentCheckCounter[courseNum] === 'undefined') state.enrollmentCheckCounter[courseNum] = 0
+        state.enrollmentCheckCounter[courseNum]++
+    },
     saveMobileDetect: function(state, md) {
         state.MobileDetect = md;
     },

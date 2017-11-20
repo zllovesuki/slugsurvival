@@ -1215,6 +1215,26 @@ var self = module.exports = {
                 if (_.getters.Tracker !== null) {
                     _.getters.Tracker.trackEvent('realTimeEnrollment', 'success', termCode + '_' + courseNum)
                 }
+
+                _.commit('incEnrollmentCheckCounter', courseNum)
+
+                if (_.getters.enrollmentCheckCounter[courseNum] > 2) {
+                    _.getters.alert
+                    .success('Did you know that you can see changes as they happen?', function(evt) {
+                        evt.preventDefault()
+                        // TODO: ugly hack
+                        try {
+                            if (_.getters.Tracker !== null) {
+                                _.getters.Tracker.trackEvent('realTimeEnrollment', 'redirectToRealtime')
+                            }
+                        }catch (e) {}
+
+                        window.App.$router.push({
+                            name: 'analyticsRealtime'
+                        })
+                    })
+                }
+
             }else if (res.message && res.message.indexOf('not tracked') !== -1) {
                 if (typeof monitorStart === 'undefined') {
                     _.getters.alert.error('This term is not yet being tracked, please check again later.')
