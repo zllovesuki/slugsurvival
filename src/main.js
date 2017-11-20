@@ -54,6 +54,11 @@ var router = new VueRouter({
                     path: 'privacy',
                     name: 'explainPrivacy',
                     component: require('./views/explain/privacy.vue')
+                },
+                {
+                    path: 'opensource',
+                    name: 'openSource',
+                    component: require('./views/explain/opensource.vue')
                 }
             ]
         },

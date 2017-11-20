@@ -30,6 +30,7 @@
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'mainPage' }">Main Page</router-link>
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'explainText' }">What is SlugSurvival?</router-link>
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'explainPrivacy' }">Privacy Policy</router-link>
+                        <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'openSource' }">Open Source</router-link>
                     </div>
                     <div class="clearfix" @click="egg">
                         version {{ version }}
