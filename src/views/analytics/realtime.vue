@@ -16,7 +16,7 @@
 			</div>
 			<div class="m0 p1 border-top">
                 <div class="clearfix">
-                    <div class="overflow-scroll col col-12 block" v-show="changes.length > 0">
+                    <div class="overflow-scroll col col-12 block" v-if="ready && changes.length > 0">
                         <table class="table-light">
                             <thead class="bg-silver h6">
                                 <th>Course</th>
@@ -43,7 +43,7 @@
                     </div>
                     <div
                         class="ml1 col col-12 block h5"
-                        v-show="changes.length === 0"
+                        v-show="changes.length === 0 || !ready"
                         v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }"
                     >
                         No changes yet.
@@ -60,6 +60,7 @@ module.exports = {
     data: function () {
         return {
             helper: require('../../lib/vuex/helper'),
+            ready: false,
             isMobile: false
         }
     },
@@ -107,6 +108,7 @@ module.exports = {
             })
         })
         .then(function() {
+            self.ready = true
             self.$store.dispatch('hideSpinner')
         })
     },
