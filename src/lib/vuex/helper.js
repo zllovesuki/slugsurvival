@@ -367,8 +367,10 @@ var self = module.exports = {
             if (!locts[j].t) continue;
             for (var m = 0, days = locts[j].t.day, length1 = days.length; m < length1; m++) {
                 epochTimes.push({
-                    start: (new Date(dateMap[days[m]] + ' ' + locts[j].t.time.start).valueOf() / 1000),
-                    end: (new Date(dateMap[days[m]] + ' ' + locts[j].t.time.end).valueOf() / 1000)
+                    // NOTE: moment.js is required
+                    // Safari has a totally different behavior of parsing...
+                    start: (new Date(moment(dateMap[days[m]] + ' ' + locts[j].t.time.start)).valueOf() / 1000),
+                    end: (new Date(moment(dateMap[days[m]] + ' ' + locts[j].t.time.end)).valueOf() / 1000)
                 })
             }
         }
