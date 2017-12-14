@@ -8,6 +8,10 @@
                     v-model="search.string"
                     placeholder="ECON 197, Design, Mendes, etc..."
                     v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    spellcheck="false"
                 >
             </h4>
             <span slot="body">

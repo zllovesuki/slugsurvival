@@ -22,6 +22,10 @@
                             v-model="search.string"
                             placeholder="e.g. EE 177, +CC, ECON +PE-H, ..."
                             onmouseover="this.focus()"
+                            autocomplete="off"
+                            autocorrect="off"
+                            autocapitalize="off"
+                            spellcheck="false"
                         >
                         <div
                             class="ml1 block"
