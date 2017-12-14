@@ -60,6 +60,9 @@ module.exports = {
         },
         colorMap: function() {
             return this.$store.getters.colorMap;
+        },
+        Tracker: function() {
+            return this.$store.getters.Tracker
         }
     },
     methods: {
@@ -72,14 +75,22 @@ module.exports = {
     },
     mounted: function() {
         // campaign ends on new year
+        var self = this
         if ((new Date()).getTime() > 1514793600000) return
         Lobibox.notify('success', {
+            onClick: function() {
+                if (self.Tracker !== null) {
+                    self.Tracker.trackEvent('campaign', 'sophia')
+                    self.Tracker.trackLink('https://www.gofundme.com/sophias-lyme-treatment-fund', 'link')
+                }
+                window.open('https://www.gofundme.com/sophias-lyme-treatment-fund')
+                return false;
+            },
             delay: 10000,
             sound: false,
             iconSource: 'fontAwesome',
             title: 'Help Sophia Out!',
             img: 'https://rachel.objectstore.co/img/sophia-me.jpg',
-            onClickUrl: 'https://www.gofundme.com/sophias-lyme-treatment-fund',
             position: 'top right',
             pauseDelayOnHover: true,
             continueDelayOnInactiveTab: false,
