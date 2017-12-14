@@ -69,6 +69,22 @@ module.exports = {
         showFeedback: function() {
             this.$store.getters.alert.okBtn('OK').alert('<a class="btn" href="https://goo.gl/forms/LuDkBkoQodzQLJz92" target="_blank">Found a problem? Click here to report!</a>')
         }
+    },
+    mounted: function() {
+        // campaign ends on new year
+        if ((new Date()).getTime() > 1514793600000) return
+        Lobibox.notify('success', {
+            delay: 10000,
+            sound: false,
+            iconSource: 'fontAwesome',
+            title: 'Help Sophia Out!',
+            img: 'https://rachel.objectstore.co/img/sophia-me.jpg',
+            onClickUrl: 'https://www.gofundme.com/sophias-lyme-treatment-fund',
+            position: 'top right',
+            pauseDelayOnHover: true,
+            continueDelayOnInactiveTab: false,
+            msg: "If you think SlugSurvival has helped you, please consider helping my girlfriend."
+        });
     }
 }
 </script>

@@ -19,7 +19,9 @@ var jsAssets = [
     'assets/js/FileSaver.js',
     'assets/js/dom-to-image.js',
     'assets/js/ics.js',
-    'assets/js/plotly-basic.js'
+    'assets/js/plotly-basic.js',
+    'assets/js/lobibox.js',
+    'assets/js/notifications.js'
 ];
 
 var cssAssets = 'assets/css/*.css';
