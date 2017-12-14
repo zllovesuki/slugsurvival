@@ -14,7 +14,7 @@
                             Your identity remains anonymous.
                         </li>
                         <li>
-                            We <b>do</b> have analytics to track page views. However, you do <a href="https://insidious.api.blue/index.php?module=CoreAdminHome&action=optOut&language=en" target="_blank">have a choice to opt-out</a>.
+                            We <b>do</b> have analytics to track page views. However, you do <a href="https://insidious.sdapi.net/index.php?module=CoreAdminHome&action=optOut&language=en" target="_blank">have a choice to opt-out</a>.
                         </li>
                         <li>
                             We <b>do not</b> store your personal data (except when you sign up for notifications, then we have your phone number and/or email address).
