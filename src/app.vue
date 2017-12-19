@@ -59,7 +59,7 @@
                     She dreamed of being Lyme-free, but financial difficulty has stopped her.
                 </p>
                 <p>
-                    Germany has the technology to cure her disease. <a class="clickable" @click="campaign">Your dollar will help ending her suffering.</a>
+                    Germany has the technology to cure her disease. <a class="clickable" @click="campaign">Your dollar will help end her suffering.</a>
                 </p>
             </span>
         </modal>
