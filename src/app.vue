@@ -38,6 +38,31 @@
                 </div>
             </div>
         </div>
+        <modal :show="showCampaign" v-on:close="showCampaign = false">
+            <h4 slot="header">
+                Sophia Needs Your Help
+            </h4>
+            <span slot="body" class="h5">
+                <p>
+                    <img src="https://rachel.objectstore.co/img/sophia-me.jpg" alt="message" class="px1" style="max-width: 100px; float: left; display: inline-block;" />
+                </p>
+                <p>
+                    This is Sophia, and she suffers from Chronic Lyme Disease for 13 years.
+                </p>
+                <p>
+                    She dreamed of being a great dancer, but her joint pain has stopped her.
+                </p>
+                <p>
+                    She dreamed of being a great dancer, but her heart condition has stopped her.
+                </p>
+                <p>
+                    She dreamed of being Lyme-free, but financial difficulty has stopped her.
+                </p>
+                <p>
+                    Germany has the technology to cure her disease. <a class="clickable" @click="campaign">Your dollar will help ending her suffering.</a>
+                </p>
+            </span>
+        </modal>
     </div>
 </template>
 
@@ -45,10 +70,14 @@
 module.exports = {
     data: function() {
         return {
-            version: require('../version.json')
+            version: require('../version.json'),
+            showCampaign: false
         }
     },
     computed: {
+        alert: function() {
+            return this.$store.getters.alert;
+        },
         shouldAddMargin: function() {
             return this.$store.getters.shouldAddMargin;
         },
@@ -71,31 +100,17 @@ module.exports = {
         },
         showFeedback: function() {
             this.$store.getters.alert.okBtn('OK').alert('<a class="btn" href="https://goo.gl/forms/LuDkBkoQodzQLJz92" target="_blank">Found a problem? Click here to report!</a>')
+        },
+        campaign: function() {
+            window.open('https://www.gofundme.com/sophias-lyme-treatment-fund')
+            if (this.Tracker !== null) {
+                this.Tracker.trackEvent('campaign', 'sophia')
+                this.Tracker.trackLink('https://www.gofundme.com/sophias-lyme-treatment-fund', 'link')
+            }
         }
     },
     mounted: function() {
-        // campaign ends on new year
-        var self = this
-        if ((new Date()).getTime() > 1514793600000) return
-        Lobibox.notify('success', {
-            onClick: function() {
-                if (self.Tracker !== null) {
-                    self.Tracker.trackEvent('campaign', 'sophia')
-                    self.Tracker.trackLink('https://www.gofundme.com/sophias-lyme-treatment-fund', 'link')
-                }
-                window.open('https://www.gofundme.com/sophias-lyme-treatment-fund')
-                return false;
-            },
-            delay: 10000,
-            sound: false,
-            iconSource: 'fontAwesome',
-            title: 'Help Sophia Out!',
-            img: 'https://rachel.objectstore.co/img/sophia-me.jpg',
-            position: 'top right',
-            pauseDelayOnHover: true,
-            continueDelayOnInactiveTab: false,
-            msg: "If you think SlugSurvival has helped you, please consider helping my girlfriend."
-        });
+        this.showCampaign = true
     }
 }
 </script>
