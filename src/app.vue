@@ -110,7 +110,7 @@ module.exports = {
         }
     },
     mounted: function() {
-        this.showCampaign = true
+        //this.showCampaign = true
     }
 }
 </script>
