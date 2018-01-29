@@ -8,6 +8,9 @@ module.exports = {
     alert: function(state) {
         return state.alert.delay(3000);
     },
+    storage: function(state) {
+        return state.storage
+    },
     route: function(state) {
         return state.route
     },

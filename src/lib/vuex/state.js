@@ -1,4 +1,5 @@
-var alertify = require('alertify.js');
+var alertify = require('alertify.js'),
+    storage = require('./plugins/storage')
 
 module.exports = {
 
@@ -83,5 +84,6 @@ module.exports = {
     showFinal: false,
     eventSnapshot: [],
 
-    alert: alertify.reset().closeLogOnClick(true).logPosition("bottom left").maxLogItems(3)
+    alert: alertify.reset().closeLogOnClick(true).logPosition("bottom left").maxLogItems(3),
+    storage: storage
 }

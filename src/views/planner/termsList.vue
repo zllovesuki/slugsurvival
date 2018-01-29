@@ -38,7 +38,6 @@
 </template>
 
 <script>
-var storage = require('../../lib/vuex/plugins/storage')
 
 module.exports = {
     data: function() {
@@ -51,11 +50,14 @@ module.exports = {
         flatTermsList: function() {
             return this.$store.getters.flatTermsList;
         },
+        storage: function() {
+            return this.$store.getters.storage;
+        }
     },
     created: function() {
         var self = this;
         Bluebird.map(self.flatTermsList, function(term) {
-            return storage.getItem(term.code).then(function(events) {
+            return self.storage.getItem(term.code).then(function(events) {
                 if (events !== null) self.saved.push(term.code)
             })
         }).then(function() {

@@ -1,5 +1,4 @@
 var lunr = require('lunr'),
-    storage = require('./plugins/storage')
     helper = require('./helper');
 
 module.exports = {
@@ -127,7 +126,7 @@ module.exports = {
         // autosave.js
         if (payload.skipSaving === true) return;
         if (typeof state.events[termId] !== 'undefined') {
-            return storage.setItem(termId, helper.compact(state.events[termId]));
+            return state.storage.setItem(termId, helper.compact(state.events[termId]));
         }
     },
     restoreEventSourceSnapshot: function(state, payload) {
@@ -170,9 +169,9 @@ module.exports = {
         // autosave.js
         if (skipSaving === true) return;
         if (typeof state.events[termId] !== 'undefined') {
-            return storage.setItem(termId, helper.compact(state.events[termId]));
+            return state.storage.setItem(termId, helper.compact(state.events[termId]));
         }else{
-            return storage.removeItem(termId);
+            return state.storage.removeItem(termId);
         }
     },
     blockCheckVersion: function(state) {
@@ -194,12 +193,12 @@ module.exports = {
         }, 0)
         .then(function(total) {
             if (total > 0) {
-                return storage.setItem('academicPlanner', {
+                return state.storage.setItem('academicPlanner', {
                     plannerYear: payload.plannerYear,
                     table: payload.table
                 })
             }else{
-                return storage.removeItem('academicPlanner')
+                return state.storage.removeItem('academicPlanner')
             }
         })
     },

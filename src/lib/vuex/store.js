@@ -1,10 +1,7 @@
 var	Vue = require('vue'),
-    Vuex = require('vuex'),
-    storage = require('./plugins/storage');
+    Vuex = require('vuex');
 
 Vue.use(Vuex);
-
-window._storage = storage;
 
 var store = new Vuex.Store({
     actions: require('./actions'),
@@ -12,7 +9,7 @@ var store = new Vuex.Store({
     state: require('./state'),
     mutations: require('./mutations'),
     plugins: [
-        require('./plugins/offline')(storage)
+        require('./plugins/offline')()
     ]
 })
 

@@ -1,5 +1,4 @@
 var helper = require('./helper'),
-    storage = require('./plugins/storage'),
     config = require('../../../config'),
     compoundSubject = require('compound-subject');
 
@@ -45,7 +44,7 @@ var self = module.exports = {
     loadAutosave: function(_, payload) {
         termId = payload.termId;
         alert = (payload.alert === true);
-        return storage.getItem(termId).then(function(array) {
+        return _.getters.storage.getItem(termId).then(function(array) {
             if (array === null) return;
             return _.dispatch('parseFromCompact', {
                 termId: termId,
@@ -104,22 +103,22 @@ var self = module.exports = {
         }
         var loadOfflineTimestamp = function() {
             return Bluebird.all([
-                storage.getItem('termsListTimestamp'),
-                storage.getItem('rmpTimestamp'),
-                storage.getItem('subjectsTimestamp'),
-                storage.getItem('mmTimestamp'),
-                storage.getItem('historicDataTimestamp'),
-                storage.getItem('finalScheduleTimestamp')
+                _.getters.storage.getItem('termsListTimestamp'),
+                _.getters.storage.getItem('rmpTimestamp'),
+                _.getters.storage.getItem('subjectsTimestamp'),
+                _.getters.storage.getItem('mmTimestamp'),
+                _.getters.storage.getItem('historicDataTimestamp'),
+                _.getters.storage.getItem('finalScheduleTimestamp')
             ])
         }
         var loadFromStorage = function(invalid, online) {
             return Bluebird.all([
-                !invalid.termsList ? storage.getItem('lz-termsList') : null,
-                !invalid.rmp ? storage.getItem('lz-rmp') : null,
-                !invalid.subjects ? storage.getItem('lz-subjects') : null,
-                !invalid.mm ? storage.getItem('lz-majorMinor') : null,
-                !invalid.historicData ? storage.getItem('lz-historicData') : null,
-                !invalid.finalSchedule ? storage.getItem('lz-finalSchedule') : null
+                !invalid.termsList ? _.getters.storage.getItem('lz-termsList') : null,
+                !invalid.rmp ? _.getters.storage.getItem('lz-rmp') : null,
+                !invalid.subjects ? _.getters.storage.getItem('lz-subjects') : null,
+                !invalid.mm ? _.getters.storage.getItem('lz-majorMinor') : null,
+                !invalid.historicData ? _.getters.storage.getItem('lz-historicData') : null,
+                !invalid.finalSchedule ? _.getters.storage.getItem('lz-finalSchedule') : null
             ]).spread(function(termsList, rmp, subjects, mm, historicData, finalSchedule) {
                 return _.dispatch('saveBasicData', {
                     termsList: termsList,
@@ -356,14 +355,14 @@ var self = module.exports = {
         }
         var loadOfflineTimestamp = function() {
             return Bluebird.all([
-                storage.getItem('termCourseTimestamp-' + termId),
-                storage.getItem('termCourseInfoTimestamp-' + termId)
+                _.getters.storage.getItem('termCourseTimestamp-' + termId),
+                _.getters.storage.getItem('termCourseInfoTimestamp-' + termId)
             ])
         }
         var loadFromStorage = function(invalid) {
             return Bluebird.all([
-                !invalid.coursesData ? storage.getItem('lz-termCourse-' + termId) : null,
-                !invalid.courseInfo ? storage.getItem('lz-termCourseInfo-' + termId) : null
+                !invalid.coursesData ? _.getters.storage.getItem('lz-termCourse-' + termId) : null,
+                !invalid.courseInfo ? _.getters.storage.getItem('lz-termCourseInfo-' + termId) : null
             ]).spread(function(coursesData, courseInfo) {
                 return _.dispatch('saveCourseData', {
                     termId: termId,
@@ -1525,7 +1524,7 @@ var self = module.exports = {
         }
     },
     loadLocalAcademicPlanner: function(_) {
-        return storage.getItem('academicPlanner').then(function(object) {
+        return _.getters.storage.getItem('academicPlanner').then(function(object) {
             if (object !== null) {
                 _.state.academicPlanner = object;
                 return true;
@@ -1618,7 +1617,7 @@ var self = module.exports = {
         })
     },
     showDisclaimer: function(_) {
-        //return storage.getItem('disclaimerShown').then(function(yes) {
+        //return _.getters.storage.getItem('disclaimerShown').then(function(yes) {
         //    if (yes !== null) return;
             var html = [
                 '<p>', '<i>', 'Disclaimer', '</i>', '</p>',
@@ -1631,7 +1630,7 @@ var self = module.exports = {
                 if (_.getters.Tracker !== null) {
                     _.getters.Tracker.trackEvent('disclaimer', 'shown')
                 }
-        //        return storage.setItem('disclaimerShown', true)
+        //        return _.getters.storage.setItem('disclaimerShown', true)
             })
         //})
     },
@@ -1808,7 +1807,7 @@ var self = module.exports = {
         _.commit('saveUnsubscribeRealtimeFn', unsubscribeRealtimeFn)
     },
     removeLegacyStorage: function(_) {
-        return storage.keys().then(function(keys) {
+        return _.getters.storage.keys().then(function(keys) {
             return Bluebird.map(keys, function(key) {
                 var parts = key.split('-')
                 if ([
@@ -1816,7 +1815,7 @@ var self = module.exports = {
                     'termCourseInfo'
                 ].indexOf(parts[0]) !== -1) {
                     console.log('removeLegacyStorage: Removing', key)
-                    return storage.removeItem(key)
+                    return _.getters.storage.removeItem(key)
                 }
             })
         })
