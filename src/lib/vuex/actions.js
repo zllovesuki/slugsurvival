@@ -85,6 +85,8 @@ var self = module.exports = {
                 fetch(config.dbURL + '/timestamp/major-minor.json')
             ]).then(function(results) {
                 return Bluebird.map(results, function(result) {
+                    if (result === null) return null
+                    if (typeof result.json === 'undefined') return result
                     return result.json()
                 })
             })
@@ -254,6 +256,7 @@ var self = module.exports = {
                         ]).then(function(results) {
                             return Bluebird.map(results, function(result) {
                                 if (result === null) return null
+                                if (typeof result.json === 'undefined') return result
                                 return result.json()
                             })
                         }).then(function(hh) {
@@ -274,8 +277,9 @@ var self = module.exports = {
                     invalid.finalSchedule ? fetch(config.dbURL + '/final.json') : null
                 ]).then(function(results) {
                     return Bluebird.map(results, function(result) {
+                        if (result === null) return null
                         if (typeof result.json === 'undefined') return result
-                        else return result.json()
+                        return result.json()
                     })
                 }).then(resolve).catch(reject)
             });
@@ -339,6 +343,8 @@ var self = module.exports = {
                 fetch(config.dbURL + '/timestamp/courses/' + termId + '.json')
             ]).then(function(results) {
                 return Bluebird.map(results, function(result) {
+                    if (result === null) return null
+                    if (typeof result.json === 'undefined') return result
                     return result.json()
                 })
             }).then(function(base) {
@@ -443,8 +449,9 @@ var self = module.exports = {
                     invalid.courseInfo ? fetch(config.dbURL + '/courses/' + termId + '.json') : null
                 ]).then(function(results) {
                     return Bluebird.map(results, function(result) {
+                        if (result === null) return null
                         if (typeof result.json === 'undefined') return result
-                        else return result.json()
+                        return result.json()
                     })
                 }).then(function(base) {
                     return [
