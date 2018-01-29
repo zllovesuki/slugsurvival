@@ -1806,5 +1806,21 @@ var self = module.exports = {
             }
         })
         _.commit('saveUnsubscribeRealtimeFn', unsubscribeRealtimeFn)
+    },
+    removeLegacyStorage: function(_) {
+        return storage.keys().then(function(keys) {
+            return Bluebird.map(keys, function(key) {
+                var parts = key.split('-')
+                if ([
+                    'termCourse',
+                    'termCourseInfo',
+                    'termCourseTimestamp',
+                    'termCourseInfoTimestamp'
+                ].indexOf(parts[0]) !== -1) {
+                    console.log('removeLegacyStorage: Removing', key)
+                    return storage.removeItem(key)
+                }
+            })
+        })
     }
 }

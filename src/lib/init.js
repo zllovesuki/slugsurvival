@@ -4,6 +4,8 @@ module.exports = function(_, router) {
     var element = document.getElementById('loading');
     element.parentNode.removeChild(element);
 
+    _.dispatch('removeLegacyStorage')
+
     _.dispatch('checkVersion')
     _.dispatch('addOnlineOfflineListener')
     _.dispatch('realtime')

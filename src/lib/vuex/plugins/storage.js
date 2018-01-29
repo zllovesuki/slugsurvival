@@ -17,7 +17,6 @@ module.exports = {
     // compatibility layer
     getItem: function(key) {
         if (key.slice(0, 3) === 'lz-') {
-            adapter.removeItem(key.slice(3)) // also remove the legacy key-value
             return adapter.getItem(key).then(function(compressed) {
                 if (compressed === null) return null
                 else return JSON.parse(LZString.decompressFromUTF16(compressed))
