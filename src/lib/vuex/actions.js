@@ -1813,9 +1813,7 @@ var self = module.exports = {
                 var parts = key.split('-')
                 if ([
                     'termCourse',
-                    'termCourseInfo',
-                    'termCourseTimestamp',
-                    'termCourseInfoTimestamp'
+                    'termCourseInfo'
                 ].indexOf(parts[0]) !== -1) {
                     console.log('removeLegacyStorage: Removing', key)
                     return storage.removeItem(key)
