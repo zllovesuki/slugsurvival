@@ -16,7 +16,7 @@ module.exports = function(storage) {
 
                 return Bluebird.all([
                     storage.setItem('termCourseTimestamp-' + termId, onlineTimestamp),
-                    storage.setItem('termCourse-' + termId, coursesData)
+                    storage.setItem('lz-termCourse-' + termId, coursesData)
                 ])
                 break;
 
@@ -30,7 +30,7 @@ module.exports = function(storage) {
 
                 return Bluebird.all([
                     storage.setItem('termCourseInfoTimestamp-' + termId, onlineTimestamp),
-                    storage.setItem('termCourseInfo-' + termId, courseInfo)
+                    storage.setItem('lz-termCourseInfo-' + termId, courseInfo)
                 ])
 
                 break;
@@ -45,7 +45,7 @@ module.exports = function(storage) {
 
                 return Bluebird.all([
                     storage.setItem('rmpTimestamp', onlineTimestamp),
-                    storage.setItem('rmp', rmp)
+                    storage.setItem('lz-rmp', rmp)
                 ])
 
                 break;
@@ -60,7 +60,7 @@ module.exports = function(storage) {
 
                 return Bluebird.all([
                     storage.setItem('termsListTimestamp', onlineTimestamp),
-                    storage.setItem('termsList', termsList)
+                    storage.setItem('lz-termsList', termsList)
                 ])
 
                 break;
@@ -75,7 +75,7 @@ module.exports = function(storage) {
 
                 return Bluebird.all([
                     storage.setItem('subjectsTimestamp', onlineTimestamp),
-                    storage.setItem('subjects', subjects)
+                    storage.setItem('lz-subjects', subjects)
                 ])
 
                 case 'saveMajorMinor':
@@ -88,7 +88,7 @@ module.exports = function(storage) {
 
                 return Bluebird.all([
                     storage.setItem('mmTimestamp', onlineTimestamp),
-                    storage.setItem('majorMinor', mm)
+                    storage.setItem('lz-majorMinor', mm)
                 ])
 
                 break;
@@ -103,7 +103,7 @@ module.exports = function(storage) {
 
                 return Bluebird.all([
                     storage.setItem('historicDataTimestamp', onlineTimestamp),
-                    storage.setItem('historicData', historicData)
+                    storage.setItem('lz-historicData', historicData)
                 ])
 
                 break;
@@ -118,7 +118,7 @@ module.exports = function(storage) {
 
                 return Bluebird.all([
                     storage.setItem('finalScheduleTimestamp', onlineTimestamp),
-                    storage.setItem('finalSchedule', final)
+                    storage.setItem('lz-finalSchedule', final)
                 ])
 
                 break;

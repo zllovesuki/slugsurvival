@@ -1,5 +1,6 @@
 var lunr = require('lunr'),
-    helper = require('./helper.js');
+    storage = require('./plugins/storage')
+    helper = require('./helper');
 
 module.exports = {
     setTracker: function(state, Tracker) {
@@ -19,7 +20,7 @@ module.exports = {
         })
     },
     saveTermsList: function(state, payload) {
-        var terms = payload.termsList, skipSaving = payload.skipSaving
+        var terms = payload.termsList
         state.flatTermsList = terms;
         var tmp;
         var years = {};
@@ -120,9 +121,14 @@ module.exports = {
         })
     },
     mergeEventSource: function(state, payload) {
-        var termId = payload.termId, events = payload.events, skipSaving = payload.skipSaving;
+        var termId = payload.termId, events = payload.events;
         if (typeof state.events[termId] === 'undefined') state.events[termId] = [];
         state.events[termId] = state.events[termId].concat(events);
+        // autosave.js
+        if (payload.skipSaving === true) return;
+        if (typeof state.events[termId] !== 'undefined') {
+            return storage.setItem(termId, helper.compact(state.events[termId]));
+        }
     },
     restoreEventSourceSnapshot: function(state, payload) {
         var termId = payload.termId, events = payload.events;
@@ -161,6 +167,13 @@ module.exports = {
         if (state.events[termId].length === 0) {
             delete state.events[termId];
         }
+        // autosave.js
+        if (skipSaving === true) return;
+        if (typeof state.events[termId] !== 'undefined') {
+            return storage.setItem(termId, helper.compact(state.events[termId]));
+        }else{
+            return storage.removeItem(termId);
+        }
     },
     blockCheckVersion: function(state) {
         state.blockCheckVersion = true;
@@ -168,8 +181,27 @@ module.exports = {
     shouldAddMargin: function(state, to) {
         state.shouldAddMargin = (to || false);
     },
-    saveAcademicPlanner: function(state, table) {
-        state.academicPlanner = table;
+    saveAcademicPlanner: function(state, payload) {
+        state.academicPlanner = payload;
+        // autosave.js
+        return Bluebird.reduce(Object.keys(payload.table), function(yearTotal, year) {
+            return Bluebird.reduce(Object.keys(payload.table[year]), function(quarterTotal, quarter) {
+                return payload.table[year][quarter].length > 0 ? quarterTotal + 1 : quarterTotal;
+            }, 0)
+            .then(function(qTotal) {
+                return qTotal > 0 ? yearTotal + 1 : yearTotal;
+            })
+        }, 0)
+        .then(function(total) {
+            if (total > 0) {
+                return storage.setItem('academicPlanner', {
+                    plannerYear: payload.plannerYear,
+                    table: payload.table
+                })
+            }else{
+                return storage.removeItem('academicPlanner')
+            }
+        })
     },
     changeOnlineState: function(state, status) {
         state.onlineState = status;

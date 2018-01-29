@@ -54,14 +54,10 @@ module.exports = {
     },
     created: function() {
         var self = this;
-        storage.keys().then(function(keys) {
-            Bluebird.map(keys, function(key) {
-                return storage.getItem(key).then(function(events) {
-                    if (events !== null && events.length > 0) {
-                        self.saved.push(key);
-                    }
-                })
-            }, { concurrency: 4 })
+        Bluebird.map(self.flatTermsList, function(term) {
+            return storage.getItem(term.code).then(function(events) {
+                if (events !== null) self.saved.push(term.code)
+            })
         }).then(function() {
             self.$store.dispatch('hideSpinner')
         })
