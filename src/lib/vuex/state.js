@@ -1,3 +1,4 @@
+"use strict"
 var storage = require('./plugins/storage')
 
 module.exports = {

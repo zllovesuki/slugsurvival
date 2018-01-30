@@ -1,3 +1,4 @@
+"use strict"
 var helper = require('./helper'),
     config = require('../../../config'),
     compoundSubject = require('compound-subject');
@@ -49,8 +50,8 @@ var self = module.exports = {
         })
     },
     loadAutosave: function(_, payload) {
-        termId = payload.termId;
-        alert = (payload.alert === true);
+        var termId = payload.termId;
+        var alert = (payload.alert === true);
         return _.getters.storage.getItem(termId).then(function(array) {
             if (array === null) return;
             return _.dispatch('parseFromCompact', {
@@ -747,7 +748,7 @@ var self = module.exports = {
         var colorMap = _.state.colorMap;
         var events = [];
         var obj = {};
-        var courseNum, course, courseInfo, sectionNumber, section, conflict, multiple;
+        var courseNum, course, courseInfo, sectionNumber, section, conflict, awaitSelection = false, multiple = false;
         var termId = payload.termId, secSeats = (typeof payload.secSeats === 'undefined' ? null : payload.secSeats);
 
         awaitSelection = (payload.awaitSelection === true);

@@ -1,3 +1,4 @@
+"use strict"
 var	Vue = require('vue'),
     Vuex = require('vuex');
 

@@ -1,3 +1,4 @@
+"use strict"
 var self = module.exports = {
 
     delta: function(termCode) {

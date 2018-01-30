@@ -1,3 +1,4 @@
+"use strict"
 module.exports = function(Vue) {
     Vue.transition("fade", {
         beforeLeave: function(t) {

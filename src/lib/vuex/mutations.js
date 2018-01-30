@@ -1,3 +1,4 @@
+"use strict"
 var lunr = require('lunr'),
     helper = require('./helper');
 

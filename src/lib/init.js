@@ -1,3 +1,4 @@
+"use strict"
 var MobileDetect = require('mobile-detect')
 
 module.exports = function(_, router) {

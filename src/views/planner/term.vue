@@ -366,8 +366,8 @@ module.exports = {
                             self.$store.dispatch('refreshCalendar')
                             if (multiple.length > 1) self.alert.success('Showing all ' + course.c + ' on the planner!');
                             else self.alert.success(course.c + ' added to the planner!');
-                        }).catch(function() {
-
+                        }).catch(function(e) {
+                            console.error(e)
                         })
                     }
                 }
@@ -548,6 +548,7 @@ module.exports = {
                 })
             })
             .catch(function(e) {
+                console.error(e)
                 // hash was used instead of local copy
                 self.lock = true;
                 if (self.Tracker !== null) {

@@ -1,3 +1,4 @@
+"use strict"
 var localforage = require('localforage')
 
 var adapter = localforage.createInstance({
