@@ -53,7 +53,7 @@
                 <div class="clearfix">
                     <h3 class="muted">Data: Terms Information</h3>
                     <p>
-                        <pre>https://data.slugsurvival.com/terms</pre> contains the list of terms in JSON format
+                        <pre>https://slugsurvival.objectstore.co/data/terms.json</pre> contains the list of terms in JSON format
                     </p>
                 </div>
             </div>
@@ -61,13 +61,13 @@
                 <div class="clearfix">
                     <h3 class="muted">Data: Term Information</h3>
                     <p>
-                        There are two parts of a term. Access via <pre>https://data.slugsurvival.com/term/:termCode</pre>
+                        There are two parts of a term.
                     </p>
                     <p>
-                        Key 'term' contains the essential information. Under each key is the subject, and the value is an array of the courses.
+                        <pre>https://slugsurvival.objectstore.co/data/terms/:termCode.json</pre> contains the essential information. Under each key is the subject, and the value is an array of the courses.
                     </p>
                     <p>
-                        Key 'courses' contains a more detailed information. Under each key is the course number, and the value is an object pertains to the information about the course.
+                        <pre>https://slugsurvival.objectstore.co/data/courses/:termCode.json</pre> contains a more detailed information. Under each key is the course number, and the value is an object pertains to the information about the course.
                     </p>
                 </div>
             </div>
@@ -75,7 +75,7 @@
                 <div class="clearfix">
                     <h3 class="muted">Data: RateMyProfessors Mapping</h3>
                     <p>
-                        <pre>https://data.slugsurvival.com/rmp</pre> contains a map of professor's name (FirstnameLastname) to corresponding teacher ID (tid) on RateMyProfessors
+                        <pre>https://slugsurvival.objectstore.co/data/rmp.json</pre> contains a map of professor's name (FirstnameLastname) to corresponding teacher ID (tid) on RateMyProfessors
                     </p>
                 </div>
             </div>
@@ -83,13 +83,13 @@
                 <div class="clearfix">
                     <h3 class="muted">Data: RateMyProfessors Ratings</h3>
                     <p>
-                        There are two parts of a rating. Access via <pre>https://data.slugsurvival.com/rmp/:tid</pre>
+                        There are two parts of a rating.
                     </p>
                     <p>
-                        Key 'stats' contains the essential information. Such as quality.
+                        <pre>https://slugsurvival.objectstore.co/data/rmp/stats/:tid.json</pre> contains the essential information. Such as quality.
                     </p>
                     <p>
-                        Key 'scores' contains a more detailed information. Such as based on how many ratings, tags, and etc.
+                        <pre>https://slugsurvival.objectstore.co/data/rmp/scores/:tid.json</pre> contains a more detailed information. Such as based on how many ratings, tags, and etc.
                     </p>
                 </div>
             </div>
