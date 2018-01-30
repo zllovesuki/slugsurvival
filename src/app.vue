@@ -32,9 +32,9 @@
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'explainPrivacy' }">Privacy Policy</router-link>
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'openSource' }">Open Source</router-link>
                     </div>
-                    <div class="clearfix" @click="egg">
+                    <router-link class="clearfix muted black" :to="{ name: 'bugzilla' }">
                         version {{ version }}
-                    </div>
+                    </router-link>
                 </div>
             </div>
         </div>
@@ -69,12 +69,7 @@ module.exports = {
         }
     },
     methods: {
-        egg: function() {
-            this.$store.getters.alert.okBtn('WTF').alert('<img src="https://rachel.objectstore.co/img/16360519.gif" alt="" />')
-        },
-        showFeedback: function() {
-            this.$store.getters.alert.okBtn('OK').alert('<a class="btn" href="https://goo.gl/forms/LuDkBkoQodzQLJz92" target="_blank">Found a problem? Click here to report!</a>')
-        },
+
     }
 }
 </script>
