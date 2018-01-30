@@ -202,7 +202,7 @@ module.exports = {
             if (!this.ready) return;
             this.termCode = val;
             this.$router.push({ name: 'analyticsCourse' })
-            this.switchTerm();
+            this.switchTerm(oldVal);
         }
     },
     methods: {
@@ -319,8 +319,12 @@ module.exports = {
                 else self.compacted = [];
             })
         },
-        switchTerm: function() {
+        switchTerm: function(oldTermCode) {
             var self = this;
+            self.dropDeadline = '...'
+            self.$store.commit('setTermName', null)
+            self.$store.commit('emptyTerm', oldTermCode)
+
             self.$store.dispatch('showSpinner')
             self.graphDataReady = true;
             return self.$store.dispatch('fetchTermCourses', self.termCode)
@@ -401,6 +405,8 @@ module.exports = {
             Plotly.purge(document.getElementById(canvasId))
         })
         this.sectionsCanvasId = []
+        this.$store.commit('setTermName', null)
+        this.$store.commit('emptyTerm', this.termCode)
     }
 
 }
