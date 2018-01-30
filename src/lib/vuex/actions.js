@@ -18,14 +18,21 @@ var self = module.exports = {
         }
 
         var sugar = function() {
-            return new Bluebird(function(resolve, reject) {
-                fetch(config.dbURL + '/rmp/' + tid + '.json')
-                .then(function(res) {
-                    return res.json();
+            return Bluebird.all([
+                fetch(config.dbURL + '/rmp/scores/' + tid + '.json'),
+                fetch(config.dbURL + '/rmp/stats/' + tid + '.json')
+            ]).then(function(results) {
+                return Bluebird.map(results, function(result) {
+                    if (result === null) return null
+                    if (typeof result.json === 'undefined') return result
+                    return result.json()
                 })
-                .then(resolve)
-                .catch(reject)
-            });
+            }).then(function(rmp) {
+                return {
+                    scores: rmp[0],
+                    stats: rmp[1]
+                }
+            })
         }
         return sugar()
         .then(function(rmp) {
