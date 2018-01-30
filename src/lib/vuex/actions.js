@@ -115,7 +115,7 @@ var self = module.exports = {
             Somehow, com.apple.WebKit.Storage keeps crashing on me,
             so maybe Safari doesn't like to be tickled
             */
-            let keysToLoad = [
+            var keysToLoad = [
                 'termsListTimestamp',
                 'rmpTimestamp',
                 'subjectsTimestamp',
@@ -131,7 +131,7 @@ var self = module.exports = {
             /*
             Again, maybe Safari doesn't like to be tickled
             */
-            let keysMap = [{
+            var keysMap = [{
                 objKey: 'termsList',
                 storKey: 'lz-termsList'
             }, {
