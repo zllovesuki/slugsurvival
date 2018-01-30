@@ -1,6 +1,18 @@
 <!-- Piwik -->
 <script type="text/javascript">
   var _paq = _paq || [];
+  var periodic;
+  var setTracker = function() {
+      console.log('piwik: Tracker enabled')
+      window.App.$store.commit('setTracker', Piwik.getAsyncTracker())
+      window.App.$store.getters.Tracker.enableHeartBeatTimer(10);
+  }
+  var checkApp = function() {
+      if (typeof window.App !== 'undefined') {
+          setTracker()
+          clearInterval(periodic)
+      }
+  }
   _paq.push(["setDomains", ["__DOMAIN__"]]);
   _paq.push(['trackPageView']);
   _paq.push(['enableLinkTracking']);
@@ -12,19 +24,7 @@
     g.type='text/javascript'; g.async=true; g.defer=true; g.src=u+'piwik.js';
     g.onload = function() {
         if (typeof Piwik !== 'undefined') {
-            var periodic;
-            var setTracker = function() {
-                window.App.$store.commit('setTracker', Piwik.getAsyncTracker())
-                window.App.$store.getters.Tracker.enableHeartBeatTimer(10);
-            }
-            var checkApp = function() {
-                if (typeof window.App === 'undefined') {
-                    periodic = setInterval(checkApp, 750)
-                }else{
-                    setTracker()
-                    clearInterval(periodic)
-                }
-            }
+            periodic = setInterval(checkApp, 750)
         }
     }
     s.parentNode.insertBefore(g,s);
