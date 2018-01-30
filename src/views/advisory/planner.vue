@@ -240,11 +240,11 @@ module.exports = {
         },
         disableSelectize: function() {
             var self = this;
-            return Bluebird.map(Object.keys(self.table), function(year) {
-                return Bluebird.map(Object.keys(self.table[year]), function(quarter) {
-                    return self.selectizeRef[year + '-' + quarter][0].selectize.disable()
-                }, { concurrency: 4 })
-            }, { concurrency: 2 })
+            Object.keys(self.table).map(function(year) {
+                Object.keys(self.table[year]).map(function(quarter) {
+                    self.selectizeRef[year + '-' + quarter][0].selectize.disable()
+                })
+            })
         },
         unSelectize: function(year, quarter) {
             this.selectizeRef[year + '-' + quarter][0].selectize.destroy()
@@ -266,15 +266,13 @@ module.exports = {
                             return (x > y) ? x : y;
                         });
                         if (largest === -1) return -1;
-                        return Bluebird.map(Object.keys(self.table[largest]), function(quarter) {
+                        Object.keys(self.table[largest]).map(function(quarter) {
                             self.unSelectize(largest, quarter);
                             self.$delete(self.table[largest], quarter);
                         })
-                        .then(function() {
-                            self.$delete(self.table, parseInt(largest));
-                            self.modifyingTable = false;
-                            self.savePlanner();
-                        })
+                        self.$delete(self.table, parseInt(largest));
+                        self.modifyingTable = false;
+                        self.savePlanner();
                     }, 500)
                 })
                 if (self.$store.getters.Tracker !== null) {
@@ -285,30 +283,26 @@ module.exports = {
         savePlanner: function() {
             var self = this;
             if (self.lock) return;
-            return Bluebird.map(Object.keys(self.table), function(year) {
-                return Bluebird.map(Object.keys(self.table[year]), function(quarter) {
+            Object.keys(self.table).map(function(year) {
+                Object.keys(self.table[year]).map(function(quarter) {
                     self.table[year][quarter] = self.table[year][quarter].filter(function(v, i, s) {
                         return s.indexOf(v) === i;
                     })
                 })
             })
-            .then(function() {
-                return self.$store.commit('saveAcademicPlanner', {
-                    plannerYear: self.plannerYear,
-                    table: self.table
-                })
-            });
+            return self.$store.commit('saveAcademicPlanner', {
+                plannerYear: self.plannerYear,
+                table: self.table
+            })
         },
         initSelectize: function() {
             var self = this;
-            return Bluebird.map(Object.keys(self.table), function(year) {
-                return Bluebird.map(Object.keys(self.table[year]), function(quarter) {
-                    return self.Selectize(year, quarter);
-                }, { concurrency: 4 })
-            }, { concurrency: 2 })
-            .then(function() {
-                if (self.lock) self.disableSelectize();
+            Object.keys(self.table).map(function(year) {
+                Object.keys(self.table[year]).map(function(quarter) {
+                    self.Selectize(year, quarter);
+                })
             })
+            if (self.lock) self.disableSelectize();
         },
         focusEdit: function() {
             if (this.lock) return;
@@ -356,7 +350,7 @@ module.exports = {
                 spring: 1,
                 summer: 0
             };
-            return Bluebird.map(Object.keys(self.table), function(year) {
+            Object.keys(self.table).map(function(year) {
                 if (year == '1') {
                     self.$set(self.pdfFormData, '20', self.plannerYear.slice(-2))
                     self.$set(self.pdfFormData, '20_' + (1 + parseInt(year)), (parseInt(self.plannerYear.slice(-2)) + 1))
@@ -364,7 +358,7 @@ module.exports = {
                     self.$set(self.pdfFormData, '20_' + (2 * parseInt(year) - 1),  (parseInt(self.plannerYear.slice(-2)) + parseInt(year - 1)))
                     self.$set(self.pdfFormData, '20_' + (2 * parseInt(year)), (parseInt(self.plannerYear.slice(-2)) +  parseInt(year)))
                 }
-                return Bluebird.map(Object.keys(self.table[year]), function(quarter) {
+                Object.keys(self.table[year]).map(function(quarter) {
                     for (var i = 0, length = self.table[year][quarter].length; i < length; i++) {
                         if (year == '1' && quarter == 'fall') {
                             self.$set(self.pdfFormData, i + 1, self.table[year][quarter][i]);
@@ -374,15 +368,13 @@ module.exports = {
                     }
                 })
             })
-            .then(function() {
-                if (self.$store.getters.Tracker !== null) {
-                    self.$store.getters.Tracker.trackEvent('fillPDF', 'clicked')
-                }
-                self.$nextTick(function() {
-                    $('#fillPDF').submit();
-                    return Bluebird.map(Object.keys(self.pdfFormData), function(key) {
-                        self.$delete(self.pdfFormData, key);
-                    })
+            if (self.$store.getters.Tracker !== null) {
+                self.$store.getters.Tracker.trackEvent('fillPDF', 'clicked')
+            }
+            self.$nextTick(function() {
+                $('#fillPDF').submit();
+                Object.keys(self.pdfFormData).map(function(key) {
+                    self.$delete(self.pdfFormData, key);
                 })
             })
         },
@@ -501,11 +493,11 @@ module.exports = {
     beforeDestroy: function() {
         // garbage collection
         var self = this;
-        return Bluebird.map(Object.keys(self.table), function(year) {
-            return Bluebird.map(Object.keys(self.table[year]), function(quarter) {
-                return self.unSelectize(year, quarter);
-            }, { concurrency: 4 })
-        }, { concurrency: 2 })
+        Object.keys(self.table).map(function(year) {
+            Object.keys(self.table[year]).map(function(quarter) {
+                self.unSelectize(year, quarter);
+            })
+        })
     }
 }
 </script>

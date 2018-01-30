@@ -414,11 +414,11 @@ module.exports = {
     mounted: function() {
         var self = this;
         this.$store.dispatch('setTitle', 'All Classes');
-        Bluebird.all([
-            self.$store.dispatch('fetchGE'),
-            self.$store.dispatch('fetchTermCourses')
-        ])
-        .spread(function(ge) {
+        self.$store.dispatch('fetchTermCourses')
+        .then(function() {
+            return self.$store.dispatch('fetchGE')
+        })
+        .then(function(ge) {
             self.$store.commit('setTermName', self.$store.getters.termsList[self.$store.getters.termId])
             self.courses = self.$store.getters.sortedCourses[self.termId];
             self.initReactive();

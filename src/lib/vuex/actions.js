@@ -23,7 +23,7 @@ var self = module.exports = {
                 fetch(config.dbURL + '/rmp/scores/' + tid + '.json'),
                 fetch(config.dbURL + '/rmp/stats/' + tid + '.json')
             ]).then(function(results) {
-                return Bluebird.map(results, function(result) {
+                return Bluebird.mapSeries(results, function(result) {
                     if (result === null) return null
                     if (typeof result.json === 'undefined') return result
                     return result.json()
@@ -91,7 +91,7 @@ var self = module.exports = {
                 fetch(config.dbURL + '/timestamp/subjects.json'),
                 fetch(config.dbURL + '/timestamp/major-minor.json')
             ]).then(function(results) {
-                return Bluebird.map(results, function(result) {
+                return Bluebird.mapSeries(results, function(result) {
                     if (result === null) return null
                     if (typeof result.json === 'undefined') return result
                     return result.json()
@@ -295,7 +295,7 @@ var self = module.exports = {
                             fetch(config.dbURL + '/offered/ge_fall.json'),
                             fetch(config.dbURL + '/offered/ge_winter.json')
                         ]).then(function(results) {
-                            return Bluebird.map(results, function(result) {
+                            return Bluebird.mapSeries(results, function(result) {
                                 if (result === null) return null
                                 if (typeof result.json === 'undefined') return result
                                 return result.json()
@@ -317,7 +317,7 @@ var self = module.exports = {
                     })() : null,
                     invalid.finalSchedule ? fetch(config.dbURL + '/final.json') : null
                 ]).then(function(results) {
-                    return Bluebird.map(results, function(result) {
+                    return Bluebird.mapSeries(results, function(result) {
                         if (result === null) return null
                         if (typeof result.json === 'undefined') return result
                         return result.json()
@@ -383,7 +383,7 @@ var self = module.exports = {
                 fetch(config.dbURL + '/timestamp/terms/' + termId + '.json'),
                 fetch(config.dbURL + '/timestamp/courses/' + termId + '.json')
             ]).then(function(results) {
-                return Bluebird.map(results, function(result) {
+                return Bluebird.mapSeries(results, function(result) {
                     if (result === null) return null
                     if (typeof result.json === 'undefined') return result
                     return result.json()
@@ -396,16 +396,26 @@ var self = module.exports = {
             })
         }
         var loadOfflineTimestamp = function() {
-            return Bluebird.all([
-                _.getters.storage.getItem('termCourseTimestamp-' + termId),
-                _.getters.storage.getItem('termCourseInfoTimestamp-' + termId)
-            ])
+            var keysToLoad = [
+                'termCourseTimestamp-' + termId,
+                'termCourseInfoTimestamp-' + termId
+            ]
+            return Bluebird.mapSeries(keysToLoad, function(key) {
+                return _.getters.storage.getItem(key)
+            })
         }
         var loadFromStorage = function(invalid) {
-            return Bluebird.all([
-                !invalid.coursesData ? _.getters.storage.getItem('lz-termCourse-' + termId) : null,
-                !invalid.courseInfo ? _.getters.storage.getItem('lz-termCourseInfo-' + termId) : null
-            ]).spread(function(coursesData, courseInfo) {
+            var keysMap = [{
+                objKey: 'coursesData',
+                storKey: 'lz-termCourse-' + termId
+            }, {
+                objKey: 'courseInfo',
+                storKey: 'lz-termCourseInfo-' + termId
+            }]
+            return Bluebird.mapSeries(keysMap, function(map) {
+                return (!invalid[map.objKey] ? _.getters.storage.getItem(map.storKey) : null)
+            })
+            .spread(function(coursesData, courseInfo) {
                 return _.dispatch('saveCourseData', {
                     termId: termId,
                     coursesData: coursesData,
@@ -489,7 +499,7 @@ var self = module.exports = {
                     invalid.coursesData ? fetch(config.dbURL + '/terms/' + termId + '.json') : null,
                     invalid.courseInfo ? fetch(config.dbURL + '/courses/' + termId + '.json') : null
                 ]).then(function(results) {
-                    return Bluebird.map(results, function(result) {
+                    return Bluebird.mapSeries(results, function(result) {
                         if (result === null) return null
                         if (typeof result.json === 'undefined') return result
                         return result.json()
@@ -1607,7 +1617,7 @@ var self = module.exports = {
         })
         return Bluebird.map(Object.keys(maps), function(termId) {
             return _.dispatch('fetchTermCourses', termId)
-        }, { concurrency: 4 })
+        }, { concurrency: 2 })
         .then(function() {
             console.log('fetched')
             // the most inefficient code in the entire universe
@@ -1744,7 +1754,7 @@ var self = module.exports = {
 
         var day = null, start = null, end = null, obj = {}, course = {}, eventSource = [], split = [];
         var compact = helper.compact(events);
-        return Bluebird.map(compact, function(string) {
+        return Bluebird.mapSeries(compact, function(string) {
             split = string.split('-');
             course = _.state.flatCourses[termId][split[0]];
             return _.dispatch('getFinalTime', {
@@ -1779,7 +1789,7 @@ var self = module.exports = {
                 eventSource.push(obj)
                 obj = {};
             })
-        }, { concurrency: 1 })
+        })
         .then(function() {
             return eventSource;
         })
@@ -1850,7 +1860,7 @@ var self = module.exports = {
     },
     removeLegacyStorage: function(_) {
         return _.getters.storage.keys().then(function(keys) {
-            return Bluebird.map(keys, function(key) {
+            return Bluebird.mapSeries(keys, function(key) {
                 var parts = key.split('-')
                 if ([
                     'termCourse',

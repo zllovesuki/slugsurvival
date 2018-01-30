@@ -103,7 +103,7 @@ module.exports = {
                 else if (a.code < b.code) return 1;
                 else return 0
             }).slice(0, 2)
-            return Bluebird.map(terms, function(term) {
+            return Bluebird.mapSeries(terms, function(term) {
                 return self.$store.dispatch('fetchTermCourses', term.code)
             })
         })

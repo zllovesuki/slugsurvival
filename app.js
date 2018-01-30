@@ -44,7 +44,7 @@ module.exports = function() {
         html = html.replace('__DRIFT__', '');
     }
 
-    html = html.replace('__JS__', js)
+    html = html.replace(new RegExp('__JS__', 'g'), js)
 
     app.get('/version', function(req, res, next) {
         return res.end(version);

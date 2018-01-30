@@ -3,8 +3,7 @@ var gulp = require('gulp'),
     gp_rename = require('gulp-rename'),
     gp_uglify = require('gulp-uglify'),
     gp_concatcss = require('gulp-concat-css'),
-    gp_cleancss = require('gulp-clean-css'),
-    gp_sourcemaps = require('gulp-sourcemaps');
+    gp_cleancss = require('gulp-clean-css');
 
 var jsAssets = [
     'assets/js/alertify.js',
@@ -27,12 +26,10 @@ var cssAssets = 'assets/css/*.css';
 
 gulp.task('js', function() {
     return gulp.src(jsAssets)
-        .pipe(gp_sourcemaps.init())
         .pipe(gp_concat('assets.js'))
         .pipe(gulp.dest('public'))
         .pipe(gp_rename('assets.min.js'))
         .pipe(gp_uglify())
-        .pipe(gp_sourcemaps.write('./'))
         .pipe(gulp.dest('public'));
 });
 

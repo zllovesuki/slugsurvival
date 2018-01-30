@@ -56,11 +56,11 @@ module.exports = {
     },
     created: function() {
         var self = this;
-        Bluebird.map(self.flatTermsList, function(term) {
+        Bluebird.mapSeries(self.flatTermsList, function(term) {
             return self.storage.getItem(term.code).then(function(events) {
                 if (events !== null) self.saved.push(term.code)
             })
-        }, { concurrency: 1 }).then(function() {
+        }).then(function() {
             self.$store.dispatch('hideSpinner')
         })
     },

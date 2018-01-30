@@ -15,10 +15,8 @@ module.exports = function() {
 
                 if (skipSaving) return;
 
-                return Bluebird.all([
-                    store.getters.storage.setItem('termCourseTimestamp-' + termId, onlineTimestamp),
-                    store.getters.storage.setItem('lz-termCourse-' + termId, coursesData)
-                ])
+                store.getters.storage.setItem('termCourseTimestamp-' + termId, onlineTimestamp)
+                store.getters.storage.setItem('lz-termCourse-' + termId, coursesData)
                 break;
 
                 case 'saveCourseInfo':
@@ -29,11 +27,8 @@ module.exports = function() {
 
                 if (skipSaving) return;
 
-                return Bluebird.all([
-                    store.getters.storage.setItem('termCourseInfoTimestamp-' + termId, onlineTimestamp),
-                    store.getters.storage.setItem('lz-termCourseInfo-' + termId, courseInfo)
-                ])
-
+                store.getters.storage.setItem('termCourseInfoTimestamp-' + termId, onlineTimestamp)
+                store.getters.storage.setItem('lz-termCourseInfo-' + termId, courseInfo)
                 break;
 
                 case 'saveInstructorNameToTidMapping':
@@ -44,11 +39,8 @@ module.exports = function() {
 
                 if (skipSaving) return;
 
-                return Bluebird.all([
-                    store.getters.storage.setItem('rmpTimestamp', onlineTimestamp),
-                    store.getters.storage.setItem('lz-rmp', rmp)
-                ])
-
+                store.getters.storage.setItem('rmpTimestamp', onlineTimestamp)
+                store.getters.storage.setItem('lz-rmp', rmp)
                 break;
 
                 case 'saveTermsList':
@@ -59,11 +51,8 @@ module.exports = function() {
 
                 if (skipSaving) return;
 
-                return Bluebird.all([
-                    store.getters.storage.setItem('termsListTimestamp', onlineTimestamp),
-                    store.getters.storage.setItem('lz-termsList', termsList)
-                ])
-
+                store.getters.storage.setItem('termsListTimestamp', onlineTimestamp)
+                store.getters.storage.setItem('lz-termsList', termsList)
                 break;
 
                 case 'saveSubjects':
@@ -74,10 +63,9 @@ module.exports = function() {
 
                 if (skipSaving) return;
 
-                return Bluebird.all([
-                    store.getters.storage.setItem('subjectsTimestamp', onlineTimestamp),
-                    store.getters.storage.setItem('lz-subjects', subjects)
-                ])
+                store.getters.storage.setItem('subjectsTimestamp', onlineTimestamp)
+                store.getters.storage.setItem('lz-subjects', subjects)
+                break;
 
                 case 'saveMajorMinor':
 
@@ -87,11 +75,8 @@ module.exports = function() {
 
                 if (skipSaving) return;
 
-                return Bluebird.all([
-                    store.getters.storage.setItem('mmTimestamp', onlineTimestamp),
-                    store.getters.storage.setItem('lz-majorMinor', mm)
-                ])
-
+                store.getters.storage.setItem('mmTimestamp', onlineTimestamp)
+                store.getters.storage.setItem('lz-majorMinor', mm)
                 break;
 
                 case 'saveHistoricData':
@@ -102,11 +87,8 @@ module.exports = function() {
 
                 if (skipSaving) return;
 
-                return Bluebird.all([
-                    store.getters.storage.setItem('historicDataTimestamp', onlineTimestamp),
-                    store.getters.storage.setItem('lz-historicData', historicData)
-                ])
-
+                store.getters.storage.setItem('historicDataTimestamp', onlineTimestamp)
+                store.getters.storage.setItem('lz-historicData', historicData)
                 break;
 
                 case 'saveFinalSchedule':
@@ -117,11 +99,8 @@ module.exports = function() {
 
                 if (skipSaving) return;
 
-                return Bluebird.all([
-                    store.getters.storage.setItem('finalScheduleTimestamp', onlineTimestamp),
-                    store.getters.storage.setItem('lz-finalSchedule', final)
-                ])
-
+                store.getters.storage.setItem('finalScheduleTimestamp', onlineTimestamp)
+                store.getters.storage.setItem('lz-finalSchedule', final)
                 break;
 
                 default:

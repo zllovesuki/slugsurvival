@@ -324,12 +324,8 @@ module.exports = {
             self.$store.dispatch('showSpinner')
             self.graphDataReady = true;
             return self.$store.dispatch('fetchTermCourses', self.termCode)
-            .then(function() {
-                return Bluebird.all([
-                    self.fetchHeat(),
-                    self.fetchCompacted()
-                ])
-            })
+            .then(self.fetchHeat)
+            .then(self.fetchCompacted)
             .then(function() {
                 self.$store.commit('setTermName', self.$store.getters.termsList[self.termCode])
                 var startDate = self.termDates[self.termCode]
