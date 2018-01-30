@@ -37,6 +37,12 @@ module.exports = {
         var mm = payload.mm;
         state.majorMinor = mm;
     },
+    emptyTerm: function(state, termId) {
+        delete state.flatCourses[termId]
+        delete state.sortedCourses[termId]
+        delete state.search[termId]
+        delete state.courseInfo[termId]
+    },
     saveTermCourses: function(state, payload) {
         var obj, termId = payload.termId, courses = payload.coursesData, skipSaving = payload.skipSaving;
         if (typeof state.flatCourses[termId] === 'undefined') {

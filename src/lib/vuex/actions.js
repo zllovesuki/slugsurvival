@@ -102,7 +102,9 @@ var self = module.exports = {
             })
         }
         var loadOfflineTimestamp = function() {
-            return Bluebird.all([
+            /*
+            Ideally, we would use:
+            Bluebird.all([
                 _.getters.storage.getItem('termsListTimestamp'),
                 _.getters.storage.getItem('rmpTimestamp'),
                 _.getters.storage.getItem('subjectsTimestamp'),
@@ -110,16 +112,48 @@ var self = module.exports = {
                 _.getters.storage.getItem('historicDataTimestamp'),
                 _.getters.storage.getItem('finalScheduleTimestamp')
             ])
+            Somehow, com.apple.WebKit.Storage keeps crashing on me,
+            so maybe Safari doesn't like to be tickled
+            */
+            let keysToLoad = [
+                'termsListTimestamp',
+                'rmpTimestamp',
+                'subjectsTimestamp',
+                'mmTimestamp',
+                'historicDataTimestamp',
+                'finalScheduleTimestamp'
+            ]
+            return Bluebird.mapSeries(keysToLoad, function(key) {
+                return _.getters.storage.getItem(key)
+            })
         }
         var loadFromStorage = function(invalid, online) {
-            return Bluebird.all([
-                !invalid.termsList ? _.getters.storage.getItem('lz-termsList') : null,
-                !invalid.rmp ? _.getters.storage.getItem('lz-rmp') : null,
-                !invalid.subjects ? _.getters.storage.getItem('lz-subjects') : null,
-                !invalid.mm ? _.getters.storage.getItem('lz-majorMinor') : null,
-                !invalid.historicData ? _.getters.storage.getItem('lz-historicData') : null,
-                !invalid.finalSchedule ? _.getters.storage.getItem('lz-finalSchedule') : null
-            ]).spread(function(termsList, rmp, subjects, mm, historicData, finalSchedule) {
+            /*
+            Again, maybe Safari doesn't like to be tickled
+            */
+            let keysMap = [{
+                objKey: 'termsList',
+                storKey: 'lz-termsList'
+            }, {
+                objKey: 'rmp',
+                storKey: 'lz-rmp'
+            }, {
+                objKey: 'subjects',
+                storKey: 'lz-subjects'
+            }, {
+                objKey: 'mm',
+                storKey: 'lz-majorMinor'
+            }, {
+                objKey: 'historicData',
+                storKey: 'lz-historicData'
+            }, {
+                objKey: 'finalSchedule',
+                storKey: 'lz-finalSchedule'
+            }]
+            return Bluebird.mapSeries(keysMap, function(map) {
+                return (!invalid[map.objKey] ? _.getters.storage.getItem(map.storKey) : null)
+            })
+            .spread(function(termsList, rmp, subjects, mm, historicData, finalSchedule) {
                 return _.dispatch('saveBasicData', {
                     termsList: termsList,
                     rmp: rmp,

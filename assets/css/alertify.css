@@ -4,21 +4,26 @@
 .alertify.show {
     box-sizing: border-box
 }
+
 .alertify-logs>* {
     color: #fff;
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .2);
     border-radius: 1px
 }
+
 .alertify-logs>*,
 .alertify-logs>.default {
     background: rgba(0, 0, 0, .8)
 }
+
 .alertify-logs>.error {
     background: rgba(244, 67, 54, .8)
 }
+
 .alertify-logs>.success {
     background: rgba(76, 175, 80, .9)
 }
+
 .alertify {
     position: fixed;
     background-color: rgba(0, 0, 0, .3);
@@ -30,17 +35,21 @@
     height: 100%;
     z-index: 100002
 }
+
 .alertify.hide {
     opacity: 0;
     pointer-events: none
 }
+
 .alertify,
 .alertify.show {
-    transition: all .33s cubic-bezier(.25, .8, .25, 1)
+    transition: opacity .33s ease-in-out
 }
+
 .alertify .dialog {
     padding: 12px
 }
+
 .alertify .alert,
 .alertify .dialog {
     width: 100%;
@@ -50,6 +59,7 @@
     -webkit-transform: translateY(-50%);
     transform: translateY(-50%)
 }
+
 .alertify .alert>*,
 .alertify .dialog>* {
     width: 400px;
@@ -60,12 +70,14 @@
     background: #fff;
     box-shadow: 0 2px 4px -1px rgba(0, 0, 0, .14), 0 4px 5px 0 rgba(0, 0, 0, .098), 0 1px 10px 0 rgba(0, 0, 0, .084)
 }
+
 .alertify .alert .msg,
 .alertify .dialog .msg {
     padding: 12px;
     margin: 0;
     text-align: left
 }
+
 .alertify .alert input:not(.form-control),
 .alertify .dialog input:not(.form-control) {
     margin-bottom: 15px;
@@ -73,14 +85,17 @@
     font-size: 100%;
     padding: 12px
 }
+
 .alertify .alert input:not(.form-control):focus,
 .alertify .dialog input:not(.form-control):focus {
     outline-offset: -2px
 }
+
 .alertify .alert nav,
 .alertify .dialog nav {
     text-align: right
 }
+
 .alertify .alert nav button:not(.btn):not(.pure-button):not(.md-button):not(.mdl-button),
 .alertify .dialog nav button:not(.btn):not(.pure-button):not(.md-button):not(.mdl-button) {
     background: 0 0;
@@ -107,32 +122,39 @@
     border: 1px solid transparent;
     border-radius: 2px
 }
+
 .alertify .alert nav button:not(.btn):not(.pure-button):not(.md-button):not(.mdl-button):active,
 .alertify .alert nav button:not(.btn):not(.pure-button):not(.md-button):not(.mdl-button):hover,
 .alertify .dialog nav button:not(.btn):not(.pure-button):not(.md-button):not(.mdl-button):active,
 .alertify .dialog nav button:not(.btn):not(.pure-button):not(.md-button):not(.mdl-button):hover {
     background-color: rgba(0, 0, 0, .05)
 }
+
 .alertify .alert nav button:not(.btn):not(.pure-button):not(.md-button):not(.mdl-button):focus,
 .alertify .dialog nav button:not(.btn):not(.pure-button):not(.md-button):not(.mdl-button):focus {
     border: 1px solid rgba(0, 0, 0, .1)
 }
+
 .alertify .alert nav button.btn,
 .alertify .dialog nav button.btn {
     margin: 6px 4px
 }
+
 .alertify-logs {
     position: fixed;
     z-index: 100003
 }
+
 .alertify-logs.bottom,
 .alertify-logs:not(.top) {
     bottom: 16px
 }
+
 .alertify-logs.left,
 .alertify-logs:not(.right) {
     left: 16px
 }
+
 .alertify-logs.left>*,
 .alertify-logs:not(.right)>* {
     float: left;
@@ -140,36 +162,44 @@
     transform: translateZ(0);
     height: auto
 }
+
 .alertify-logs.left>.show,
 .alertify-logs:not(.right)>.show {
     left: 0
 }
+
 .alertify-logs.left>*,
 .alertify-logs.left>.hide,
 .alertify-logs:not(.right)>*,
 .alertify-logs:not(.right)>.hide {
     left: -110%
 }
+
 .alertify-logs.right {
     right: 16px
 }
+
 .alertify-logs.right>* {
     float: right;
     -webkit-transform: translateZ(0);
     transform: translateZ(0)
 }
+
 .alertify-logs.right>.show {
     right: 0;
     opacity: 1
 }
+
 .alertify-logs.right>*,
 .alertify-logs.right>.hide {
     right: -110%;
     opacity: 0
 }
+
 .alertify-logs.top {
     top: 0
 }
+
 .alertify-logs>* {
     transition: all .4s cubic-bezier(.25, .8, .25, 1);
     position: relative;
@@ -185,6 +215,7 @@
     opacity: 0;
     pointer-events: none
 }
+
 .alertify-logs>.show {
     margin-top: 12px;
     opacity: 1;

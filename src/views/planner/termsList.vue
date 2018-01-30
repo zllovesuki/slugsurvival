@@ -60,7 +60,7 @@ module.exports = {
             return self.storage.getItem(term.code).then(function(events) {
                 if (events !== null) self.saved.push(term.code)
             })
-        }).then(function() {
+        }, { concurrency: 1 }).then(function() {
             self.$store.dispatch('hideSpinner')
         })
     },

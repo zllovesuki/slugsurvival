@@ -70,7 +70,8 @@ module.exports = {
             chooseSectionModal: false,
             sectionList: [],
             lock: false,
-            inflight: false
+            inflight: false,
+            persistentTermId: null
         }
     },
     computed: {
@@ -532,6 +533,7 @@ module.exports = {
     },
     mounted: function() {
         var self = this;
+        this.persistentTermId = this.termId
         this.$store.dispatch('setTitle', 'Planner');
         if (self.showFinal) self.$store.dispatch('filpSchedule');
         return self.$store.dispatch('fetchTermCourses').then(function() {
@@ -569,9 +571,11 @@ module.exports = {
         })
     },
     beforeDestroy: function() {
-        var termId = this.termId;
+        var termId = this.persistentTermId;
         $('#calendar-' + termId).fullCalendar('destroy')
         this.$store.getters.unsubscribeRealtimeFn()
+        this.$store.commit('setTermName', null)
+        this.$store.commit('emptyTerm', termId)
     }
 }
 </script>

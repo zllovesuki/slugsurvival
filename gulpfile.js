@@ -7,6 +7,7 @@ var gulp = require('gulp'),
     gp_sourcemaps = require('gulp-sourcemaps');
 
 var jsAssets = [
+    'assets/js/alertify.js',
     'assets/js/fetch.js',
     'assets/js/moment.js',
     'assets/js/lz-string.js',
@@ -37,12 +38,10 @@ gulp.task('js', function() {
 
 gulp.task('css', function() {
     return gulp.src(cssAssets)
-        .pipe(gp_sourcemaps.init())
         .pipe(gp_concatcss('style.css'))
         .pipe(gulp.dest('public'))
         .pipe(gp_rename('style.min.css'))
         .pipe(gp_cleancss({compatibility: 'ie8'}))
-        .pipe(gp_sourcemaps.write('./'))
         .pipe(gulp.dest('public'));
 });
 

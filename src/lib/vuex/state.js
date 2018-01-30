@@ -1,5 +1,4 @@
-var alertify = require('alertify.js'),
-    storage = require('./plugins/storage')
+var storage = require('./plugins/storage')
 
 module.exports = {
 

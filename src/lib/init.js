@@ -1,9 +1,6 @@
 var MobileDetect = require('mobile-detect')
 
 module.exports = function(_, router) {
-    var element = document.getElementById('loading');
-    element.parentNode.removeChild(element);
-
     _.dispatch('removeLegacyStorage')
 
     _.dispatch('checkVersion')
@@ -14,9 +11,7 @@ module.exports = function(_, router) {
 
     router.beforeEach(function(to, from, next) {
         _.commit('shouldAddMargin', false);
-        _.dispatch('showSpinner').then(function() {
-            _.dispatch('ensureDataLoaded').then(next);
-        });
+        _.dispatch('showSpinner').then(next);
     })
 
     router.afterEach(function(to, from) {
@@ -26,5 +21,9 @@ module.exports = function(_, router) {
             _.getters.Tracker.setDocumentTitle(to.name)
             _.getters.Tracker.trackPageView()
         }
+    })
+
+    return _.dispatch('ensureDataLoaded').then(function() {
+        window.loading_screen.finish()
     })
 }

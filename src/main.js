@@ -137,14 +137,13 @@ var router = new VueRouter({
     ]
 })
 
-require('./lib/init.js')(store, router)
 require('./lib/registerComponents.js')(Vue)
 
-sync(store, router);
-
-var vm = new App({
-    router: router,
-    store: store
-}).$mount('#app')
-
-window.App = vm;
+require('./lib/init.js')(store, router).then(function() {
+    sync(store, router);
+    var vm = new App({
+        router: router,
+        store: store
+    }).$mount('#app')
+    window.App = vm;
+})
