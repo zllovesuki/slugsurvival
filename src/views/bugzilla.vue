@@ -122,6 +122,9 @@ module.exports = {
         this.getKeys();
         this.$store.dispatch('hideSpinner')
         this.$store.dispatch('setTitle', 'Bugzilla');
+    },
+    beforeDestroy: function() {
+        window.location = '/'
     }
 }
 </script>
