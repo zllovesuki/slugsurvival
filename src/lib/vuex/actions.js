@@ -1742,7 +1742,7 @@ var self = module.exports = {
         var events = _.state.events[termId], dateMap = _.state.dateMap, colorMap = _.state.colorMap;
         if (typeof events === 'undefined') events = [];
 
-        var day = null, start = null, end = null, obj = {}, course = {}, eventSource = [];;
+        var day = null, start = null, end = null, obj = {}, course = {}, eventSource = [], split = [];
         var compact = helper.compact(events);
         return Bluebird.map(compact, function(string) {
             split = string.split('-');
