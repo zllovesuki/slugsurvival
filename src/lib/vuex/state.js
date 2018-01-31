@@ -16,7 +16,7 @@ module.exports = {
 
     termsList: {},
     flatTermsList: [],
-    latestTwoTerms: [],
+    latestTerms: [],
     termDates: {},
     termName: '',
 

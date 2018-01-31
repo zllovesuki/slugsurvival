@@ -21,7 +21,7 @@ module.exports = {
     saveTermsList: function(state, payload) {
         state.flatTermsList = Object.freeze(payload.termsList);
         // sigh.... *JavaScript*
-        state.latestTwoTerms = Object.freeze(JSON.parse(JSON.stringify(payload.termsList)).sort(function(a, b) {
+        state.latestTerms = Object.freeze(JSON.parse(JSON.stringify(payload.termsList)).sort(function(a, b) {
             if (a.code > b.code) return -1;
             else if (a.code < b.code) return 1;
             else return 0
@@ -46,7 +46,7 @@ module.exports = {
         state.majorMinor = Object.freeze(payload.mm);
     },
     emptyTerm: function(state, termId) {
-        if (state.latestTwoTerms.indexOf(termId) !== -1) {
+        if (state.latestTerms.indexOf(termId) !== -1) {
             console.log('gc: skipped one of the latest two terms - ' + termId)
             return
         }
