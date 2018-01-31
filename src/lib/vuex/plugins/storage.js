@@ -10,6 +10,13 @@ if (!!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)) {
     // iOS is fucking broken with its IndexedDB implementation...
     console.log('storage support: iOS detected, forcing to WebSQL')
     driver = localforage.WEBSQL
+    try {
+        indexedDB.deleteDatabase('offlineStore')
+        console.log('storage engine: removing IndexedDB on iOS')
+    }catch (e) {
+        console.log('storage engine: cannot remove IndexedDB')
+        console.log(e)
+    }
 }
 
 var adapter = localforage.createInstance({
