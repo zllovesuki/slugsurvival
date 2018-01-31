@@ -4,7 +4,7 @@ var lunr = require('lunr'),
 
 module.exports = {
     setTracker: function(state, Tracker) {
-        state.Tracker = Tracker;
+        state.Tracker = Object.freeze(Tracker);
     },
     setTitle: function(state, title) {
         state.title = title;
@@ -13,123 +13,130 @@ module.exports = {
         state.termName = name;
     },
     saveSubjects: function(state, payload) {
-        var subjects = payload.subjects;
-        state.flatSubjectList = subjects;
-        subjects.forEach(function(subject) {
+        state.flatSubjectList = Object.freeze(payload.subjects);
+        payload.subjects.forEach(function(subject) {
             state.subjectList[subject.code] = subject.name;
         })
     },
     saveTermsList: function(state, payload) {
-        var terms = payload.termsList
-        state.flatTermsList = terms;
+        state.flatTermsList = Object.freeze(payload.termsList);
         var tmp;
-        var years = {};
-        terms.forEach(function(term) {
-            state.termsList[term.code] = term.name;
-            state.termDates[term.code] = term.date;
+        var years = {}, termsList = {}, termDates = {}
+        payload.termsList.forEach(function(term) {
+            termsList[term.code] = term.name;
+            termDates[term.code] = term.date;
             tmp = '20' + helper.pad((term.code % 2000).toString().slice(0, -1), 2, 0);
             if (typeof years[tmp] === 'undefined') {
                 years[tmp] = null;
             }
         })
         state.numOfYears = Object.keys(years).length;
+        state.termsList = Object.freeze(termsList)
+        state.termDates = Object.freeze(termDates)
     },
     saveMajorMinor: function(state, payload) {
-        var mm = payload.mm;
-        state.majorMinor = mm;
+        state.majorMinor = Object.freeze(payload.mm);
     },
     emptyTerm: function(state, termId) {
+        console.log('gc: removing ' + termId + ' from state')
         delete state.flatCourses[termId]
         delete state.sortedCourses[termId]
         delete state.search[termId]
         delete state.courseInfo[termId]
     },
     saveTermCourses: function(state, payload) {
-        var obj, termId = payload.termId, courses = payload.coursesData, skipSaving = payload.skipSaving;
+        var obj, termId = payload.termId, skipSaving = payload.skipSaving;
         if (typeof state.flatCourses[termId] === 'undefined') {
             state.flatCourses[termId] = {};
         }
         if (typeof state.sortedCourses[termId] === 'undefined') {
             state.sortedCourses[termId] = {};
         }
-        Object.keys(courses).sort().forEach(function(subject) {
-            state.sortedCourses[termId][subject] = courses[subject];
-            state.sortedCourses[termId][subject].sort(function(a, b) {
-                if (!skipSaving) {
-                    return helper.naturalSorter(a.c, b.c)
-                }else{
-                    return helper.naturalSorter(a.c.split(' ').filter(Boolean)[1], b.c.split(' ').filter(Boolean)[1])
-                }
-            });
-            courses[subject].forEach(function(course) {
+        Object.keys(payload.coursesData).sort().forEach(function(subject) {
+            state.sortedCourses[termId][subject] = Object.freeze(
+                payload.coursesData[subject].sort(function(a, b) {
+                    if (!skipSaving) {
+                        return helper.naturalSorter(a.c, b.c)
+                    }else{
+                        return helper.naturalSorter(a.c.split(' ').filter(Boolean)[1], b.c.split(' ').filter(Boolean)[1])
+                    }
+                })
+            )
+
+            payload.coursesData[subject].forEach(function(course) {
                 if (!skipSaving) {
                     obj = course;
                     obj.c = [subject, course.c].join(' ');
-                    state.flatCourses[termId][course.num] = obj;
+                    state.flatCourses[termId][course.num] = Object.freeze(obj)
                 }else{
-                    state.flatCourses[termId][course.num] = course;
+                    state.flatCourses[termId][course.num] = Object.freeze(course)
                 }
             })
         })
     },
     appendCourse: function(state, payload) {
-        var termId = payload.termId, courseNum = payload.courseNum, course = payload.courseObj;
-        state.flatCourses[termId][courseNum] = course;
+        var termId = payload.termId, courseNum = payload.courseNum;
+        state.flatCourses[termId][courseNum] = Object.freeze(payload.courseObj);
     },
     saveInstructorNameToTidMapping: function(state, payload) {
-        state.instructorNameToTidMapping = payload.rmp;
+        state.instructorNameToTidMapping = Object.freeze(payload.rmp);
     },
     saveInstructorStats: function(state, stats) {
         if (Object.keys(state.instructorStats).length > 5) {
             state.instructorStats = {};
         }
-        state.instructorStats[stats.tid] = stats;
+        state.instructorStats[stats.tid] = Object.freeze(stats);
     },
     saveCourseInfo: function(state, payload) {
-        var termId = payload.termId, courses = payload.courseInfo;
-        state.courseInfo[termId] = courses;
+        var termId = payload.termId;
+        if (typeof state.courseInfo[termId] === 'undefined') state.courseInfo[termId] = {}
+        for (var courseNum in payload.courseInfo) {
+            state.courseInfo[termId][courseNum] = Object.freeze(payload.courseInfo[courseNum])
+        }
     },
     appendCourseInfo: function(state, payload) {
-        var termId = payload.termId, courseNum = payload.courseNum, courseInfo = payload.courseInfo;
-        state.courseInfo[termId][courseNum] = courseInfo;
+        var termId = payload.termId, courseNum = payload.courseNum;
+        state.courseInfo[termId][courseNum] = Object.freeze(payload.courseInfo);
     },
     saveHistoricData: function(state, payload) {
-        state.historicData = payload.historicData;
+        state.historicData = Object.freeze(payload.historicData);
     },
     saveHistoricFrequency: function(state, frequency) {
-        state.historicFrequency = frequency;
+        state.historicFrequency = Object.freeze(frequency);
     },
     buildIndexedSearch: function(state, termId) {
         console.log(termId + ': building index on the fly')
 
         var obj, _obj = {};
-        state.search[termId] = lunr(function() {
-            this.field('c', { boost: 5 })
-            this.field('n');
-            this.field('f');
-            this.field('la');
-            this.field('d');
-            this.ref('b');
+        state.search[termId] = Object.freeze(
+            lunr(function() {
+                this.field('c', { boost: 5 })
+                this.field('n');
+                this.field('f');
+                this.field('la');
+                this.field('d');
+                this.ref('b');
 
-            for (var courseNum in state.flatCourses[termId]) {
-                obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNum]));
+                for (var courseNum in state.flatCourses[termId]) {
+                    obj = JSON.parse(JSON.stringify(state.flatCourses[termId][courseNum]));
 
-                _obj.b = obj.num;
-                _obj.c = obj.c.split(/(\d+)/).map(function(el) { return el.replace(/\s+/g, ''); }).join(' ')
-                _obj.n = obj.n;
-                _obj.f = obj.ins.f;
-                _obj.la = obj.ins.l;
-                _obj.d = obj.ins.d[0];
-                this.add(_obj);
-                obj = {};
-                _obj = {};
-            }
-        })
+                    _obj.b = obj.num;
+                    _obj.c = obj.c.split(/(\d+)/).map(function(el) { return el.replace(/\s+/g, ''); }).join(' ')
+                    _obj.n = obj.n;
+                    _obj.f = obj.ins.f;
+                    _obj.la = obj.ins.l;
+                    _obj.d = obj.ins.d[0];
+                    this.add(_obj);
+                    obj = {};
+                    _obj = {};
+                }
+            })
+        )
     },
     mergeEventSource: function(state, payload) {
-        var termId = payload.termId, events = payload.events;
+        var termId = payload.termId;
         if (typeof state.events[termId] === 'undefined') state.events[termId] = [];
-        state.events[termId] = state.events[termId].concat(events);
+        state.events[termId] = state.events[termId].concat(payload.events);
         // autosave.js
         if (payload.skipSaving === true) return;
         if (typeof state.events[termId] !== 'undefined') {
@@ -137,8 +144,8 @@ module.exports = {
         }
     },
     restoreEventSourceSnapshot: function(state, payload) {
-        var termId = payload.termId, events = payload.events;
-        state.events[termId] = events;
+        var termId = payload.termId;
+        state.events[termId] = payload.events;
     },
     emptyEventSource: function(state, termId) {
         delete state.events[termId];
@@ -213,13 +220,13 @@ module.exports = {
         state.onlineState = status;
     },
     saveFinalSchedule: function(state, payload) {
-        state.finalSchedule = payload.finalSchedule;
+        state.finalSchedule = Object.freeze(payload.finalSchedule);
     },
     flipFinalSchedule: function(state) {
         state.showFinal = !state.showFinal;
     },
     saveEventSnapshot: function(state, events) {
-        state.eventSnapshot = events;
+        state.eventSnapshot = Object.freeze(events);
     },
     incRMPEmptyCounter: function(state) {
         state.rmpEmptyCounter++
@@ -229,13 +236,13 @@ module.exports = {
         state.enrollmentCheckCounter[courseNum]++
     },
     saveMobileDetect: function(state, md) {
-        state.MobileDetect = md;
+        state.MobileDetect = Object.freeze(md);
     },
     inflight: function(state, isInflight) {
         state.inflight = (isInflight === true)
     },
     saveSocket: function(state, socket) {
-        state.socket = socket
+        state.socket = Object.freeze(socket)
     },
     changePushReady: function(state, readyState) {
         state.pushReady = readyState

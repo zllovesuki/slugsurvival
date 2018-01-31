@@ -1,14 +1,31 @@
 "use strict"
 var localforage = require('localforage')
 
+console.log('storage support: IndexedDB - ' + localforage.supports(localforage.INDEXEDDB))
+console.log('storage support: WebSQL - ' + localforage.supports(localforage.WEBSQL))
+
+var driver = localforage.INDEXEDDB
+
+if (!!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform)) {
+    // iOS is fucking broken with its IndexedDB implementation...
+    console.log('storage support: iOS detected, forcing to WebSQL')
+    driver = localforage.WEBSQL
+}
+
 var adapter = localforage.createInstance({
+    driver: driver,
     name: "offlineStore",
     version: 1.0,
     storeName: "kvStoreForCalendar"
 })
 
+adapter.ready().then(function() {
+    console.log('storage engine: ' + adapter.driver())
+})
+
 module.exports = {
     // pass thru
+    adapter: adapter,
     keys: function() {
         return adapter.keys()
     },

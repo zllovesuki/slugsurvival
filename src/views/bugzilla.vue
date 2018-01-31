@@ -13,7 +13,7 @@
                     <div class="clearfix">
                         <div class="left black">
                             <span class="btn h6 muted not-clickable">
-                                Storage Keys
+                                Storage Keys (Driver: {{ storageDriver }})
                             </span>
                         </div>
                     </div>
@@ -75,6 +75,7 @@ module.exports = {
     },
     data: function() {
         return {
+            storageDriver: null,
             storageKeys: []
         }
     },
@@ -120,6 +121,7 @@ module.exports = {
     },
     mounted: function() {
         this.getKeys();
+        this.storageDriver = this.$store.getters.storage.adapter.driver()
         this.$store.dispatch('hideSpinner')
         this.$store.dispatch('setTitle', 'Bugzilla');
     },

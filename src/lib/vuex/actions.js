@@ -23,7 +23,7 @@ var self = module.exports = {
                 fetch(config.dbURL + '/rmp/scores/' + tid + '.json'),
                 fetch(config.dbURL + '/rmp/stats/' + tid + '.json')
             ]).then(function(results) {
-                return Bluebird.mapSeries(results, function(result) {
+                return Bluebird.map(results, function(result) {
                     if (result === null) return null
                     if (typeof result.json === 'undefined') return result
                     return result.json()
@@ -91,7 +91,7 @@ var self = module.exports = {
                 fetch(config.dbURL + '/timestamp/subjects.json'),
                 fetch(config.dbURL + '/timestamp/major-minor.json')
             ]).then(function(results) {
-                return Bluebird.mapSeries(results, function(result) {
+                return Bluebird.map(results, function(result) {
                     if (result === null) return null
                     if (typeof result.json === 'undefined') return result
                     return result.json()
@@ -110,9 +110,7 @@ var self = module.exports = {
             })
         }
         var loadOfflineTimestamp = function() {
-            /*
-            Ideally, we would use:
-            Bluebird.all([
+            return Bluebird.all([
                 _.getters.storage.getItem('termsListTimestamp'),
                 _.getters.storage.getItem('rmpTimestamp'),
                 _.getters.storage.getItem('subjectsTimestamp'),
@@ -120,48 +118,16 @@ var self = module.exports = {
                 _.getters.storage.getItem('historicDataTimestamp'),
                 _.getters.storage.getItem('finalScheduleTimestamp')
             ])
-            Somehow, com.apple.WebKit.Storage keeps crashing on me,
-            so maybe Safari doesn't like to be tickled
-            */
-            var keysToLoad = [
-                'termsListTimestamp',
-                'rmpTimestamp',
-                'subjectsTimestamp',
-                'mmTimestamp',
-                'historicDataTimestamp',
-                'finalScheduleTimestamp'
-            ]
-            return Bluebird.mapSeries(keysToLoad, function(key) {
-                return _.getters.storage.getItem(key)
-            })
         }
         var loadFromStorage = function(invalid, online) {
-            /*
-            Again, maybe Safari doesn't like to be tickled
-            */
-            var keysMap = [{
-                objKey: 'termsList',
-                storKey: 'lz-termsList'
-            }, {
-                objKey: 'rmp',
-                storKey: 'lz-rmp'
-            }, {
-                objKey: 'subjects',
-                storKey: 'lz-subjects'
-            }, {
-                objKey: 'mm',
-                storKey: 'lz-majorMinor'
-            }, {
-                objKey: 'historicData',
-                storKey: 'lz-historicData'
-            }, {
-                objKey: 'finalSchedule',
-                storKey: 'lz-finalSchedule'
-            }]
-            return Bluebird.mapSeries(keysMap, function(map) {
-                return (!invalid[map.objKey] ? _.getters.storage.getItem(map.storKey) : null)
-            })
-            .spread(function(termsList, rmp, subjects, mm, historicData, finalSchedule) {
+            return Bluebird.all([
+               !invalid.termsList ? _.getters.storage.getItem('lz-termsList') : null,
+               !invalid.rmp ? _.getters.storage.getItem('lz-rmp') : null,
+               !invalid.subjects ? _.getters.storage.getItem('lz-subjects') : null,
+               !invalid.mm ? _.getters.storage.getItem('lz-majorMinor') : null,
+               !invalid.historicData ? _.getters.storage.getItem('lz-historicData') : null,
+               !invalid.finalSchedule ? _.getters.storage.getItem('lz-finalSchedule') : null
+           ]).spread(function(termsList, rmp, subjects, mm, historicData, finalSchedule) {
                 return _.dispatch('saveBasicData', {
                     termsList: termsList,
                     rmp: rmp,
@@ -295,7 +261,7 @@ var self = module.exports = {
                             fetch(config.dbURL + '/offered/ge_fall.json'),
                             fetch(config.dbURL + '/offered/ge_winter.json')
                         ]).then(function(results) {
-                            return Bluebird.mapSeries(results, function(result) {
+                            return Bluebird.map(results, function(result) {
                                 if (result === null) return null
                                 if (typeof result.json === 'undefined') return result
                                 return result.json()
@@ -317,7 +283,7 @@ var self = module.exports = {
                     })() : null,
                     invalid.finalSchedule ? fetch(config.dbURL + '/final.json') : null
                 ]).then(function(results) {
-                    return Bluebird.mapSeries(results, function(result) {
+                    return Bluebird.map(results, function(result) {
                         if (result === null) return null
                         if (typeof result.json === 'undefined') return result
                         return result.json()
@@ -383,7 +349,7 @@ var self = module.exports = {
                 fetch(config.dbURL + '/timestamp/terms/' + termId + '.json'),
                 fetch(config.dbURL + '/timestamp/courses/' + termId + '.json')
             ]).then(function(results) {
-                return Bluebird.mapSeries(results, function(result) {
+                return Bluebird.map(results, function(result) {
                     if (result === null) return null
                     if (typeof result.json === 'undefined') return result
                     return result.json()
@@ -396,26 +362,16 @@ var self = module.exports = {
             })
         }
         var loadOfflineTimestamp = function() {
-            var keysToLoad = [
-                'termCourseTimestamp-' + termId,
-                'termCourseInfoTimestamp-' + termId
-            ]
-            return Bluebird.mapSeries(keysToLoad, function(key) {
-                return _.getters.storage.getItem(key)
-            })
+            return Bluebird.all([
+                _.getters.storage.getItem('termCourseTimestamp-' + termId),
+                _.getters.storage.getItem('termCourseInfoTimestamp-' + termId)
+            ])
         }
         var loadFromStorage = function(invalid) {
-            var keysMap = [{
-                objKey: 'coursesData',
-                storKey: 'lz-termCourse-' + termId
-            }, {
-                objKey: 'courseInfo',
-                storKey: 'lz-termCourseInfo-' + termId
-            }]
-            return Bluebird.mapSeries(keysMap, function(map) {
-                return (!invalid[map.objKey] ? _.getters.storage.getItem(map.storKey) : null)
-            })
-            .spread(function(coursesData, courseInfo) {
+            return Bluebird.all([
+               !invalid.coursesData ? _.getters.storage.getItem('termCourse-' + termId) : null,
+               !invalid.courseInfo ? _.getters.storage.getItem('termCourseInfo-' + termId) : null
+           ]).spread(function(coursesData, courseInfo) {
                 return _.dispatch('saveCourseData', {
                     termId: termId,
                     coursesData: coursesData,
@@ -499,7 +455,7 @@ var self = module.exports = {
                     invalid.coursesData ? fetch(config.dbURL + '/terms/' + termId + '.json') : null,
                     invalid.courseInfo ? fetch(config.dbURL + '/courses/' + termId + '.json') : null
                 ]).then(function(results) {
-                    return Bluebird.mapSeries(results, function(result) {
+                    return Bluebird.map(results, function(result) {
                         if (result === null) return null
                         if (typeof result.json === 'undefined') return result
                         return result.json()
@@ -1857,19 +1813,5 @@ var self = module.exports = {
             }
         })
         _.commit('saveUnsubscribeRealtimeFn', unsubscribeRealtimeFn)
-    },
-    removeLegacyStorage: function(_) {
-        return _.getters.storage.keys().then(function(keys) {
-            return Bluebird.mapSeries(keys, function(key) {
-                var parts = key.split('-')
-                if ([
-                    'termCourse',
-                    'termCourseInfo'
-                ].indexOf(parts[0]) !== -1) {
-                    console.log('removeLegacyStorage: Removing', key)
-                    return _.getters.storage.removeItem(key)
-                }
-            })
-        })
     }
 }

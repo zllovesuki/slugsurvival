@@ -22,8 +22,6 @@ module.exports = function(_, router) {
         return Bluebird.resolve()
     }
 
-    _.dispatch('removeLegacyStorage')
-
     _.dispatch('checkVersion')
     _.dispatch('addOnlineOfflineListener')
     _.dispatch('realtime')

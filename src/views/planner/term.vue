@@ -346,7 +346,7 @@ module.exports = {
                                 if (self.Tracker !== null) {
                                     self.Tracker.trackEvent('searchCb', 'back', termId + '_' + course.c + '-' + course.s)
                                 }
-                                throw new Error();
+                                throw new Error('Shortcut skip: safely ignore this error.');
                             }
                             if (multiple.length > 1) {
                                 // We will track the actual event when user actually clicks

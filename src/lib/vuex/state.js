@@ -85,5 +85,5 @@ module.exports = {
     eventSnapshot: [],
 
     alert: alertify.reset().closeLogOnClick(true).logPosition("bottom left").maxLogItems(3),
-    storage: storage
+    storage: Object.freeze(storage)
 }
