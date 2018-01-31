@@ -20,6 +20,14 @@ module.exports = {
     },
     saveTermsList: function(state, payload) {
         state.flatTermsList = Object.freeze(payload.termsList);
+        // sigh.... *JavaScript*
+        state.latestTwoTerms = Object.freeze(JSON.parse(JSON.stringify(payload.termsList)).sort(function(a, b) {
+            if (a.code > b.code) return -1;
+            else if (a.code < b.code) return 1;
+            else return 0
+        }).slice(0, 2).map(function(term) {
+            return term.code
+        }))
         var tmp;
         var years = {}, termsList = {}, termDates = {}
         payload.termsList.forEach(function(term) {
@@ -38,6 +46,10 @@ module.exports = {
         state.majorMinor = Object.freeze(payload.mm);
     },
     emptyTerm: function(state, termId) {
+        if (state.latestTwoTerms.indexOf(termId) !== -1) {
+            console.log('gc: skipped one of the latest two terms - ' + termId)
+            return
+        }
         console.log('gc: removing ' + termId + ' from state')
         delete state.flatCourses[termId]
         delete state.sortedCourses[termId]

@@ -339,6 +339,7 @@ var self = module.exports = {
         })
         .then(function(success) {
             if (success) return _.dispatch('buildHistoricFrequency')
+            else _.getters.alert.error('Cannot load basic data!')
         })
     },
     loadCourseDataFromLocal: function(_, termId) {
@@ -517,6 +518,7 @@ var self = module.exports = {
         })
         .then(function(success) {
             if (success) _.commit('buildIndexedSearch', termId)
+            else _.getters.alert.error('Cannot load course data!')
         })
     },
     fetchThreeStatsByFirstLastName: function(_, payload) {
