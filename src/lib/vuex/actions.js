@@ -369,8 +369,8 @@ var self = module.exports = {
         }
         var loadFromStorage = function(invalid) {
             return Bluebird.all([
-               !invalid.coursesData ? _.getters.storage.getItem('termCourse-' + termId) : null,
-               !invalid.courseInfo ? _.getters.storage.getItem('termCourseInfo-' + termId) : null
+               !invalid.coursesData ? _.getters.storage.getItem('lz-termCourse-' + termId) : null,
+               !invalid.courseInfo ? _.getters.storage.getItem('lz-termCourseInfo-' + termId) : null
            ]).spread(function(coursesData, courseInfo) {
                 return _.dispatch('saveCourseData', {
                     termId: termId,

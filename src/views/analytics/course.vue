@@ -323,7 +323,7 @@ module.exports = {
             var self = this;
             self.dropDeadline = '...'
             self.$store.commit('setTermName', null)
-            self.$store.commit('emptyTerm', oldTermCode)
+            if (!!oldTermCode) self.$store.commit('emptyTerm', oldTermCode)
 
             self.$store.dispatch('showSpinner')
             self.graphDataReady = true;
