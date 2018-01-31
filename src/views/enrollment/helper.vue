@@ -159,7 +159,7 @@ module.exports = {
         'termCode': function(val, oldVal) {
             if (!this.ready) return;
             this.termCode = val;
-            this.switchTerm();
+            this.switchTerm(oldVal);
         }
     },
     methods: {
@@ -388,10 +388,12 @@ module.exports = {
                 });
             })
         },
-        switchTerm: function() {
+        switchTerm: function(oldTermCode) {
             var self = this;
             self.courses = [];
             self.$store.dispatch('showSpinner')
+            self.$store.commit('setTermName', null)
+            if (!!oldTermCode) self.$store.commit('emptyTerm', oldTermCode)
             return self.$store.dispatch('fetchTermCourses', self.termCode).then(function() {
                 self.$store.dispatch('hideSpinner')
             })
