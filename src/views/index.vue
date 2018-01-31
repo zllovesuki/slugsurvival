@@ -237,6 +237,7 @@ module.exports = {
                         if (self.$store.getters.Tracker !== null) {
                             self.$store.getters.Tracker.trackEvent('quickSearchCb', 'back', termId + '_' + course.c + '-' + course.s)
                         }
+                        self.$store.commit('emptyTerm', termId)
                     })
                 })
             })
