@@ -382,7 +382,7 @@ module.exports = {
         return this.$store.dispatch('fetchAvailableTerms')
         .then(function(list) {
             self.availableTerms = list.filter(function(term) {
-                return self.termDates[term.code].start !== null;
+                return !!self.termDates[term.code] && self.termDates[term.code].start !== null;
             });
             self.termCode = self.route.params.termId || self.availableTerms[self.availableTerms.length - 1].code;
             return self.switchTerm();
