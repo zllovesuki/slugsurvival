@@ -154,6 +154,7 @@ var helper = require('../lib/vuex/helper')
 module.exports = {
     data: function() {
         return {
+            inFlight: false,
             isMobile: false,
             listOfGE: {},
             GEModal: false,
@@ -196,7 +197,9 @@ module.exports = {
     methods: {
         promptShowCourse: function(result, year) {
             if (year === '...') return
+            if (this.inFlight) return
             var self = this;
+            self.inFlight = true
             self.$store.dispatch('showSpinner')
             var quarter = result.qtr;
             var termId = helper.nameToCode([year, quarter].join(' '))
@@ -240,6 +243,9 @@ module.exports = {
                         self.$store.commit('emptyTerm', termId)
                     })
                 })
+            })
+            .finally(function() {
+                self.inFlight = false
             })
 
         },
