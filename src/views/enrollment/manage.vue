@@ -298,7 +298,7 @@ module.exports = {
                 return el.num !== course.num
             })
         },
-        switchTerm: function() {
+        switchTerm: function(oldTermCode) {
             var self = this;
             self.courses = [];
             self.$store.dispatch('showSpinner')
