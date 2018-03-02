@@ -62,6 +62,9 @@ module.exports = {
             y: [],
             yaxis: 'y2',
             mode: 'markers',
+            marker: {
+                size: 4
+            },
             line: {
                 color: 'gray'
             },
@@ -75,9 +78,11 @@ module.exports = {
             name: 'Available',
             x: [],
             y: [],
-            mode: 'lines',
+            mode: 'markers',
+            marker: {
+                size: 6
+            },
             line: {
-                shape: 'linear',
                 color: 'green'
             }
         }
@@ -85,9 +90,11 @@ module.exports = {
             name: 'Enrolled',
             x: [],
             y: [],
-            mode: 'lines',
+            mode: 'markers',
+            marker: {
+                size: 6
+            },
             line: {
-                shape: 'linear',
                 color: 'blue'
             }
         }
@@ -95,9 +102,11 @@ module.exports = {
             name: 'Capacity',
             x: [],
             y: [],
-            mode: 'lines',
+            mode: 'markers',
+            marker: {
+                size: 6
+            },
             line: {
-                shape: 'linear',
                 color: 'red'
             }
         }
@@ -106,8 +115,10 @@ module.exports = {
             x: [],
             y: [],
             mode: 'markers',
+            marker: {
+                size: 4
+            },
             line: {
-                shape: 'linear',
                 color: 'black'
             }
         }
