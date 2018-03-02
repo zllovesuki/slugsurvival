@@ -1815,7 +1815,7 @@ var self = module.exports = {
             }, {})
             if (typeof courseMap[delta.courseNum] !== 'undefined') {
                 // *explosion*
-                _.getters.alert.success('Enrollment changes on ' + courseMap[delta.courseNum].c + '!')
+                _.getters.alert.delay(0).success('Enrollment changes on ' + courseMap[delta.courseNum].c + '!')
             }
         })
         _.commit('saveUnsubscribeRealtimeFn', unsubscribeRealtimeFn)

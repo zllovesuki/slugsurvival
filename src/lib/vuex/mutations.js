@@ -13,7 +13,7 @@ module.exports = {
         state.termName = name;
     },
     saveSubjects: function(state, payload) {
-        state.flatSubjectList = Object.freeze(payload.subjects);
+        state.flatSubjectList = payload.subjects;
         payload.subjects.forEach(function(subject) {
             state.subjectList[subject.code] = subject.name;
         })
