@@ -44,8 +44,10 @@ var self = module.exports = {
             return '10-week Session';
             break;
             case 'ED1':
+            return 'Education Masters (First Qtr)';
+            break;
             case 'ED2':
-            return 'Education Masters';
+            return 'Education Masters (Fifth Qtr)';
             break;
             default:
             return null;

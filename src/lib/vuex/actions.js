@@ -1781,10 +1781,14 @@ var self = module.exports = {
         _.commit('flipFinalSchedule')
     },
     realtime: function(_) {
-        var socket = require('socket.io-client')(config.realtimeURL);
+        var socket = require('socket.io-client')(config.realtimeURL)
+        socket.on('connecting', function() {
+            console.log('Push: Connecting to Feeds')
+        })
         socket.on('connect', function() {
             console.log('Push: Feeds ready')
             _.commit('changePushReady', true)
+            _.commit('saveSocket', socket)
         })
         socket.on('disconnect', function() {
             console.log('Push: Feeds disconnected')
@@ -1793,7 +1797,7 @@ var self = module.exports = {
         socket.on('delta', function(data) {
             _.commit('pushChanges', data)
         })
-        _.commit('saveSocket', socket)
+        socket.open()
     },
     subscribeRealtime: function(_) {
         // TODO: this is an ugly hack
