@@ -254,7 +254,7 @@ module.exports = {
         state.inflight = (isInflight === true)
     },
     saveSocket: function(state, socket) {
-        state.socket = Object.freeze(socket)
+        state.socket = socket
     },
     changePushReady: function(state, readyState) {
         state.pushReady = readyState
