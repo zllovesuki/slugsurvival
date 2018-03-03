@@ -80,7 +80,7 @@ module.exports = {
             y: [],
             mode: 'markers',
             marker: {
-                size: 6
+                size: 4
             },
             line: {
                 color: 'green'
@@ -92,7 +92,7 @@ module.exports = {
             y: [],
             mode: 'markers',
             marker: {
-                size: 6
+                size: 4
             },
             line: {
                 color: 'blue'
@@ -104,7 +104,7 @@ module.exports = {
             y: [],
             mode: 'markers',
             marker: {
-                size: 6
+                size: 4
             },
             line: {
                 color: 'red'
