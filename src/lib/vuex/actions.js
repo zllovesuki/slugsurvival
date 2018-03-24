@@ -1183,7 +1183,7 @@ var self = module.exports = {
         })
     },
     fetchRealTimeEnrollment: function(_, payload) {
-        return fetch(config.trackingURL + '/fetch/' + payload.termCode + '/' + payload.courseNum + '/latestOne')
+        return fetch(config.trackingURL + '/latestOne?termId=' + payload.termCode + '&courseNum=' + payload.courseNum)
         .then(function(res) {
             return res.json();
         })
@@ -1646,7 +1646,7 @@ var self = module.exports = {
     },
     fetchAvailableTerms: function(_) {
         var self = this;
-        return fetch(config.trackingURL + '/fetch/available').then(function(res) {
+        return fetch(config.trackingURL + '/available').then(function(res) {
             return res.json();
         }).then(function(res) {
             if (res && res.ok && res.results) return res.results.map(function(termCode) {
