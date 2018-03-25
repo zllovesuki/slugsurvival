@@ -175,7 +175,7 @@ module.exports = {
         unSub: function() {
             var self = this;
             self.$store.dispatch('showSpinner')
-            return fetch(config.notifyURL + '/verify/stop', {
+            return fetch(config.notifyURL + '/unsubscribe', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -217,7 +217,7 @@ module.exports = {
             var self = this;
             self.$store.dispatch('showSpinner')
             self.sub.inFlight = true;
-            return fetch(config.notifyURL + '/watch/get', {
+            return fetch(config.notifyURL + '/getCourses', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',

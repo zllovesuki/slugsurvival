@@ -179,7 +179,7 @@ module.exports = {
             if (self.$store.getters.Tracker !== null) {
                 self.$store.getters.Tracker.trackEvent('sendVerify', 'recipient', self.sub.recipient);
             }
-            return fetch(config.notifyURL + '/verify/' + (self.sub.shouldResend ? 'resend' : 'new'), {
+            return fetch(config.notifyURL + '/' + (self.sub.shouldResend ? 'verifyResend' : 'verifyNewUser'), {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
@@ -230,7 +230,7 @@ module.exports = {
             var self = this;
             self.$store.dispatch('showSpinner')
             self.sub.verifyInflight = true;
-            return fetch(config.notifyURL + '/verify/check', {
+            return fetch(config.notifyURL + '/verifyUser', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',

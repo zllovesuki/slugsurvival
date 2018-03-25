@@ -1403,7 +1403,7 @@ var self = module.exports = {
     },
     updateWatch: function(_, payload) {
         var self = this, recipient = payload.recipient, code = payload.code, courses = payload.courses, termId = payload.termId;
-        return fetch(config.notifyURL + '/watch/update', {
+        return fetch(config.notifyURL + '/updateCourses', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
