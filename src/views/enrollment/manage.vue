@@ -183,8 +183,8 @@ module.exports = {
                 },
                 body: JSON.stringify({
                     recipient: self.sub.recipient,
-                    code: self.sub.code,
-                    termId: self.termCode
+                    code: parseInt(self.sub.code),
+                    termId: parseInt(self.termCode)
                 })
             })
             .then(function(res) {
@@ -225,8 +225,8 @@ module.exports = {
                 },
                 body: JSON.stringify({
                     recipient: self.sub.recipient,
-                    code: self.sub.code,
-                    termId: self.termCode
+                    code: parseInt(self.sub.code),
+                    termId: parseInt(self.termCode)
                 })
             })
             .then(function(res) {

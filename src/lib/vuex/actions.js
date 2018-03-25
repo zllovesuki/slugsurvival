@@ -1411,11 +1411,11 @@ var self = module.exports = {
             },
             body: JSON.stringify({
                 recipient: recipient,
-                code: code,
+                code: parseInt(code),
                 courses: courses.map(function(el) {
-                    return el.num
+                    return parseInt(el.num)
                 }),
-                termId: termId
+                termId: parseInt(termId)
             })
         })
         .then(function(res) {
