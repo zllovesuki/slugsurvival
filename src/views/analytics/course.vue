@@ -122,7 +122,7 @@
             <div class="m0 p0">
                 <div class="clearfix">
                     <div v-bind:id="sectionsCanvasId[index]"></div>
-                    <graph :section="true ":canvas-id="sectionsCanvasId[index]" :graph-data="section" :graph-title="'Section ' + section[0].num"></graph>
+                    <graph :section="true ":canvas-id="sectionsCanvasId[index]" :graph-data="section" :graph-title="'Section ' + section[0].sec"></graph>
                 </div>
             </div>
         </div>
@@ -257,7 +257,6 @@ module.exports = {
                         return self.alert.error('No data found, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
                     }
                 }
-                self.graphData = res.results
                 var numOfSections = (res.results[0] ? res.results[0].sections.length  : 0);
                 if (numOfSections > 0) {
                     for (var i = 0, length = res.results.length; i < length; i++) {
@@ -269,14 +268,16 @@ module.exports = {
                                 !res.results[i].sections ||
                                 !res.results[i].sections[j]) continue;
                             self.sectionsCanvasId[j] = self.makeid();
-                            self.sectionsData[j].push({
-                                num: res.results[i].sections[j].sec,
-                                date: res.results[i].date,
-                                seats: res.results[i].sections[j]
-                            })
+                            self.sectionsData[j].push(Object.assign({
+                                date: res.results[i].date
+                            }, res.results[i].sections[j]))
                         }
                     }
                 }
+                self.graphData = res.results.map(function(result) {
+                    delete result.sections
+                    return result
+                })
                 self.course = self.flatCourses[params.termId][params.courseNum];
             })
             .then(function() {
