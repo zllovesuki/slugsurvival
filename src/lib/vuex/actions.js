@@ -1016,8 +1016,8 @@ var self = module.exports = {
             courseNum: courseNum
         })
         .then(function(res) {
-            if (res.ok && res.results[0] && res.results[0].seats) {
-                secSeats = res.results[0].seats.sec;
+            if (res.ok && res.results[0] && res.results[0]) {
+                secSeats = res.results[0].sections;
             }
             return _.dispatch('getEventObjectsByCourse', {
                 termId: termId,
@@ -1218,9 +1218,9 @@ var self = module.exports = {
                 var monitorStart = new Date(start);
                 monitorStart.setDate(monitorStart.getDate() - helper.delta(_.getters.termId).enrollment);
             }
-            if (res.ok && res.results[0] && res.results[0].seats) {
+            if (res.ok && res.results[0] && res.results[0]) {
                 var latest = res.results[0];
-                var seat = latest.seats;
+                var seat = latest;
                 var isSection = (!!sectionNum && courseNum !== sectionNum);
 
                 if (isSection) {

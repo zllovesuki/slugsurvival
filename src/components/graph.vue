@@ -123,21 +123,21 @@ module.exports = {
             }
         }
         for (var i = 0, length = self.graphData.length; i < length; i++) {
-            if (typeof self.graphData[i].seats.avail !== 'undefined') {
+            if (typeof self.graphData[i].avail !== 'undefined') {
                 avail.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
-                avail.y.push(self.graphData[i].seats.avail)
+                avail.y.push(self.graphData[i].avail)
             }
-            if (typeof self.graphData[i].seats.status !== 'undefined') {
+            if (typeof self.graphData[i].status !== 'undefined') {
                 status.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
-                status.y.push(self.graphData[i].seats.status)
+                status.y.push(self.graphData[i].status)
             }
             cap.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
-            cap.y.push(self.graphData[i].seats.cap)
+            cap.y.push(self.graphData[i].cap)
             enrolled.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
-            enrolled.y.push(self.graphData[i].seats.enrolled)
+            enrolled.y.push(self.graphData[i].enrolled)
             wait.x.push(moment(self.graphData[i].date * 1000).format(self.formatString))
-            if (self.section) wait.y.push(self.graphData[i].seats.wait)
-            else wait.y.push(self.graphData[i].seats.waitTotal)
+            if (self.section) wait.y.push(self.graphData[i].wait)
+            else wait.y.push(self.graphData[i].waitTotal)
         }
         if (avail.x.length > 0) {
             graphConfig.push(avail);

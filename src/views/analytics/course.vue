@@ -58,8 +58,8 @@
                                     <tr class="clickable" v-on:click.prevent.stop="openAnalytics(result.course)" v-for="result in compacted.slice(0, top)">
                                         <td class="nowrap">{{ result.course.c }} - {{ result.course.s }}</td>
                                         <td class="nowrap bold">{{ (result.ratio * 100).toPrecision(4) + '%' }}</td>
-                                        <td class="nowrap italic">{{ result.seats.waitTotal }}</td>
-                                        <td class="nowrap">{{ result.seats.enrolled }} / {{ result.seats.cap }}</td>
+                                        <td class="nowrap italic">{{ result.waitTotal }}</td>
+                                        <td class="nowrap">{{ result.enrolled }} / {{ result.cap }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -257,8 +257,8 @@ module.exports = {
                         return self.alert.error('No data found, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
                     }
                 }
-                self.graphData = res.results;
-                var numOfSections = (res.results[0] ? (res.results[0].seats.sec ? res.results[0].seats.sec.length : 0) : 0);
+                self.graphData = res.results
+                var numOfSections = (res.results[0] ? res.results[0].sections.length  : 0);
                 if (numOfSections > 0) {
                     for (var i = 0, length = res.results.length; i < length; i++) {
                         for (var j = 0; j < numOfSections; j++) {
@@ -266,14 +266,13 @@ module.exports = {
                                 self.sectionsData[j] = [];
                             }
                             if (!res.results[i] ||
-                                !res.results[i].seats ||
-                                !res.results[i].seats.sec ||
-                                !res.results[i].seats.sec[j]) continue;
+                                !res.results[i].sections ||
+                                !res.results[i].sections[j]) continue;
                             self.sectionsCanvasId[j] = self.makeid();
                             self.sectionsData[j].push({
-                                num: res.results[i].seats.sec[j].sec,
+                                num: res.results[i].sections[j].sec,
                                 date: res.results[i].date,
-                                seats: res.results[i].seats.sec[j]
+                                seats: res.results[i].sections[j]
                             })
                         }
                     }
@@ -309,11 +308,17 @@ module.exports = {
             }).then(function(res) {
                 if (res && res.ok && res.results && res.results.length > 0) self.compacted = res.results.map(function(obj) {
                     if (!self.flatCourses[self.termCode]) return;
-                    if (!self.flatCourses[self.termCode][obj.group]) return;
+                    if (!self.flatCourses[self.termCode][obj.courseNum]) return;
                     return {
-                        course: self.flatCourses[self.termCode][obj.group],
-                        seats: obj.reduction.seats,
-                        ratio: obj.reduction.ratio
+                        course: self.flatCourses[self.termCode][obj.courseNum],
+                        seats: {
+                            avail: obj.avail,
+                            cap: obj.cap,
+                            enrolled: obj.enrolled,
+                            waitCap: obj.waitCap,
+                            waitTotal: obj.waitTotal
+                        },
+                        ratio: obj.ratio - 1
                     }
                 })
                 else self.compacted = [];
