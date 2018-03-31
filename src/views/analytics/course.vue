@@ -58,8 +58,8 @@
                                     <tr class="clickable" v-on:click.prevent.stop="openAnalytics(result.course)" v-for="result in compacted.slice(0, top)">
                                         <td class="nowrap">{{ result.course.c }} - {{ result.course.s }}</td>
                                         <td class="nowrap bold">{{ (result.ratio * 100).toPrecision(4) + '%' }}</td>
-                                        <td class="nowrap italic">{{ result.waitTotal }}</td>
-                                        <td class="nowrap">{{ result.enrolled }} / {{ result.cap }}</td>
+                                        <td class="nowrap italic">{{ result.seats.waitTotal }}</td>
+                                        <td class="nowrap">{{ result.seats.enrolled }} / {{ result.seats.cap }}</td>
                                     </tr>
                                 </tbody>
                             </table>
