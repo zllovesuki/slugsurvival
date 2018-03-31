@@ -1225,7 +1225,7 @@ var self = module.exports = {
 
                 if (isSection) {
                     // checking section
-                    seat = getSeatBySectionNum(seat.sec, sectionNum)
+                    seat = getSeatBySectionNum(seat.sections, sectionNum)
                 }
 
                 html += template('Status', seat.status);
@@ -1392,9 +1392,9 @@ var self = module.exports = {
                 if (j !== length1 - 1) html += '<hr />'
             }
 
-            if (course.custom !== true && final.date) {
+            if (course.custom !== true) {
                 html += '<hr />';
-                if (!isSection) html += template('Final', final.date + '; ' + final.time)
+                if (!isSection && final.date) html += template('Final', final.date + '; ' + final.time)
                 html += template('Is It Open', '<span class="muted clickable rainbow" onclick="window.App.$store.dispatch(\'_showRealTimeEnrollment\', \'' + termId + (courseNum ? '+' + courseNum : '') + '+' + course.num + '\')">Check Real Time</span>');
             }
 
