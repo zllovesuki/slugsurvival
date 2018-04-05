@@ -1,6 +1,6 @@
 {
   "name": "slugsurvival",
-  "version": "3.20.0",
+  "version": "3.25.0",
   "scripts": {
     "dev": "node node_modules/watchify/bin/cmd.js -vd -p browserify-hmr -e src/main.js -o public/app.js -v",
     "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
@@ -15,9 +15,9 @@
   "dependencies": {
     "body-parser": "^1.18.2",
     "debug": "~3.1.0",
-    "express": "^4.16.2",
+    "express": "^4.16.3",
     "fill-pdf": "^1.1.0",
-    "socket.io-client": "^2.0.4"
+    "socket.io-client": "^2.1.0"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
@@ -25,32 +25,32 @@
     "babel-preset-es2015": "^6.24.1",
     "babel-runtime": "^6.26.0",
     "bluebird": "^3.5.1",
-    "browserify": "^15.2.0",
+    "browserify": "^16.1.1",
     "browserify-hmr": "^0.3.6",
     "compound-subject": "0.0.2",
     "envify": "^4.1.0",
     "gulp": "^3.9.1",
-    "gulp-clean-css": "^3.9.2",
+    "gulp-clean-css": "^3.9.3",
     "gulp-concat": "^2.6.1",
-    "gulp-concat-css": "^3.0.0",
+    "gulp-concat-css": "^3.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^3.0.0",
-    "localforage": "^1.5.6",
+    "localforage": "^1.7.1",
     "lodash.debounce": "^4.0.8",
-    "lunr": "^2.1.5",
+    "lunr": "^2.1.6",
     "mobile-detect": "^1.4.1",
     "stringify": "^5.2.0",
-    "uglify-js": "^3.3.9",
-    "v-tooltip": "^2.0.0-rc.30",
-    "vue": "^2.5.13",
-    "vue-hot-reload-api": "^2.2.4",
-    "vue-resource": "^1.3.5",
+    "uglify-js": "^3.3.18",
+    "v-tooltip": "^2.0.0-rc.31",
+    "vue": "^2.5.16",
+    "vue-hot-reload-api": "^2.3.0",
+    "vue-resource": "^1.5.0",
     "vue-router": "^3.0.1",
     "vueify": "^9.4.1",
     "vueify-insert-css": "^1.0.0",
     "vuex": "^3.0.1",
     "vuex-router-sync": "^5.0.0",
-    "watchify": "^3.10.0"
+    "watchify": "^3.11.0"
   },
   "browserify": {
     "transform": [
