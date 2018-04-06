@@ -299,12 +299,19 @@ var self = module.exports = {
         })
     },
     saveBasicData: function(_, payload) {
-        if (payload.termsList !== null) _.commit('saveTermsList', payload);
-        if (payload.rmp !== null) _.commit('saveInstructorNameToTidMapping', payload);
-        if (payload.subjects !== null) _.commit('saveSubjects', payload);
-        if (payload.mm !== null) _.commit('saveMajorMinor', payload);
-        if (payload.historicData !== null) _.commit('saveHistoricData', payload);
-        if (payload.finalSchedule !== null) _.commit('saveFinalSchedule', payload);
+        var kv = {
+            termsList: 'saveTermsList',
+            rmp: 'saveInstructorNameToTidMapping',
+            subjects: 'saveSubjects',
+            mm: 'saveMajorMinor',
+            historicData: 'saveHistoricData',
+            finalSchedule: 'saveFinalSchedule'
+        }
+        return Bluebird.map(Object.keys(kv), function(key) {
+            console.log('throttled commit:', key)
+            if (payload[key] !== null) _.commit(kv[key], payload)
+            return Bluebird.delay(50)
+        })
     },
     fetchBasicData: function(_) {
         if (_.state.flatTermsList.length !== 0) {
