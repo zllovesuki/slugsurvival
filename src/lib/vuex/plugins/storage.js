@@ -37,7 +37,7 @@ module.exports = {
         return adapter.keys()
     },
     removeItem: function(key) {
-        console.love('storage: remove', key)
+        console.log('storage: remove', key)
         return adapter.removeItem(key)
     },
     // compatibility layer

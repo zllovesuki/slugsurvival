@@ -309,10 +309,9 @@ module.exports = {
                 else self.heat = [];
             })
         },
-        fetchCompacted: function(showMax) {
-            showMax = showMax || false;
+        fetchCompacted: function() {
             var self = this;
-            return request.get(config.trackingURL + '/compacted' + (showMax ? 'Max': '') + '?termId=' + self.termCode)
+            return request.get(config.trackingURL + '/compacted?termId=' + self.termCode)
             .then(function(res) {
                 return res.body
             })
