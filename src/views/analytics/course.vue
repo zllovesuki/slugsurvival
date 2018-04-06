@@ -131,6 +131,7 @@
 <script>
 var config = require('../../../config')
 var helper = require('../../lib/vuex/helper')
+var request = require('superagent')
 
 module.exports = {
     data: function() {
@@ -233,9 +234,14 @@ module.exports = {
             self.graphDataReady = false;
             this.canvasId = this.makeid();
             self.graphData = [];
-            return fetch(config.trackingURL + '/fetch?termId=' + params.termId + '&courseNum=' + params.courseNum).then(function(res) {
-                return res.json();
-            }).then(function(res) {
+            return request.get(config.trackingURL + '/fetch?termId=' + params.termId + '&courseNum=' + params.courseNum)
+            .ok(function(res) {
+                return true
+            })
+            .then(function(res) {
+                return res.body
+            })
+            .then(function(res) {
                 if (typeof self.$store.state.termDates[self.termCode] !== 'undefined') {
                     var start = self.$store.state.termDates[self.termCode].start;
                     var monitorStart = new Date(start);
@@ -287,9 +293,11 @@ module.exports = {
         },
         fetchHeat: function() {
             var self = this;
-            return fetch(config.trackingURL + '/heat?termId=' + self.termCode + '&period=3600').then(function(res) {
-                return res.json();
-            }).then(function(res) {
+            return request.get(config.trackingURL + '/heat?termId=' + self.termCode + '&period=3600')
+            .then(function(res) {
+                return res.body
+            })
+            .then(function(res) {
                 if (res && res.ok && res.results && res.results.length > 0) self.heat = res.results.map(function(obj) {
                     if (!self.flatCourses[self.termCode]) return;
                     if (!self.flatCourses[self.termCode][obj.group]) return;
@@ -304,9 +312,11 @@ module.exports = {
         fetchCompacted: function(showMax) {
             showMax = showMax || false;
             var self = this;
-            return fetch(config.trackingURL + '/compacted' + (showMax ? 'Max': '') + '?termId=' + self.termCode).then(function(res) {
-                return res.json();
-            }).then(function(res) {
+            return request.get(config.trackingURL + '/compacted' + (showMax ? 'Max': '') + '?termId=' + self.termCode)
+            .then(function(res) {
+                return res.body
+            })
+            .then(function(res) {
                 if (res && res.ok && res.results && res.results.length > 0) self.compacted = res.results.map(function(obj) {
                     if (!self.flatCourses[self.termCode]) return;
                     if (!self.flatCourses[self.termCode][obj.courseNum]) return;

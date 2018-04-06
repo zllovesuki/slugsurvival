@@ -1,7 +1,8 @@
 "use strict"
 var helper = require('./helper'),
     config = require('../../../config'),
-    compoundSubject = require('compound-subject');
+    compoundSubject = require('compound-subject'),
+    request = require('superagent')
 
 var self = module.exports = {
     setTitle: function(_, title) {
@@ -13,36 +14,38 @@ var self = module.exports = {
     ensureDataLoaded: function(_) {
         return _.dispatch('fetchBasicData')
     },
+    throttledFetch: function(_, keys) {
+        return Bluebird.map(keys, function(key) {
+            if (key === null) return null
+            console.log('throttledFetch:', key)
+            return request.get(config.dbURL + key).then(function(res) {
+                return res.body
+            })
+        }, { concurrency: 2 })
+    },
+    throttledGetStorage: function(_, keys) {
+        return Bluebird.mapSeries(keys, function(key) {
+            return Bluebird.delay(50).then(function() {
+                if (key === null) return null
+                return _.getters.storage.getItem(key)
+            })
+        })
+    },
     fetchThreeStatsByTid: function(_, tid) {
         if (typeof _.state.instructorStats[tid] !== 'undefined') {
             return Bluebird.resolve(_.state.instructorStats[tid]);
         }
 
-        var sugar = function() {
-            return Bluebird.all([
-                fetch(config.dbURL + '/rmp/scores/' + tid + '.json'),
-                fetch(config.dbURL + '/rmp/stats/' + tid + '.json')
-            ]).then(function(results) {
-                return Bluebird.map(results, function(result) {
-                    if (result === null) return null
-                    if (typeof result.json === 'undefined') return result
-                    return result.json()
-                })
-            }).then(function(rmp) {
-                return {
-                    scores: rmp[0],
-                    stats: rmp[1]
-                }
-            })
-        }
-        return sugar()
-        .then(function(rmp) {
+        return _.dispatch('throttledFetch', [
+            '/rmp/scores/' + tid,
+            '/rmp/stats/' + tid
+        ]).then(function(rmp) {
             var stats = {
                 tid: tid,
                 stats: {
                     //ratings: rmp.ratings,
-                    scores: rmp.scores,
-                    stats: rmp.stats
+                    scores: rmp[0],
+                    stats: rmp[1]
                 }
             };
             _.commit('saveInstructorStats', stats);
@@ -85,19 +88,12 @@ var self = module.exports = {
         var online = [];
         var self = this;
         var loadOnlineTimestamp = function() {
-            return Bluebird.all([
-                fetch(config.dbURL + '/timestamp/terms.json'),
-                fetch(config.dbURL + '/timestamp/rmp.json'),
-                fetch(config.dbURL + '/timestamp/subjects.json'),
-                fetch(config.dbURL + '/timestamp/major-minor.json')
-            ]).then(function(results) {
-                return Bluebird.map(results, function(result) {
-                    if (result === null) return null
-                    if (typeof result.json === 'undefined') return result
-                    return result.json()
-                })
-            })
-            .then(function(base) {
+            return _.dispatch('throttledFetch', [
+                '/timestamp/terms',
+                '/timestamp/rmp',
+                '/timestamp/subjects',
+                '/timestamp/major-minor'
+            ]).then(function(base) {
                 return [
                     base[0],
                     base[1],
@@ -110,23 +106,23 @@ var self = module.exports = {
             })
         }
         var loadOfflineTimestamp = function() {
-            return Bluebird.all([
-                _.getters.storage.getItem('termsListTimestamp'),
-                _.getters.storage.getItem('rmpTimestamp'),
-                _.getters.storage.getItem('subjectsTimestamp'),
-                _.getters.storage.getItem('mmTimestamp'),
-                _.getters.storage.getItem('historicDataTimestamp'),
-                _.getters.storage.getItem('finalScheduleTimestamp')
+            return _.dispatch('throttledGetStorage', [
+                'termsListTimestamp',
+                'rmpTimestamp',
+                'subjectsTimestamp',
+                'mmTimestamp',
+                'historicDataTimestamp',
+                'finalScheduleTimestamp'
             ])
         }
         var loadFromStorage = function(invalid, online) {
-            return Bluebird.all([
-               !invalid.termsList ? _.getters.storage.getItem('lz-termsList') : null,
-               !invalid.rmp ? _.getters.storage.getItem('lz-rmp') : null,
-               !invalid.subjects ? _.getters.storage.getItem('lz-subjects') : null,
-               !invalid.mm ? _.getters.storage.getItem('lz-majorMinor') : null,
-               !invalid.historicData ? _.getters.storage.getItem('lz-historicData') : null,
-               !invalid.finalSchedule ? _.getters.storage.getItem('lz-finalSchedule') : null
+            return _.dispatch('throttledGetStorage', [
+               !invalid.termsList ? 'lz-termsList' : null,
+               !invalid.rmp ? 'lz-rmp' : null,
+               !invalid.subjects ? 'lz-subjects' : null,
+               !invalid.mm ? 'lz-majorMinor' : null,
+               !invalid.historicData ? 'lz-historicData' : null,
+               !invalid.finalSchedule ? 'lz-finalSchedule' : null
            ]).spread(function(termsList, rmp, subjects, mm, historicData, finalSchedule) {
                 return _.dispatch('saveBasicData', {
                     termsList: termsList,
@@ -238,61 +234,43 @@ var self = module.exports = {
     },
     loadBasicDataFromOnline: function(_, payload) {
         var self = this, invalid = payload.invalid, online = payload.online;
-        var sugar = function() {
-            return new Bluebird(function(resolve, reject) {
-                if (Object.keys(invalid).reduce(function(skip, key) {
-                    if (invalid[key] === true) skip = false;
-                    return skip;
-                }, true)) return resolve({});
-
-                Bluebird.all([
-                    invalid.termsList ? fetch(config.dbURL + '/terms.json') : null,
-                    invalid.rmp ? fetch(config.dbURL + '/rmp.json') : null,
-                    invalid.subjects ? fetch(config.dbURL + '/subjects.json') : null,
-                    invalid.mm ? fetch(config.dbURL + '/major-minor.json') : null,
-                    invalid.historicData ? (function() {
-                        return Bluebird.all([
-                            fetch(config.dbURL + '/offered/spring.json'),
-                            fetch(config.dbURL + '/offered/summer.json'),
-                            fetch(config.dbURL + '/offered/fall.json'),
-                            fetch(config.dbURL + '/offered/winter.json'),
-                            fetch(config.dbURL + '/offered/ge_spring.json'),
-                            fetch(config.dbURL + '/offered/ge_summer.json'),
-                            fetch(config.dbURL + '/offered/ge_fall.json'),
-                            fetch(config.dbURL + '/offered/ge_winter.json')
-                        ]).then(function(results) {
-                            return Bluebird.map(results, function(result) {
-                                if (result === null) return null
-                                if (typeof result.json === 'undefined') return result
-                                return result.json()
-                            })
-                        }).then(function(hh) {
-                            return {
-                                spring: hh[0],
-                                summer: hh[1],
-                                fall: hh[2],
-                                winter: hh[3],
-                                ge: {
-                                    spring: hh[4],
-                                    summer: hh[5],
-                                    fall: hh[6],
-                                    winter: hh[7]
-                                }
-                            }
-                        })
-                    })() : null,
-                    invalid.finalSchedule ? fetch(config.dbURL + '/final.json') : null
-                ]).then(function(results) {
-                    return Bluebird.map(results, function(result) {
-                        if (result === null) return null
-                        if (typeof result.json === 'undefined') return result
-                        return result.json()
+        return _.dispatch('throttledFetch', [
+            invalid.termsList ? '/terms' : null,
+            invalid.rmp ? '/rmp' : null,
+            invalid.subjects ? '/subjects' : null,
+            invalid.mm ? '/major-minor' : null,
+            invalid.finalSchedule ? '/final' : null
+        ]).then(function(results) {
+            if (invalid.historicData) {
+                return _.dispatch('throttledFetch', [
+                    '/offered/spring',
+                    '/offered/summer',
+                    '/offered/fall',
+                    '/offered/winter',
+                    '/offered/ge_spring',
+                    '/offered/ge_summer',
+                    '/offered/ge_fall',
+                    '/offered/ge_winter'
+                ]).then(function(hh) {
+                    results.push({
+                        spring: hh[0],
+                        summer: hh[1],
+                        fall: hh[2],
+                        winter: hh[3],
+                        ge: {
+                            spring: hh[4],
+                            summer: hh[5],
+                            fall: hh[6],
+                            winter: hh[7]
+                        }
                     })
-                }).then(resolve).catch(reject)
-            });
-        }
-        return sugar()
-        .spread(function(termsList, rmp, subjects, mm, historicData, finalSchedule) {
+                    return results
+                })
+            }else{
+                results.push(null)
+                return results;
+            }
+        }).spread(function(termsList, rmp, subjects, mm, finalSchedule, historicData) {
             return _.dispatch('saveBasicData', {
                 termsList: termsList,
                 rmp: rmp,
@@ -346,16 +324,10 @@ var self = module.exports = {
         var online = [];
         var self = this;
         var loadOnlineTimestamp = function() {
-            return Bluebird.all([
-                fetch(config.dbURL + '/timestamp/terms/' + termId + '.json'),
-                fetch(config.dbURL + '/timestamp/courses/' + termId + '.json')
-            ]).then(function(results) {
-                return Bluebird.map(results, function(result) {
-                    if (result === null) return null
-                    if (typeof result.json === 'undefined') return result
-                    return result.json()
-                })
-            }).then(function(base) {
+            return _.dispatch('throttledFetch', [
+                '/timestamp/terms/' + termId,
+                '/timestamp/courses/' + termId
+            ]).then(function(base) {
                 return [
                     base[0],
                     base[1]
@@ -363,16 +335,16 @@ var self = module.exports = {
             })
         }
         var loadOfflineTimestamp = function() {
-            return Bluebird.all([
-                _.getters.storage.getItem('termCourseTimestamp-' + termId),
-                _.getters.storage.getItem('termCourseInfoTimestamp-' + termId)
+            return _.dispatch('throttledGetStorage', [
+                'termCourseTimestamp-' + termId,
+                'termCourseInfoTimestamp-' + termId
             ])
         }
-        var loadFromStorage = function(invalid) {
-            return Bluebird.all([
-               !invalid.coursesData ? _.getters.storage.getItem('lz-termCourse-' + termId) : null,
-               !invalid.courseInfo ? _.getters.storage.getItem('lz-termCourseInfo-' + termId) : null
-           ]).spread(function(coursesData, courseInfo) {
+        var loadFromStorage = function(invalid, online) {
+            return _.dispatch('throttledGetStorage', [
+                !invalid.coursesData ? 'lz-termCourse-' + termId : null,
+                !invalid.courseInfo ? 'lz-termCourseInfo-' + termId : null
+            ]).spread(function(coursesData, courseInfo) {
                 return _.dispatch('saveCourseData', {
                     termId: termId,
                     coursesData: coursesData,
@@ -433,7 +405,7 @@ var self = module.exports = {
                 if (invalid.yes) console.log(termId + ': some or all local copies are outdated')
                 else console.log(termId + ': local copies valid')
 
-                return loadFromStorage(invalid).then(function () {
+                return loadFromStorage(invalid, online).then(function () {
                     return Bluebird.reject({
                         invalid: invalid,
                         online: online
@@ -445,32 +417,10 @@ var self = module.exports = {
     loadCourseDataFromOnline: function(_, payload) {
         var invalid = payload.invalid, online = payload.online, termId = payload.termId;
         var self = this;
-        var sugar = function() {
-            return new Bluebird(function(resolve, reject) {
-                if (Object.keys(invalid).reduce(function(skip, key) {
-                    if (invalid[key] === true) skip = false;
-                    return skip;
-                }, true)) return resolve({});
-
-                Bluebird.all([
-                    invalid.coursesData ? fetch(config.dbURL + '/terms/' + termId + '.json') : null,
-                    invalid.courseInfo ? fetch(config.dbURL + '/courses/' + termId + '.json') : null
-                ]).then(function(results) {
-                    return Bluebird.map(results, function(result) {
-                        if (result === null) return null
-                        if (typeof result.json === 'undefined') return result
-                        return result.json()
-                    })
-                }).then(function(base) {
-                    return [
-                        base[0],
-                        base[1]
-                    ]
-                }).then(resolve).catch(reject)
-            });
-        }
-        return sugar()
-        .spread(function(coursesData, courseInfo) {
+        return _.dispatch('throttledFetch', [
+            invalid.coursesData ? '/terms/' + termId : null,
+            invalid.courseInfo ? '/courses/' + termId : null
+        ]).spread(function(coursesData, courseInfo) {
             return _.dispatch('saveCourseData', {
                 termId: termId,
                 coursesData: coursesData,
@@ -495,12 +445,6 @@ var self = module.exports = {
         var termId = payload.termId, coursesData = payload.coursesData, courseInfo = payload.courseInfo, skipSaving = payload.skipSaving, index = payload.index;
         if (coursesData !== null) _.commit('saveTermCourses', payload);
         if (courseInfo !== null) _.commit('saveCourseInfo', payload);
-        /*if (workaround || index !== null) _.commit('buildIndexedSearch', {
-            termId: termId,
-            index: index,
-            workaround: workaround,
-            skipSaving: skipSaving
-        });*/
     },
     fetchTermCourses: function(_, termId) {
         termId =  termId || _.getters.termId;
@@ -1183,9 +1127,9 @@ var self = module.exports = {
         })
     },
     fetchRealTimeEnrollment: function(_, payload) {
-        return fetch(config.trackingURL + '/latestOne?termId=' + payload.termCode + '&courseNum=' + payload.courseNum)
+        return request.get(config.trackingURL + '/latestOne?termId=' + payload.termCode + '&courseNum=' + payload.courseNum)
         .then(function(res) {
-            return res.json();
+            return res.body
         })
         .catch(function(e) {
             return {ok: false}
@@ -1403,35 +1347,22 @@ var self = module.exports = {
     },
     updateWatch: function(_, payload) {
         var self = this, recipient = payload.recipient, code = payload.code, courses = payload.courses, termId = payload.termId;
-        return fetch(config.notifyURL + '/updateCourses', {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                recipient: recipient,
-                code: parseInt(code),
-                courses: courses.map(function(el) {
-                    return parseInt(el.num)
-                }),
-                termId: parseInt(termId)
-            })
+        return request.post(config.notifyURL + '/updateCourses')
+        .send({
+            recipient: recipient,
+            code: parseInt(code),
+            courses: courses.map(function(el) {
+                return parseInt(el.num)
+            }),
+            termId: parseInt(termId)
+        })
+        .ok(function(res) {
+            return true
         })
         .then(function(res) {
-            return res.json()
-            .catch(function(e) {
-                return res.text();
-            })
-        })
-        .then(function(res) {
-            if (!res.ok) {
-                return _.getters.alert.error(res.message);
+            if (!res.body.ok) {
+                _.getters.alert.error(res.body.message || 'An error has occurred.');
             }
-        })
-        .catch(function(e) {
-            console.log(e);
-            _.getters.alert.error('An error has occurred.')
         })
     },
     populateLocalEntriesWithExtra: function(_, payload) {
@@ -1439,9 +1370,9 @@ var self = module.exports = {
         _.commit('appendCourseInfo', payload);
     },
     fetchGE: function(_) {
-        return fetch(config.dbURL + '/ge.json')
+        return request.get(config.dbURL + '/ge')
         .then(function(res) {
-            return res.json();
+            return res.body
         })
     },
     calculateDropDeadline: function(_, termId) {
@@ -1460,21 +1391,14 @@ var self = module.exports = {
         return deadline.getTime() < today.getTime();
     },
     compareVersion: function(_) {
-        return new Bluebird(function(resolve) {
-            fetch('/version')
-            .then(function(res) {
-                if (res.status != 200) return _.getters.version; // fake it until you make it
-                return res.text()
-            })
-            .then(function(version) {
-                if (_.getters.version != version) return resolve(false)
-                else return resolve(true)
-            })
-            .catch(function(e) {
-                // network error? give it a pass
-                return resolve(true)
-            })
-        });
+        return request.get('/version')
+        .then(function(res) {
+            if (_.getters.version != res.text) return false
+            else return true
+        })
+        .catch(function(e) {
+            return true
+        })
     },
     checkVersion: function(_) {
         return _.dispatch('compareVersion').then(function(isUpdated) {
@@ -1646,9 +1570,14 @@ var self = module.exports = {
     },
     fetchAvailableTerms: function(_) {
         var self = this;
-        return fetch(config.trackingURL + '/available').then(function(res) {
-            return res.json();
-        }).then(function(res) {
+        return request.get(config.trackingURL + '/available')
+        .ok(function(res) {
+            return true
+        })
+        .then(function(res) {
+            return res.body
+        })
+        .then(function(res) {
             if (res && res.ok && res.results) return res.results.map(function(termCode) {
                 return {
                     code: termCode,

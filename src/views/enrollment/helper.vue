@@ -110,6 +110,7 @@
 <script>
 var helper = require('../../lib/vuex/helper')
 var config = require('../../../config')
+var request = require('superagent')
 
 module.exports = {
     data: function() {
@@ -179,22 +180,16 @@ module.exports = {
             if (self.$store.getters.Tracker !== null) {
                 self.$store.getters.Tracker.trackEvent('sendVerify', 'recipient', self.sub.recipient);
             }
-            return fetch(config.notifyURL + '/' + (self.sub.shouldResend ? 'verifyResend' : 'verifyNewUser'), {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    recipient: self.sub.recipient,
-                    termId: parseInt(self.termCode)
-                })
+            return request.post(config.notifyURL + '/' + (self.sub.shouldResend ? 'verifyResend' : 'verifyNewUser'))
+            .send({
+                recipient: self.sub.recipient,
+                termId: parseInt(self.termCode)
+            })
+            .ok(function(res) {
+                return true
             })
             .then(function(res) {
-                return res.json()
-                .catch(function(e) {
-                    return res.text();
-                })
+                return res.body
             })
             .then(function(res) {
                 self.$store.dispatch('hideSpinner')
@@ -202,7 +197,7 @@ module.exports = {
                 self.sub.cooldown = true;
                 self.sub.counter -= 1;
                 if (!res.ok) {
-                    return self.alert.error(res.message);
+                    return self.alert.error(res.message || 'An error has occured.');
                 }
                 self.sub.sent = true;
                 self.sub.timer = setInterval(function() {
@@ -219,40 +214,28 @@ module.exports = {
                     self.sub.counter--;
                 }, 1000)
             })
-            .catch(function(e) {
-                console.log(e);
-                self.$store.dispatch('hideSpinner')
-                self.sub.sendInflight = false;
-                self.alert.error('An error has occurred.')
-            })
         },
         verifyCode: function() {
             var self = this;
             self.$store.dispatch('showSpinner')
             self.sub.verifyInflight = true;
-            return fetch(config.notifyURL + '/verifyUser', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    recipient: self.sub.recipient,
-                    code: parseInt(self.sub.code),
-                    termId: parseInt(self.termCode)
-                })
+            return request.post(config.notifyURL + '/verifyUser')
+            .post({
+                recipient: self.sub.recipient,
+                code: parseInt(self.sub.code),
+                termId: parseInt(self.termCode)
+            })
+            .ok(function(res) {
+                return true
             })
             .then(function(res) {
-                return res.json()
-                .catch(function(e) {
-                    return res.text();
-                })
+                return res.body
             })
             .then(function(res) {
                 self.sub.verifyInflight = false;
                 if (!res.ok) {
                     self.$store.dispatch('hideSpinner')
-                    return self.alert().error(res.message);
+                    return self.alert().error(res.message || 'An error has occured.');
                 }
                 if (self.$store.getters.Tracker !== null) {
                     self.$store.getters.Tracker.trackEvent('verified', 'recipient', self.sub.recipient);
@@ -279,12 +262,6 @@ module.exports = {
                         self.$store.getters.Tracker.trackEvent('updateWatch', 'new_courses', self.courses.map(function(el) { return el.c; }).join(','));
                     }
                 })
-            })
-            .catch(function(e) {
-                console.log(e);
-                self.$store.dispatch('hideSpinner')
-                self.sub.verifyInflight = false;
-                self.alert.error('An error has occurred.')
             })
         },
         showSearchModal: function() {

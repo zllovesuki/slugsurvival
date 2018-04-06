@@ -75,6 +75,7 @@
 
 <script>
 var config = require('../../../config')
+var request = require('superagent')
 
 module.exports = {
     data: function() {
@@ -175,28 +176,22 @@ module.exports = {
         unSub: function() {
             var self = this;
             self.$store.dispatch('showSpinner')
-            return fetch(config.notifyURL + '/unsubscribe', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    recipient: self.sub.recipient,
-                    code: parseInt(self.sub.code),
-                    termId: parseInt(self.termCode)
-                })
+            return request.post(config.notifyURL + '/unsubscribe')
+            .post({
+                recipient: self.sub.recipient,
+                code: parseInt(self.sub.code),
+                termId: parseInt(self.termCode)
+            })
+            .ok(function(res) {
+                return true
             })
             .then(function(res) {
-                return res.json()
-                .catch(function(e) {
-                    return res.text();
-                })
+                return res.body
             })
             .then(function(res) {
                 self.$store.dispatch('hideSpinner')
                 if (!res.ok) {
-                    return self.alert.error(res.message);
+                    return self.alert.error(res.message || 'An error has occured.');
                 }
                 if (self.$store.getters.Tracker !== null) {
                     self.$store.getters.Tracker.trackEvent('unsubscribe', 'recipient', self.sub.recipient);
@@ -206,40 +201,28 @@ module.exports = {
                 self.alert.success('Unsubscribed. You will no longer receive notifications.');
                 self.$router.push({ name: 'enrollHelper'})
             })
-            .catch(function(e) {
-                console.log(e);
-                self.$store.dispatch('hideSpinner')
-                self.sub.inFlight = false;
-                self.alert.error('An error has occurred.')
-            })
         },
         checkSub: function() {
             var self = this;
             self.$store.dispatch('showSpinner')
             self.sub.inFlight = true;
-            return fetch(config.notifyURL + '/getCourses', {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    recipient: self.sub.recipient,
-                    code: parseInt(self.sub.code),
-                    termId: parseInt(self.termCode)
-                })
+            return request.post(config.notifyURL + '/getCourses')
+            .send({
+                recipient: self.sub.recipient,
+                code: parseInt(self.sub.code),
+                termId: parseInt(self.termCode)
+            })
+            .ok(function(res) {
+                return true
             })
             .then(function(res) {
-                return res.json()
-                .catch(function(e) {
-                    return res.text();
-                })
+                return res.body
             })
             .then(function(res) {
                 if (!res.ok) {
                     self.$store.dispatch('hideSpinner')
                     self.sub.inFlight = false;
-                    return self.alert.error(res.message);
+                    return self.alert.error(res.message || 'An error has occured.');
                 }
                 self.$store.dispatch('hideSpinner')
                 self.sub.verified = true;
@@ -247,12 +230,6 @@ module.exports = {
                 self.courses = res.courses.map(function(num) {
                     return self.flatCourses[self.termCode][num]
                 });
-            })
-            .catch(function(e) {
-                console.log(e);
-                self.$store.dispatch('hideSpinner')
-                self.sub.inFlight = false;
-                self.alert.error('An error has occurred.')
             })
         },
         showCourse: function(termId, course) {

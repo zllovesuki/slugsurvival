@@ -6,10 +6,7 @@ var gulp = require('gulp'),
     gp_cleancss = require('gulp-clean-css');
 
 var jsAssets = [
-    'assets/js/es5-shim.js',
-    'assets/js/es5-sham.js',
     'assets/js/alertify.js',
-    'assets/js/fetch.js',
     'assets/js/moment.js',
     'assets/js/lz-string.js',
     'assets/js/jquery.js',
