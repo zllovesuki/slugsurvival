@@ -57,14 +57,14 @@ module.exports = {
     created: function() {
         var self = this;
         var counter = 0
-        Bluebird.mapSeries(self.flatTermsList, function(term) {
-            return Bluebird.delay(50).then(function() {
-                counter++
-                if (counter > 4) self.$store.dispatch('hideSpinner')
-                return self.storage.getItem(term.code).then(function(events) {
-                    if (events !== null) self.saved.push(term.code)
-                })
+
+        return self.storage.keys().then(function(keys) {
+            return self.flatTermsList.forEach(function(term) {
+                if (keys.indexOf(term.code) !== -1) self.saved.push(term.code)
             })
+        })
+        .then(function() {
+            self.$store.dispatch('hideSpinner')
         })
     },
     mounted: function() {
