@@ -220,7 +220,7 @@ module.exports = {
             self.$store.dispatch('showSpinner')
             self.sub.verifyInflight = true;
             return request.post(config.notifyURL + '/verifyUser')
-            .post({
+            .send({
                 recipient: self.sub.recipient,
                 code: parseInt(self.sub.code),
                 termId: parseInt(self.termCode)
