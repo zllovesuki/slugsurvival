@@ -177,7 +177,7 @@ module.exports = {
             var self = this;
             self.$store.dispatch('showSpinner')
             return request.post(config.notifyURL + '/unsubscribe')
-            .post({
+            .send({
                 recipient: self.sub.recipient,
                 code: parseInt(self.sub.code),
                 termId: parseInt(self.termCode)
