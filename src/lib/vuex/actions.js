@@ -18,6 +18,10 @@ var self = module.exports = {
         return Bluebird.map(keys, function(key) {
             if (key === null) return null
             console.log('throttledFetch:', key)
+            try {
+                // TODO: this is too ugly
+                $('.loading-component').text(key)
+            }catch(e) {}
             return request.get(config.dbURL + key).then(function(res) {
                 return res.body
             })
@@ -27,6 +31,10 @@ var self = module.exports = {
         return Bluebird.mapSeries(keys, function(key) {
             return Bluebird.delay(50).then(function() {
                 if (key === null) return null
+                try {
+                    // TODO: this is too ugly
+                    $('.loading-component').text(key)
+                }catch(e) {}
                 return _.getters.storage.getItem(key)
             })
         })
