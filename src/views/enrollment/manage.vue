@@ -7,14 +7,14 @@
 				</div>
 				<div class="clearfix">
                     <span class="ml1 btn black h6 muted not-clickable">
-                        To retrive your notification subscription, login with your phone number/emails and your passcode.
+                        To manage your notification subscription, login with your phone number/emails and your passcode.
                     </span>
 				</div>
 			</div>
 			<div class="m0 p2 border-top" v-show="!sub.verified">
 				<div class="clearfix">
                     <span class="btn black h6 not-clickable">
-                        <form v-on:submit.prevent="checkSub" class="h6">
+                        <form v-on:submit.prevent="returnFalse" class="h6">
                             <label for="term" class="block mb2">
                                 <select class="col-12 inline-block" id="quarters"></select>
                             </label>
@@ -24,8 +24,11 @@
                             <label for="code" class="mt2 block">
                                 <input type="text" class="col-12 field inline-block" v-model="sub.code" placeholder="passcode">
                             </label>
-                            <label for="submit" class="mt2 block">
-                                <button type="submit" class="btn btn-outline inline-block white" v-bind:style="{ backgroundColor: colorMap.regular }" :disabled="sub.inFlight">Check</button>
+                            <label for="submit" class="mt2 inline-block">
+                                <button @click="checkSub" class="btn btn-outline inline-block white" v-bind:style="{ backgroundColor: colorMap.regular }" :disabled="sub.inFlight">Check</button>
+                            </label>
+                            <label for="submit" class="ml1 mt2 inline-block">
+                                <button @click="sub.modal = true" class="btn btn-outline inline-block black" v-bind:style="{ backgroundColor: colorMap.blank }" :disabled="sub.inFlight">Reset Passcode</button>
                             </label>
         				</form>
                     </span>
@@ -70,6 +73,21 @@
 			</div>
 		</div>
         <search :show="searchModal" v-on:close="searchModal = false" :callback="addToNotifyList" :selected-term-id="termCode"></search>
+        <modal :show="sub.modal" v-on:close="sub.modal = false">
+			<h4 slot="header">Reset Your Passcode</h4>
+			<span slot="body">
+				<form v-on:submit.prevent class="h5">
+                    <label for="recipient" class="mt2 block">
+                        <input type="text" class="col-8 mb1 field inline-block" v-model="sub.recipient" placeholder="phone number or email">
+                        <button type="submit" class="col-3 btn ml1 mb1 inline-block black" :disabled="sub.verified || sub.inFlight" @click="codeResend">Get code</button>
+                    </label>
+                    <span class="btn black h6 muted not-clickable" v-show="!sub.sent">
+                        Please include country code for your phone number. <br />
+                        For example: 18314590111
+                    </span>
+				</form>
+			</span>
+		</modal>
     </div>
 </template>
 
@@ -87,6 +105,7 @@ module.exports = {
             selectizeRef: null,
             courses: [],
             sub: {
+                modal: false,
                 recipient: '',
                 code: '',
                 inFlight: false,
@@ -125,6 +144,9 @@ module.exports = {
         }
     },
     methods: {
+        returnFalse: function() {
+            return false
+        },
         showSearchModal: function() {
             this.searchModal = true;
             setTimeout(function() {
@@ -230,6 +252,36 @@ module.exports = {
                 self.courses = res.courses.map(function(num) {
                     return self.flatCourses[self.termCode][num]
                 });
+            })
+        },
+        codeResend: function() {
+            var self = this;
+            self.$store.dispatch('showSpinner')
+            self.sub.inFlight = true;
+            return request.post(config.notifyURL + '/codeResend')
+            .send({
+                recipient: self.sub.recipient,
+                termId: parseInt(self.termCode)
+            })
+            .ok(function(res) {
+                return true
+            })
+            .then(function(res) {
+                return res.body
+            })
+            .then(function(res) {
+                if (!res.ok) {
+                    self.$store.dispatch('hideSpinner')
+                    self.sub.inFlight = false;
+                    return self.alert.error(res.message || 'An error has occured.');
+                }
+                if (self.$store.getters.Tracker !== null) {
+                    self.$store.getters.Tracker.trackEvent('codeResend', 'recipient', self.sub.recipient);
+                }
+                self.$store.dispatch('hideSpinner')
+                self.sub.inFlight = false;
+                self.sub.modal = false;
+                self.alert.success('A new passcode has been sent.');
             })
         },
         showCourse: function(termId, course) {
