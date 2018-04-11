@@ -1172,10 +1172,10 @@ var self = module.exports = {
             courseNum: courseNum
         })
         .then(function(res) {
-            if (typeof _.state.termDates[_.getters.termId] !== 'undefined') {
-                var start =_.state.termDates[_.getters.termId].start;
+            if (typeof _.state.termDates[termCode] !== 'undefined') {
+                var start =_.state.termDates[termCode].start;
                 var monitorStart = new Date(start);
-                monitorStart.setDate(monitorStart.getDate() - helper.delta(_.getters.termId).enrollment);
+                monitorStart.setDate(monitorStart.getDate() - helper.delta(termCode).enrollment);
             }
             if (res.ok && res.results[0] && res.results[0]) {
                 var latest = res.results[0];
