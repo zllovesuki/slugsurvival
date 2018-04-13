@@ -94,10 +94,20 @@
                         For example: 18314590111
                     </span>
                     <span class="btn black h6 clickable" @click="hasCode" v-show="!sub.sent">
-                        I already have a code
+                        <u>Click here if you already have a code</u>
                     </span>
                     <hr />
-					<span class="block mb1">
+                    <span class="btn black h6 not-clickable" v-show="!sub.sent">
+                        (up to 1 message/4-hour/course)<br />
+                        You will receive message like:
+                    </span>
+                    <span class="btn black h6 muted not-clickable" v-show="!sub.sent">
+                        CHEM 1N - 01 (61326) has 2 events: <br/>
+                        1) Status changes to Open (from Closed). <br/>
+                        2) Has 25% or less available seats remaining (1 available, was 0).
+                    </span>
+                    <hr v-show="!sub.sent"/>
+					<span class="block h6 mb1">
                         We take privacy seriously.
                         <router-link v-bind:class="'h6 ' + color" :to="{ name: 'explainPrivacy' }" target="_blank"> Learn More</router-link>
                     </span>
@@ -166,7 +176,7 @@ module.exports = {
     methods: {
         hasCode: function() {
             this.sub.sent = true
-            this.sub.text = 'Sent'
+            this.sub.text = ''
         },
         showSub: function() {
             if (this.courses.length === 0) return this.alert.error('Add classes first!')
