@@ -1,6 +1,6 @@
 {
   "name": "slugsurvival",
-  "version": "3.25.1",
+  "version": "3.25.7",
   "scripts": {
     "dev": "node node_modules/watchify/bin/cmd.js -vd -p browserify-hmr -e src/main.js -o public/app.js -v",
     "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
@@ -16,7 +16,6 @@
     "body-parser": "^1.18.2",
     "debug": "~3.1.0",
     "express": "^4.16.3",
-    "fill-pdf": "^1.1.0",
     "socket.io-client": "^2.1.0"
   },
   "devDependencies": {

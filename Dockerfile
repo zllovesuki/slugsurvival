@@ -1,7 +1,6 @@
-FROM mhart/alpine-node:8.9.1
+FROM mhart/alpine-node:8.11.1
 
-RUN apk add --no-cache git libgcj --repository http://dl-cdn.alpinelinux.org/alpine/edge/main/ \
-    && apk add --no-cache pdftk --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/
+RUN apk add --no-cache git
 
 RUN npm install pm2 gulp -g
 
