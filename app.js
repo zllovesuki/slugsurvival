@@ -6,8 +6,7 @@ module.exports = function() {
         formParser = bodyParser.urlencoded({ extended: true }),
         fs = require('fs'),
         app = express(),
-        version = require('./version.json'),
-        fillPdf = require('fill-pdf');
+        version = require('./version.json');
 
     app.enable('trust proxy');
     app.set('trust proxy', 'loopback, linklocal, uniquelocal');
@@ -15,8 +14,6 @@ module.exports = function() {
     var root = __dirname + '/src/static/index.html', js = 'prod.js';
 
     app.use('/public', express.static(path.join(__dirname, 'public')));
-
-    var pdfTemplatePath = __dirname + '/public/academic-planning-form.pdf';
 
     if (process.env.RDB_HOST) {
         js = 'app.js'
@@ -49,16 +46,6 @@ module.exports = function() {
     app.get('/version', function(req, res, next) {
         return res.end(version);
     });
-
-    app.post('/fillAcademicPlannerPDF', formParser, function(req, res, next) {
-        fillPdf.generatePdf(req.body, pdfTemplatePath, function(err, output) {
-            if (err) {
-                return next(err);
-            }
-            res.type('application/pdf');
-            res.send(output)
-        })
-    })
 
     app.use('/*', function(req, res, next) {
         return res.end(html);

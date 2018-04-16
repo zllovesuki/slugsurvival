@@ -22,7 +22,7 @@
                         We also recommend that you use this planner on a larger screen.
                     </span>
                 </div>
-                <form class="hide" action="/fillAcademicPlannerPDF" method="post" id="fillPDF">
+                <form class="hide" :action="advisoryURL + '/fillPdf'" method="post" id="fillPDF">
                     <input type="hidden" :name="name" :value="value" v-for="(value, name) in pdfFormData"/>
                 </form>
             </div>
@@ -134,6 +134,7 @@
 </template>
 
 <script>
+var config = require('../../../config')
 var helper = require('../../lib/vuex/helper')
 module.exports = {
     data: function() {
@@ -149,6 +150,9 @@ module.exports = {
         }
     },
     computed: {
+        advisoryURL: function() {
+            return config.advisoryURL
+        },
         alert: function() {
             return this.$store.getters.alert;
         },
