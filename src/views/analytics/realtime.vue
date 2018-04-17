@@ -30,11 +30,11 @@
                                     <td class="nowrap non-clickable">{{ flatCourses[change.termCode][change.courseNum].c + ' - ' + flatCourses[change.termCode][change.courseNum].s }}</td>
                                     <td
                                         class="nowrap non-clickable"
-                                        v-bind:class="{ 'green': change.seats.status === 'Open', 'red': change.seats.status !== 'Open'}"
+                                        v-bind:class="{ 'green': change.newSeats.status === 'Open', 'red': change.newSeats.status !== 'Open'}"
                                     >
-                                        {{ change.seats.status }}
+                                        {{ change.newSeats.status }}
                                     </td>
-                                    <td class="nowrap non-clickable">{{ change.seats.avail }} / {{ change.seats.enrolled }} / {{ change.seats.cap }}</td>
+                                    <td class="nowrap non-clickable">{{ change.newSeats.avail }} / {{ change.newSeats.enrolled }} / {{ change.newSeats.cap }}</td>
                                     <td class="nowrap non-clickable">{{ helper.calculateTermName(change.termCode) }}</td>
                                     <td class="nowrap non-clickable">{{ new Date(change.date * 1000).toLocaleString() }}</td>
                                 </tr>

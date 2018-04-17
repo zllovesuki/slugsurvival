@@ -261,6 +261,7 @@ module.exports = {
     },
     pushChanges: function(state, delta) {
         state.pushChanges.unshift(delta)
+        if (state.pushChanges.length > 10) state.pushChanges.pop()
     },
     saveUnsubscribeRealtimeFn: function(state, fn) {
         state.unsubscribeRealtimeFn = fn

@@ -1725,23 +1725,38 @@ var self = module.exports = {
         _.commit('flipFinalSchedule')
     },
     realtime: function(_) {
-        var socket = require('socket.io-client')(config.realtimeURL)
-        socket.on('connecting', function() {
-            console.log('Push: Connecting to Feeds')
-        })
-        socket.on('connect', function() {
+        if (typeof EventSource === 'undefined') {
+            // TODO: Polfill on IE
+            console.log('Push: Unsupported')
+            return
+        }
+        var source = new EventSource(config.realtimeURL)
+
+        source.onopen = function() {
             console.log('Push: Feeds ready')
             _.commit('changePushReady', true)
-            _.commit('saveSocket', socket)
-        })
-        socket.on('disconnect', function() {
-            console.log('Push: Feeds disconnected')
+            _.commit('saveSocket', source)
+        }
+        source.onerror = function() {
+            console.log('Push: Error')
             _.commit('changePushReady', false)
-        })
-        socket.on('delta', function(data) {
-            _.commit('pushChanges', data)
-        })
-        socket.open()
+        }
+        source.onmessage = function(evt) {
+            var payload = {}
+            try {
+                payload = JSON.parse(evt.data)
+            }catch(e) {
+                console.log('Push: Unexpected data')
+                return
+            }
+            switch (payload.event) {
+                case 'delta':
+                _.commit('pushChanges', payload.data)
+                break;
+                default:
+                break;
+            }
+        }
     },
     subscribeRealtime: function(_) {
         // TODO: this is an ugly hack
