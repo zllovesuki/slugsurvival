@@ -13,8 +13,6 @@
   "author": "Rachel Chen <me@rachelchen.me>",
   "license": "GPL-3.0",
   "dependencies": {
-    "body-parser": "^1.18.2",
-    "debug": "~3.1.0",
     "express": "^4.16.3"
   },
   "devDependencies": {
