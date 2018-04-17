@@ -116,7 +116,8 @@
                     <div class="clearfix">
                         <div class="sm-flex" v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }">
                             <router-link class="p2 flex-auto m1 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'analyticsCourse' }" tag="div"><i class="fa fa-line-chart fa-2x">&nbsp;</i>Enrollment Analytics</router-link>
-                            <router-link class="p2 flex-auto m1 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'analyticsRealtime' }" tag="div"><i class="fa fa-exchange fa-2x">&nbsp;</i>Analytics in Realtime</router-link>
+                            <div class="p2 flex-auto m1 white not-clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.grayOut }"><i class="fa fa-exchange fa-2x">&nbsp;</i>Analytics in Realtime (temporarily disabled)</div>
+                            <!--<router-link class="p2 flex-auto m1 white clickable btn-outline" v-bind:style="{ backgroundColor: colorMap.regular }" :to="{ name: 'analyticsRealtime' }" tag="div"><i class="fa fa-exchange fa-2x">&nbsp;</i>Analytics in Realtime</router-link>-->
                         </div>
                     </div>
                 </div>
