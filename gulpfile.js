@@ -41,4 +41,4 @@ gulp.task('css', function() {
         .pipe(gulp.dest('public'));
 });
 
-gulp.task('default', ['js', 'css'], function() {});
+gulp.task('default', gulp.series(gulp.parallel('js', 'css')), function() {})
