@@ -180,7 +180,10 @@ module.exports = {
             })
         },
         promptForAction: function(calEvent) {
-            if (this.inflight) return;
+            if (this.inflight) {
+                this.alert.maxLogItems(1).error('Loading, please wait...')
+                return
+            }
             var self = this;
             this.inflight = true;
             var promise = this._promptForAction(calEvent);
@@ -429,7 +432,10 @@ module.exports = {
                     self.promptForAction(calEvent);
                 },
                 dayClick: function(date, jsEvent, view) {
-                    if (self.inflight) return;
+                    if (self.inflight) {
+                        self.alert.maxLogItems(1).error('Loading, please wait...')
+                        return
+                    }
                     return self.jumpOutAwait().then(function() {
                         return self.$store.dispatch('refreshCalendar')
                     })

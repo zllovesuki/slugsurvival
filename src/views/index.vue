@@ -197,7 +197,10 @@ module.exports = {
     methods: {
         promptShowCourse: function(result, year) {
             if (year === '...') return
-            if (this.inFlight) return
+            if (this.inFlight) {
+                this.alert.maxLogItems(1).error('Loading, please wait...')
+                return
+            }
             var self = this;
             self.inFlight = true
             self.$store.dispatch('showSpinner')

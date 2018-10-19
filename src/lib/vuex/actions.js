@@ -1004,6 +1004,7 @@ var self = module.exports = {
         if (_.getters.inflight) return
 
         _.commit('inflight', true)
+        _.getters.alert.maxLogItems(1).success('Loading, please wait...')
 
         _.dispatch('showSpinner')
         var split = string.split('+');
@@ -1154,6 +1155,7 @@ var self = module.exports = {
         if (_.getters.inflight) return
 
         _.commit('inflight', true)
+        _.getters.alert.maxLogItems(1).success('Loading, please wait...')
 
         _.dispatch('showSpinner')
         var getSeatBySectionNum = function(seats, secNum) {

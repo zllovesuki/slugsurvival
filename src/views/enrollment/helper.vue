@@ -187,6 +187,7 @@ module.exports = {
             var self = this;
             self.$store.dispatch('showSpinner')
             self.sub.sendInflight = true;
+            self.alert.success('Loading... Please do not click again.')
             if (self.$store.getters.Tracker !== null) {
                 self.$store.getters.Tracker.trackEvent('sendVerify', 'recipient', self.sub.recipient);
             }
@@ -229,6 +230,7 @@ module.exports = {
             var self = this;
             self.$store.dispatch('showSpinner')
             self.sub.verifyInflight = true;
+            self.alert.success('Loading... Please do not click again.')
             return request.post(config.notifyURL + '/verifyUser')
             .send({
                 recipient: self.sub.recipient,
