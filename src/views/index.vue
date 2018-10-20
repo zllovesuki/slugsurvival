@@ -198,7 +198,7 @@ module.exports = {
         promptShowCourse: function(result, year) {
             if (year === '...') return
             if (this.inFlight) {
-                this.alert.maxLogItems(1).error('Loading, please wait...')
+                this.alert.delay(1000).maxLogItems(1).error('Loading, please wait...')
                 return
             }
             var self = this;
