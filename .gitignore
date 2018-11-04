@@ -5,3 +5,4 @@ npm-debug.log
 public/*.js
 public/*.css
 public/*.map
+public/fonts

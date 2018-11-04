@@ -6,8 +6,8 @@
  * -------------------------- */
 @font-face {
   font-family: 'FontAwesome';
-  src: url('//rachel.objectstore.co/dist/font-awesome-4.7.0/fonts/fontawesome-webfont.eot?v=4.7.0');
-  src: url('//rachel.objectstore.co/dist/font-awesome-4.7.0/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'), url('//rachel.objectstore.co/dist/font-awesome-4.7.0/fonts/fontawesome-webfont.woff2?v=4.7.0') format('woff2'), url('//rachel.objectstore.co/dist/font-awesome-4.7.0/fonts/fontawesome-webfont.woff?v=4.7.0') format('woff'), url('//rachel.objectstore.co/dist/font-awesome-4.7.0/fonts/fontawesome-webfont.ttf?v=4.7.0') format('truetype'), url('//rachel.objectstore.co/dist/font-awesome-4.7.0/fonts/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular') format('svg');
+  src: url('/public/fonts/font-awesome-4.7.0/fontawesome-webfont.eot?v=4.7.0');
+  src: url('/public/fonts/font-awesome-4.7.0/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'), url('/public/fonts/font-awesome-4.7.0/fontawesome-webfont.woff2?v=4.7.0') format('woff2'), url('/public/fonts/font-awesome-4.7.0/fontawesome-webfont.woff?v=4.7.0') format('woff'), url('/public/fonts/font-awesome-4.7.0/fontawesome-webfont.ttf?v=4.7.0') format('truetype'), url('/public/fonts/font-awesome-4.7.0/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular') format('svg');
   font-weight: normal;
   font-style: normal;
 }

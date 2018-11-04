@@ -3,9 +3,13 @@ var gulp = require('gulp'),
     gp_rename = require('gulp-rename'),
     gp_uglify = require('gulp-uglify'),
     gp_concatcss = require('gulp-concat-css'),
-    gp_cleancss = require('gulp-clean-css');
+    gp_cleancss = require('gulp-clean-css'),
+    gp_sourcemaps = require('gulp-sourcemaps');
 
 var jsAssets = [
+    'assets/js/bluebird.js',
+    'assets/js/no-conflict.js',
+    'assets/js/please-wait.js',
     'assets/js/alertify.js',
     'assets/js/moment.js',
     'assets/js/lz-string.js',
@@ -25,10 +29,12 @@ var cssAssets = 'assets/css/*.css';
 
 gulp.task('js', function() {
     return gulp.src(jsAssets)
+        .pipe(gp_sourcemaps.init())
         .pipe(gp_concat('assets.js'))
         .pipe(gulp.dest('public'))
         .pipe(gp_rename('assets.min.js'))
         .pipe(gp_uglify())
+        .pipe(gp_sourcemaps.write('.', { destPath: 'public', sourceRoot: 'assets/js/' }))
         .pipe(gulp.dest('public'));
 });
 
@@ -41,4 +47,9 @@ gulp.task('css', function() {
         .pipe(gulp.dest('public'));
 });
 
-gulp.task('default', gulp.series(gulp.parallel('js', 'css')), function() {})
+gulp.task('fonts', function() {
+    return gulp.src('assets/fonts/**/*')
+    .pipe(gulp.dest('public/fonts'))
+})
+
+gulp.task('default', gulp.series(gulp.parallel('js', 'css', 'fonts')), function() {})
