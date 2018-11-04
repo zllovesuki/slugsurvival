@@ -46,6 +46,7 @@ module.exports = function() {
     });
 
     app.use('/*', function(req, res, next) {
+        res.setHeader('content-type', 'text/html');
         return res.end(html);
     });
 
