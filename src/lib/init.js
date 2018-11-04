@@ -28,6 +28,8 @@ module.exports = function(_, router) {
 
     _.commit('saveMobileDetect', new MobileDetect(window.navigator.userAgent))
 
+    if (_.getters.MobileDetect.mobile()) _.commit('setConcurrency', 2)
+
     return _.dispatch('ensureDataLoaded').then(function() {
         window.loading_screen.finish()
     })

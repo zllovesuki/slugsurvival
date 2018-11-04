@@ -15,9 +15,10 @@ var self = module.exports = {
         return _.dispatch('fetchBasicData')
     },
     throttledFetch: function(_, keys) {
+        var concurrency = _.state.concurrency;
         return Bluebird.map(keys, function(key) {
             if (key === null) return null
-            console.log('throttledFetch:', key)
+            console.log('throttledFetch (' + concurrency + '):', key)
             try {
                 // TODO: this is too ugly
                 $('.loading-component').text(key)
@@ -25,7 +26,7 @@ var self = module.exports = {
             return request.get(config.dbURL + key).then(function(res) {
                 return res.body
             })
-        }, { concurrency: 2 })
+        }, { concurrency: concurrency })
     },
     throttledGetStorage: function(_, keys) {
         return Bluebird.mapSeries(keys, function(key) {

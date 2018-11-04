@@ -9,6 +9,7 @@ module.exports = {
     unsubscribeRealtimeFn: function() {},
 
     MobileDetect: null,
+    concurrency: 5,
 
     onlineState: 'online',
 

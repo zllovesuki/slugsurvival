@@ -265,5 +265,8 @@ module.exports = {
     },
     saveUnsubscribeRealtimeFn: function(state, fn) {
         state.unsubscribeRealtimeFn = fn
+    },
+    setConcurrency: function(state, con) {
+        state.concurrency = con
     }
 }
