@@ -1,8 +1,8 @@
 {
   "name": "slugsurvival",
-  "version": "3.26.0",
+  "version": "3.27.0",
   "scripts": {
-    "dev": "node node_modules/watchify/bin/cmd.js -vd -p browserify-hmr -e src/main.js -o public/app.js -v",
+    "dev": "node node_modules/watchify/bin/cmd.js -vd -t vueify -t stringify -g envify -p browserify-hmr -e src/main.js -o public/app.js -v",
     "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
     "prod": "gulp && NODE_ENV=production node ./node_modules/browserify/bin/cmd.js -t vueify -t stringify -g envify -e src/main.js -d | node ./node_modules/terser/bin/uglifyjs -o public/prod.js -c warnings=false -m --source-map"
   },
