@@ -99,16 +99,14 @@ var self = module.exports = {
         var loadOnlineTimestamp = function() {
             return _.dispatch('throttledFetch', [
                 '/timestamp/terms',
-                '/timestamp/rmp',
-                '/timestamp/subjects',
-                '/timestamp/major-minor'
+                '/timestamp/rmp'
             ]).then(function(base) {
                 return [
                     base[0],
                     base[1],
-                    base[2],
-                    base[3],
-                    // reusing termsList timestamp for historic data and final
+                    // reusing termsList timestamp for the rest as they are updated around the same time
+                    base[0],
+                    base[0],
                     base[0],
                     base[0]
                 ]
@@ -117,11 +115,7 @@ var self = module.exports = {
         var loadOfflineTimestamp = function() {
             return _.dispatch('throttledGetStorage', [
                 'termsListTimestamp',
-                'rmpTimestamp',
-                'subjectsTimestamp',
-                'mmTimestamp',
-                'historicDataTimestamp',
-                'finalScheduleTimestamp'
+                'rmpTimestamp'
             ])
         }
         var loadFromStorage = function(invalid, online) {
@@ -183,22 +177,22 @@ var self = module.exports = {
                         invalid.rmp = true;
                         console.log('base: rmp mapping timestamp differs');
                     }
-                    if (online[2] !== offline[2]) {
+                    if (online[2] !== offline[0]) {
                         invalid.yes = true;
                         invalid.subjects = true;
                         console.log('base: subjects timestamp differs');
                     }
-                    if (online[3] !== offline[3]) {
+                    if (online[3] !== offline[0]) {
                         invalid.yes = true;
                         invalid.mm = true;
                         console.log('base: major minor timestamp differs');
                     }
-                    if (online[4] !== offline[4]) {
+                    if (online[4] !== offline[0]) {
                         invalid.yes = true;
                         invalid.historicData = true;
                         console.log('base: historic data timestamp differs');
                     }
-                    if (online[5] !== offline[5]) {
+                    if (online[5] !== offline[0]) {
                         invalid.yes = true;
                         invalid.finalSchedule = true;
                         console.log('base: final schedule timestamp differs');
