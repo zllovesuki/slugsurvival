@@ -316,7 +316,10 @@ module.exports = {
                 return res.body
             })
             .then(function(res) {
-                if (res && res.ok && res.results && res.results.length > 0) self.compacted = res.results.map(function(obj) {
+                if (res && res.ok && res.results && res.results.length > 0) self.compacted = res.results.filter(function(obj) {
+                    if (obj.ratio > 1) return true
+                    else return false
+                }).map(function(obj) {
                     if (!self.flatCourses[self.termCode]) return;
                     if (!self.flatCourses[self.termCode][obj.courseNum]) return;
                     return {
