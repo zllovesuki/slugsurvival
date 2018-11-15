@@ -1,6 +1,53 @@
 "use strict"
 var self = module.exports = {
 
+    courseSeatKeys: [
+        'status',
+        'avail',
+        'cap',
+        'enrolled',
+        'waitCap',
+        'waitTotal'
+    ],
+
+    sectionSeatKeys: [
+        'status',
+        'cap',
+        'enrolled',
+        'wait',
+        'waitTotal'
+    ],
+
+    courseSeatDataDiffers: function(a, b) {
+        return self.courseSeatKeys.reduce(function(equal, key) {
+            if (a[key] !== b[key]) equal = false;
+            return equal;
+        }, true) === false
+    },
+
+    sectionSeatDataDiffers: function(a, b) {
+        if (typeof a.sections !== 'undefined' || typeof b.sections !== 'undefined') {
+
+            if (typeof a.sections !== 'undefined' && typeof b.sections === 'undefined') return true;
+            if (typeof a.sections === 'undefined' && typeof b.sections !== 'undefined') return true;
+
+            if (a.sections.length !== b.sections.length) return true;
+
+            for (var i = 0, secLength = a.sections.length; i < secLength; i++) {
+
+                if (self.sectionSeatKeys.reduce(function(equal, key) {
+                    if (a.sections[i][key] !== b.sections[i][key]) equal = false;
+                    return equal;
+                }, true) === false) return true;
+            }
+        }
+        return false;
+    },
+
+    seatDataDiffers: function(a, b) {
+        return self.courseSeatDataDiffers(a, b) || self.sectionSeatDataDiffers(a, b)
+    },
+
     delta: function(termCode) {
         switch (termCode[termCode.length - 1]) {
             case '0': // Winter

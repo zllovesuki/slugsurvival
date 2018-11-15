@@ -260,6 +260,7 @@ module.exports = {
         state.pushReady = readyState
     },
     pushChanges: function(state, delta) {
+        if (!helper.courseSeatDataDiffers(delta.newSeats, delta.oldSeats)) return
         state.pushChanges.unshift(delta)
         if (state.pushChanges.length > 10) state.pushChanges.pop()
     },

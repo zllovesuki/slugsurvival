@@ -26,7 +26,7 @@
                                 <th>Last Updated</th>
                             </thead>
                             <tbody v-bind:class="{ 'h6': isMobile, 'h5': !isMobile }">
-                                <tr v-for="change in changes.slice(0, 10)">
+                                <tr v-for="change in changes">
                                     <td class="nowrap non-clickable">{{ flatCourses[change.termCode][change.courseNum].c + ' - ' + flatCourses[change.termCode][change.courseNum].s }}</td>
                                     <td
                                         class="nowrap non-clickable"
