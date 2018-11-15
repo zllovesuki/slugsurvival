@@ -2,7 +2,9 @@
 var helper = require('./helper'),
     config = require('../../../config'),
     compoundSubject = require('compound-subject'),
-    request = require('superagent')
+    request = require('superagent'),
+    EventSourcePolyfill = require('event-source-polyfill'),
+    EventSource = EventSourcePolyfill.NativeEventSource || EventSourcePolyfill.EventSourcePolyfill
 
 var self = module.exports = {
     setTitle: function(_, title) {
@@ -1722,11 +1724,6 @@ var self = module.exports = {
         _.commit('flipFinalSchedule')
     },
     realtime: function(_) {
-        if (typeof EventSource === 'undefined') {
-            // TODO: Polfill on IE
-            console.log('Push: Unsupported')
-            return
-        }
         var source = new EventSource(config.realtimeURL)
 
         source.onopen = function() {

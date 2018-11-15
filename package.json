@@ -1,6 +1,6 @@
 {
   "name": "slugsurvival",
-  "version": "3.27.0",
+  "version": "3.27.1",
   "scripts": {
     "dev": "node node_modules/watchify/bin/cmd.js -vd -t vueify -t stringify -g envify -p browserify-hmr -e src/main.js -o public/app.js -v",
     "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
@@ -26,6 +26,7 @@
     "browserify-hmr": "^0.3.6",
     "compound-subject": "0.0.2",
     "envify": "^4.1.0",
+    "event-source-polyfill": "^1.0.4",
     "gulp": "^4.0.0",
     "gulp-clean-css": "^3.10.0",
     "gulp-concat": "^2.6.1",
