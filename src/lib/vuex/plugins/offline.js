@@ -58,48 +58,40 @@ module.exports = function() {
                 case 'saveSubjects':
 
                 var subjects = mutation.payload.subjects;
-                var onlineTimestamp = mutation.payload.timestamp.subjects;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
-                store.getters.storage.setItem('subjectsTimestamp', onlineTimestamp)
                 store.getters.storage.setItem('lz-subjects', subjects)
                 break;
 
                 case 'saveMajorMinor':
 
                 var mm = mutation.payload.mm;
-                var onlineTimestamp = mutation.payload.timestamp.mm;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
-                store.getters.storage.setItem('mmTimestamp', onlineTimestamp)
                 store.getters.storage.setItem('lz-majorMinor', mm)
                 break;
 
                 case 'saveHistoricData':
 
                 var historicData = mutation.payload.historicData;
-                var onlineTimestamp = mutation.payload.timestamp.historicData;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
-                store.getters.storage.setItem('historicDataTimestamp', onlineTimestamp)
                 store.getters.storage.setItem('lz-historicData', historicData)
                 break;
 
                 case 'saveFinalSchedule':
 
                 var final = mutation.payload.finalSchedule;
-                var onlineTimestamp = mutation.payload.timestamp.finalSchedule;
                 var skipSaving = mutation.payload.skipSaving || false;
 
                 if (skipSaving) return;
 
-                store.getters.storage.setItem('finalScheduleTimestamp', onlineTimestamp)
                 store.getters.storage.setItem('lz-finalSchedule', final)
                 break;
 
