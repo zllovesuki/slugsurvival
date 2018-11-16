@@ -89,9 +89,9 @@
                         <input type="text" class="col-8 mb1 field inline-block" v-model="sub.code" placeholder="passcode received">
                         <button type="submit" class="col-3 btn ml1 mb1 inline-block black" v-bind:class="{'muted': sub.verified || !sub.code.length > 0 || sub.verifyInflight}" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
                     </label>
-                    <label for="reset" class="mnx2 mt2 block" v-if="sub.sent">
+                    <label for="reset" class="mnx2 mt2 block h6" v-if="sub.sent">
                         <button type="submit" class="col-10 btn mb1 inline-block black" v-bind:class="{'muted': sub.verified || sub.verifyInflight || sub.sendInflight}" :disabled="sub.verified || sub.verifyInflight || sub.sendInflight" @click="startAgain">
-                            Oops I typed the wrong number/email
+                            Oops start over please
                         </button>
                     </label>
                     <span class="btn black h6 muted not-clickable" v-show="!sub.sent">
