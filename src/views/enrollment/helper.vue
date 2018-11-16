@@ -253,8 +253,8 @@ module.exports = {
                 return res.body
             })
             .then(function(res) {
-                self.sub.verifyInflight = false;
                 if (!res.ok) {
+                    self.sub.verifyInflight = false;
                     self.$store.dispatch('hideSpinner')
                     return self.alert.error(res.message || 'An error has occured.');
                 }
