@@ -83,11 +83,16 @@
 				<form v-on:submit.prevent class="h5">
                     <label for="recipient" class="mt2 block">
                         <input type="text" class="col-8 mb1 field inline-block" v-model="sub.recipient" placeholder="phone number or email">
-                        <button type="submit" class="col-3 btn ml1 mb1 inline-block black" :disabled="sub.verified || sub.cooldown || !sub.recipient.length > 0 || (sub.counter > 0 && sub.counter < 60) || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
+                        <button type="submit" class="col-3 btn ml1 mb1 inline-block black" v-bind:class="{'muted': sub.verified || sub.cooldown || !sub.recipient.length > 0 || (sub.counter > 0 && sub.counter < 60) || sub.sendInflight}" :disabled="sub.verified || sub.cooldown || !sub.recipient.length > 0 || (sub.counter > 0 && sub.counter < 60) || sub.sendInflight" @click="sendVerify">{{ sub.text }}</button>
                     </label>
                     <label for="code" class="mt2 block" v-if="sub.sent">
                         <input type="text" class="col-8 mb1 field inline-block" v-model="sub.code" placeholder="passcode received">
-                        <button type="submit" class="col-3 btn ml1 mb1 inline-block black" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
+                        <button type="submit" class="col-3 btn ml1 mb1 inline-block black" v-bind:class="{'muted': sub.verified || !sub.code.length > 0 || sub.verifyInflight}" :disabled="sub.verified || !sub.code.length > 0 || sub.verifyInflight" @click="verifyCode">Verify</button>
+                    </label>
+                    <label for="reset" class="mnx2 mt2 block" v-if="sub.sent">
+                        <button type="submit" class="col-10 btn mb1 inline-block black" v-bind:class="{'muted': sub.verified || sub.verifyInflight || sub.sendInflight}" :disabled="sub.verified || sub.verifyInflight || sub.sendInflight" @click="startAgain">
+                            Oops I typed the wrong number/email
+                        </button>
                     </label>
                     <span class="btn black h6 muted not-clickable" v-show="!sub.sent">
                         Please include country code for your phone number. <br />
@@ -208,6 +213,7 @@ module.exports = {
                 self.sub.cooldown = true;
                 self.sub.counter -= 1;
                 if (!res.ok) {
+                    self.startAgain()
                     return self.alert.error(res.message || 'An error has occured.');
                 }
                 self.sub.sent = true;
@@ -225,6 +231,9 @@ module.exports = {
                     self.sub.counter--;
                 }, 1000)
             })
+        },
+        startAgain: function() {
+            this.resetSub({text: 'Get Code', verified: false, modal: true})
         },
         verifyCode: function() {
             var self = this;
@@ -247,7 +256,7 @@ module.exports = {
                 self.sub.verifyInflight = false;
                 if (!res.ok) {
                     self.$store.dispatch('hideSpinner')
-                    return self.alert().error(res.message || 'An error has occured.');
+                    return self.alert.error(res.message || 'An error has occured.');
                 }
                 if (self.$store.getters.Tracker !== null) {
                     self.$store.getters.Tracker.trackEvent('verified', 'recipient', self.sub.recipient);
@@ -260,13 +269,6 @@ module.exports = {
                 })
                 .then(function() {
                     clearInterval(self.sub.timer);
-                    self.sub.verified = true;
-                    self.sub.text = 'Verified';
-                    self.sub.shouldResend = false;
-                    self.sub.cooldown = false;
-                    self.sub.sent = false;
-                    self.sub.counter = 300;
-                    self.sub.modal = false;
                     self.$store.dispatch('hideSpinner')
                     self.alert.success('Subscribed to changes!');
                     self.$router.push({ name: 'enrollManage'})
@@ -275,6 +277,20 @@ module.exports = {
                     }
                 })
             })
+        },
+        resetSub: function(merge) {
+            clearInterval(this.sub.timer)
+            this.sub = Object.assign({
+                recipient: '',
+                code: '',
+                counter: 120,
+                sent: false,
+                sendInflight: false,
+                cooldown: false,
+                verifyInflight: false,
+                shouldResend: false,
+                timer: null
+            }, merge)
         },
         showSearchModal: function() {
             this.searchModal = true;
