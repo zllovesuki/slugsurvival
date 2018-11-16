@@ -30,11 +30,25 @@
                                     <td class="nowrap non-clickable">{{ flatCourses[change.termCode][change.courseNum].c + ' - ' + flatCourses[change.termCode][change.courseNum].s }}</td>
                                     <td
                                         class="nowrap non-clickable"
-                                        v-bind:class="{ 'green': change.newSeats.status === 'Open', 'red': change.newSeats.status !== 'Open'}"
                                     >
-                                        {{ change.newSeats.status }}
+                                        <template v-if="change.oldSeats.status !== change.newSeats.status">
+                                            <span v-bind:class="{ 'green': change.oldSeats.status === 'Open', 'red': change.oldSeats.status !== 'Open'}">
+                                                {{ change.oldSeats.status }}
+                                            </span>
+                                            {{ ' > '}}
+                                            <span v-bind:class="{ 'green': change.newSeats.status === 'Open', 'red': change.newSeats.status !== 'Open'}">
+                                                {{ change.newSeats.status }}
+                                            </span>
+                                        </template>
+                                        <template v-else>
+                                            <span v-bind:class="{ 'green': change.newSeats.status === 'Open', 'red': change.newSeats.status !== 'Open'}">
+                                                {{ change.newSeats.status }}
+                                            </span>
+                                        </template>
                                     </td>
-                                    <td class="nowrap non-clickable">{{ change.newSeats.avail }} / {{ change.newSeats.enrolled }} / {{ change.newSeats.cap }}</td>
+                                    <td class="nowrap non-clickable">
+                                        {{ change.oldSeats.avail + ' / ' + change.oldSeats.enrolled + ' / ' + change.oldSeats.cap + '&nbsp;&nbsp;>&nbsp;&nbsp;' + change.newSeats.avail + ' / ' + change.newSeats.enrolled + ' / ' + change.newSeats.cap }}
+                                    </td>
                                     <td class="nowrap non-clickable">{{ helper.calculateTermName(change.termCode) }}</td>
                                     <td class="nowrap non-clickable">{{ new Date(change.date * 1000).toLocaleString() }}</td>
                                 </tr>
