@@ -132,6 +132,11 @@
 var config = require('../../../config')
 var helper = require('../../lib/vuex/helper')
 var request = require('superagent')
+var ss = require('simple-statistics')
+
+var termsToApplyBias = [
+    '2190'
+]
 
 module.exports = {
     data: function() {
@@ -207,6 +212,40 @@ module.exports = {
         }
     },
     methods: {
+        applyBias: function(bias, data) {
+            return new Bluebird(function(resolve, reject) {
+                switch (bias) {
+                    case 'ckMeans':
+                    var timestamps = data.map(function(obj) {
+                        return obj.date
+                    })
+                    var timestampIndexHashMap = data.reduce(function(hashMap, obj, index) {
+                        hashMap[obj.date] = index
+                        return hashMap
+                    }, {})
+                    var segments = ss.ckmeans(timestamps, 2)
+                    console.log(segments)
+                    var smallestSegment = segments.reduce((obj, segment, index) => {
+                        if (segment.length < obj.size) obj = {
+                            index: index,
+                            size: segment.length
+                        }
+                        return obj
+                    }, {
+                        index: -1,
+                        size: 999999999999
+                    })
+                    if (smallestSegment.index !== -1) {
+                        data.splice(timestampIndexHashMap[segments[smallestSegment.index][0]], 1)
+                    }
+                    resolve(data)
+                    break;
+                    default:
+                    resolve(data);
+                    break
+                }
+            })
+        },
         showSearchModal: function() {
             this.searchModal = true;
             setTimeout(function() {
@@ -216,7 +255,10 @@ module.exports = {
         openAnalytics: function(course) {
             this.searchModal = false;
             this.graphDataReady = false;
-            this.$router.push({ name: 'analyticsCourse', params: { termId: this.termCode, courseNum: course.num }})
+            this.$router.push({ name: 'analyticsCourse', params: {
+                termId: this.termCode,
+                courseNum: course.num
+            }})
         },
         makeid: function() {
             var text = "";
@@ -230,6 +272,12 @@ module.exports = {
         loadGraph: function(params) {
             if (!params.termId || !params.courseNum) return;
             var self = this;
+            var bias = 'nobias'
+            var applyBias = termsToApplyBias.indexOf(params.termId) !== -1
+            if (applyBias === true) {
+                console.log('Applying ckMeans to term', params.termId)
+                bias = 'ckMeans'
+            }
             self.$store.dispatch('showSpinner')
             self.graphDataReady = false;
             this.canvasId = this.makeid();
@@ -256,35 +304,39 @@ module.exports = {
                 }else if (!res.ok) {
                     return self.alert.error('An error has occurred');
                 }
-                if (res.results && res.results.length === 0) {
+                var rawData = res.results
+                if (rawData && rawData.length === 0) {
                     if (typeof monitorStart === 'undefined') {
                         return self.alert.error('No data found.')
                     }else{
                         return self.alert.error('No data found, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
                     }
                 }
-                var numOfSections = (res.results[0] ? res.results[0].sections.length  : 0);
-                if (numOfSections > 0) {
-                    for (var i = 0, length = res.results.length; i < length; i++) {
-                        for (var j = 0; j < numOfSections; j++) {
-                            if (typeof self.sectionsData[j] === 'undefined') {
-                                self.sectionsData[j] = [];
+                return self.applyBias(bias, rawData)
+                .then(function(data) {
+                    var numOfSections = (data[0] ? data[0].sections.length  : 0);
+                    if (numOfSections > 0) {
+                        for (var i = 0, length = data.length; i < length; i++) {
+                            for (var j = 0; j < numOfSections; j++) {
+                                if (typeof self.sectionsData[j] === 'undefined') {
+                                    self.sectionsData[j] = [];
+                                }
+                                if (!data[i] ||
+                                    !data[i].sections ||
+                                    !data[i].sections[j]) continue;
+                                self.sectionsCanvasId[j] = self.makeid();
+                                self.sectionsData[j].push(Object.assign({
+                                    date: data[i].date
+                                }, data[i].sections[j]))
                             }
-                            if (!res.results[i] ||
-                                !res.results[i].sections ||
-                                !res.results[i].sections[j]) continue;
-                            self.sectionsCanvasId[j] = self.makeid();
-                            self.sectionsData[j].push(Object.assign({
-                                date: res.results[i].date
-                            }, res.results[i].sections[j]))
                         }
                     }
-                }
-                self.graphData = res.results.map(function(result) {
-                    delete result.sections
-                    return result
+                    self.graphData = data.map(function(result) {
+                        delete result.sections
+                        return result
+                    })
+                    self.course = self.flatCourses[params.termId][params.courseNum];
                 })
-                self.course = self.flatCourses[params.termId][params.courseNum];
             })
             .then(function() {
                 self.graphDataReady = true;
@@ -340,6 +392,8 @@ module.exports = {
         switchTerm: function(oldTermCode) {
             var self = this;
             self.dropDeadline = '...'
+            self.heat = []
+            self.compacted = []
             self.$store.commit('setTermName', null)
             if (!!oldTermCode) self.$store.commit('emptyTerm', oldTermCode)
 

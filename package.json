@@ -1,6 +1,6 @@
 {
   "name": "slugsurvival",
-  "version": "3.27.1",
+  "version": "3.28.2",
   "scripts": {
     "dev": "node node_modules/watchify/bin/cmd.js -vd -t vueify -t stringify -g envify -p browserify-hmr -e src/main.js -o public/app.js -v",
     "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
@@ -38,6 +38,7 @@
     "lodash.debounce": "^4.0.8",
     "lunr": "^2.3.4",
     "mobile-detect": "^1.4.3",
+    "simple-statistics": "^6.1.1",
     "stringify": "^5.2.0",
     "superagent": "^4.0.0-beta.5",
     "terser": "^3.10.1",
