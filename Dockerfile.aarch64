@@ -1,7 +1,6 @@
-FROM docker.io/project31/aarch64-alpine-qemu:latest
-RUN [ "cross-build-start" ]
-
 FROM arm64v8/node:10.13.0-alpine
+
+COPY ./qemu-aarch64-static /usr/bin/qemu-aarch64-static
 
 RUN apk add --no-cache git
 
@@ -21,5 +20,3 @@ RUN npm run prod \
 EXPOSE 3001
 
 CMD pm2 start app.json --no-daemon
-
-RUN [ "cross-build-end" ]
