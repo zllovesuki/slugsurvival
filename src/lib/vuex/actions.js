@@ -972,7 +972,7 @@ var self = module.exports = {
             courseNum: courseNum
         })
         .then(function(res) {
-            if (res.ok && res.results[0] && res.results[0]) {
+            if (res.ok === true && res.results && res.results[0]) {
                 secSeats = res.results[0].sections;
             }
             return _.dispatch('getEventObjectsByCourse', {
@@ -1176,7 +1176,7 @@ var self = module.exports = {
                 var monitorStart = new Date(start);
                 monitorStart.setDate(monitorStart.getDate() - helper.delta(termCode).enrollment);
             }
-            if (res.ok && res.results[0] && res.results[0]) {
+            if (res.ok === true && res.results && res.results[0]) {
                 var latest = res.results[0];
                 var seat = latest;
                 var isSection = (!!sectionNum && courseNum !== sectionNum);
@@ -1238,7 +1238,7 @@ var self = module.exports = {
                 if (_.getters.Tracker !== null) {
                     _.getters.Tracker.trackEvent('realTimeEnrollment', 'untracked', termCode + '_' + courseNum)
                 }
-            }else if (!res.ok) {
+            }else if (res.ok !== true) {
                 _.getters.alert.error('Cannot fetch real time data!')
                 if (_.getters.Tracker !== null) {
                     _.getters.Tracker.trackEvent('realTimeEnrollment', 'error', termCode + '_' + courseNum)
@@ -1592,7 +1592,7 @@ var self = module.exports = {
             return res.body
         })
         .then(function(res) {
-            if (res && res.ok && res.results) return res.results.map(function(termCode) {
+            if (res && res.ok === true && res.results) return res.results.map(function(termCode) {
                 return {
                     code: termCode,
                     name: _.state.termsList[termCode]

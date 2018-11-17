@@ -212,7 +212,7 @@ module.exports = {
             })
             .then(function(res) {
                 self.$store.dispatch('hideSpinner')
-                if (!res.ok) {
+                if (res.ok !== true) {
                     return self.alert.error(res.message || 'An error has occured.');
                 }
                 if (self.$store.getters.Tracker !== null) {
@@ -241,7 +241,7 @@ module.exports = {
                 return res.body
             })
             .then(function(res) {
-                if (!res.ok) {
+                if (res.ok !== true) {
                     self.$store.dispatch('hideSpinner')
                     self.sub.inFlight = false;
                     return self.alert.error(res.message || 'An error has occured.');
@@ -270,7 +270,7 @@ module.exports = {
                 return res.body
             })
             .then(function(res) {
-                if (!res.ok) {
+                if (res.ok !== true) {
                     self.$store.dispatch('hideSpinner')
                     self.sub.inFlight = false;
                     return self.alert.error(res.message || 'An error has occured.');

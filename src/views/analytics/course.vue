@@ -295,13 +295,14 @@ module.exports = {
                     var monitorStart = new Date(start);
                     monitorStart.setDate(monitorStart.getDate() - helper.delta(self.termCode).enrollment);
                 }
-                if (!res.ok && res.message && res.message.indexOf('not tracked') !== -1) {
+                if (res.ok !== true && res.message && res.message.indexOf('not tracked') !== -1) {
                     if (typeof monitorStart === 'undefined') {
                         return self.alert.error('This term is not yet being tracked, please check again later.')
                     }else{
                         return self.alert.error('This term is not yet being tracked, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
                     }
-                }else if (!res.ok) {
+                }else{
+                    console.log(res)
                     return self.alert.error('An error has occurred');
                 }
                 var rawData = res.results
@@ -350,7 +351,7 @@ module.exports = {
                 return res.body
             })
             .then(function(res) {
-                if (res && res.ok && res.results && res.results.length > 0) self.heat = res.results.map(function(obj) {
+                if (res && res.ok === true && res.results && res.results.length > 0) self.heat = res.results.map(function(obj) {
                     if (!self.flatCourses[self.termCode]) return;
                     if (!self.flatCourses[self.termCode][obj.group]) return;
                     return {
@@ -368,7 +369,7 @@ module.exports = {
                 return res.body
             })
             .then(function(res) {
-                if (res && res.ok && res.results && res.results.length > 0) self.compacted = res.results.filter(function(obj) {
+                if (res && res.ok === true && res.results && res.results.length > 0) self.compacted = res.results.filter(function(obj) {
                     if (obj.ratio > 1) return true
                     else return false
                 }).map(function(obj) {

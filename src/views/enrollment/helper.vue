@@ -212,7 +212,7 @@ module.exports = {
                 self.sub.sendInflight = false;
                 self.sub.cooldown = true;
                 self.sub.counter -= 1;
-                if (!res.ok) {
+                if (res.ok !== true) {
                     self.startAgain()
                     return self.alert.error(res.message || 'An error has occured.');
                 }
@@ -253,7 +253,7 @@ module.exports = {
                 return res.body
             })
             .then(function(res) {
-                if (!res.ok) {
+                if (res.ok !== true) {
                     self.sub.verifyInflight = false;
                     self.$store.dispatch('hideSpinner')
                     return self.alert.error(res.message || 'An error has occured.');
