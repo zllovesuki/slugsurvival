@@ -1,14 +1,13 @@
-FROM owlab/alpine-arm64:latest
+FROM docker.io/project31/aarch64-alpine-qemu:latest
+RUN [ "cross-build-start" ]
 
-RUN apk add --no-cache nodejs git libgcj pdftk
+FROM arm64v8/node:10.13.0-alpine
 
-RUN npm config set unsafe-perm true && npm install pm2 gulp -g
+RUN apk add --no-cache git
 
-RUN cd $(npm root -g)/npm \
- && npm install fs-extra \
- && sed -i -e s/graceful-fs/fs-extra/ -e s/fs\.rename/fs.move/ ./lib/utils/rename.js
+RUN npm install pm2 gulp -g
 
-ADD package.json /tmp/package.json
+ADD package-lock.json package.json /tmp/
 RUN cd /tmp && npm install
 RUN mkdir -p /usr/src/app && cp -a /tmp/node_modules /usr/src/app/
 
@@ -22,3 +21,5 @@ RUN npm run prod \
 EXPOSE 3001
 
 CMD pm2 start app.json --no-daemon
+
+RUN [ "cross-build-end" ]
