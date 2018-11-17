@@ -295,15 +295,17 @@ module.exports = {
                     var monitorStart = new Date(start);
                     monitorStart.setDate(monitorStart.getDate() - helper.delta(self.termCode).enrollment);
                 }
-                if (res.ok !== true && res.message && res.message.indexOf('not tracked') !== -1) {
-                    if (typeof monitorStart === 'undefined') {
-                        return self.alert.error('This term is not yet being tracked, please check again later.')
+                if (res.ok !== true) {
+                    if (res.message && res.message.indexOf('not tracked') !== -1) {
+                        if (typeof monitorStart === 'undefined') {
+                            return self.alert.error('This term is not yet being tracked, please check again later.')
+                        }else{
+                            return self.alert.error('This term is not yet being tracked, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
+                        }
                     }else{
-                        return self.alert.error('This term is not yet being tracked, please check again after ' + moment(monitorStart).format('YYYY-MM-DD'))
+                        console.log(res)
+                        return self.alert.error('An error has occurred');
                     }
-                }else{
-                    console.log(res)
-                    return self.alert.error('An error has occurred');
                 }
                 var rawData = res.results
                 if (rawData && rawData.length === 0) {
