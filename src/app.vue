@@ -33,7 +33,7 @@
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'openSource' }">Open Source</router-link>
                     </div>
                     <div class="clearfix muted black">
-                        &copy; 2016-{{ currentYear}}, miragespace.
+                        &copy; 2016-{{ currentYear}}, <a class="black" href="https://miragespace.com" target="_blank">miragespace</a>.
                     </div>
                     <router-link class="clearfix muted black" :to="{ name: 'bugzilla' }">
                         App version {{ version }}
