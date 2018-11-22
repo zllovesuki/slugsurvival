@@ -26,7 +26,7 @@
 			</div>
 		</div>
         <hr class="mb2" v-show="ready"/>
-        <div class="overflow-hidden bg-white rounded mb2" v-show="ready && !route.params.termId && !route.params.courseNum">
+        <div class="overflow-scroll bg-white rounded mb2" v-show="ready && !route.params.termId && !route.params.courseNum">
 			<div class="m0 p1">
 				<div class="clearfix">
 					<span class="btn black h4">Most Compacted Classes: </span>
@@ -71,7 +71,7 @@
                 </div>
 			</div>
 		</div>
-        <div class="overflow-hidden bg-white rounded mb2" v-show="ready && !route.params.termId && !route.params.courseNum">
+        <div class="overflow-scroll bg-white rounded mb2" v-show="ready && !route.params.termId && !route.params.courseNum">
 			<div class="m0 p1">
 				<div class="clearfix">
 					<span class="btn black h4">Top 10 Classes in the Last Hour: </span>
