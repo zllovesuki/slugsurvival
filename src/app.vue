@@ -32,8 +32,11 @@
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'explainPrivacy' }">Privacy Policy</router-link>
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'openSource' }">Open Source</router-link>
                     </div>
+                    <div class="clearfix muted black">
+                        &copy; 2016-{{ currentYear}}, miragespace.
+                    </div>
                     <router-link class="clearfix muted black" :to="{ name: 'bugzilla' }">
-                        version {{ version }}
+                        App version {{ version }}
                     </router-link>
                 </div>
             </div>
@@ -45,6 +48,7 @@
 module.exports = {
     data: function() {
         return {
+            currentYear: new Date().getFullYear(),
             version: require('../version.json')
         }
     },
