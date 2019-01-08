@@ -49,8 +49,13 @@
                 </div>
             </transition-group>
         </div>
+        <div class="center h6 mb2" v-show="hideListNav === false">
+            <a v-for="(subjectCourses, firstLetter) in firstLetters" class="btn" @click="filterByLetter(firstLetter)" v-bind:class="{'btn-primary bg-gray' : showSubjectStarting === firstLetter}">
+                {{ firstLetter }}
+            </a>
+    	</div>
         <search :show="searchModal" v-on:close="closeSearchModal" :show-extra="true" :callback="promptAddClass" :selected-term-id="termId" :do-not-modify-class="true"></search>
-        <div class="bg-white rounded border mb3" v-for="(subjectCourses, subject) in courses" :key="subject" v-show="initialized && hideSubject[subject] !== true">
+        <div class="bg-white rounded border mb3" v-for="(subjectCourses, subject) in courses" :key="subject" v-show="initialized && hideSubject[subject] !== true && (showSubjectStarting === null ? true : firstLetters[showSubjectStarting].indexOf(subject) !== -1)">
             <div class="m0 p1">
                 <div class="clearfix">
                     <span class="btn black h4" @click="flipSubjectCollapse(subject)">{{ subject }}</span>
@@ -115,6 +120,9 @@ module.exports = {
             show: true,
             initialized: false,
             courses: {},
+            firstLetters: {},
+            showSubjectStarting: null,
+            hideListNav: false,
             locations: [],
             timeblocks: [],
             credits: [],
@@ -162,6 +170,13 @@ module.exports = {
         }
     },
     methods: {
+        filterByLetter: function(letter) {
+            if (this.showSubjectStarting === letter) {
+                this.showSubjectStarting = null
+            }else{
+                this.showSubjectStarting = letter
+            }
+        },
         showSearchModal: function() {
             this.$store.dispatch('blockScroll', true);
             this.searchModal = true;
@@ -331,6 +346,13 @@ module.exports = {
                     self.hideSubject[subject] = true;
                 }
             }
+
+            var numSubjectsHidden = Object.keys(this.hideSubject).reduce(function(total, subject) {
+                return self.hideSubject[subject] === true ? total + 1 : total;
+            }, 0)
+            if (numSubjectsHidden > 0) self.hideListNav = true
+            else self.hideListNav = false
+
             self.autoUncollapse();
             self.alert.success('Class list updated!')
             if (self.$store.getters.Tracker !== null) {
@@ -402,6 +424,7 @@ module.exports = {
         },
         flip: function() {
             var self = this;
+            this.showSubjectStarting = null
             this.show = !this.show;
             this.$nextTick(function() {
                 if (this.show === false) this.$store.dispatch('blockScroll', false);
@@ -420,7 +443,17 @@ module.exports = {
         })
         .then(function(ge) {
             self.$store.commit('setTermName', self.$store.getters.termsList[self.$store.getters.termId])
-            self.courses = self.$store.getters.sortedCourses[self.termId];
+            self.courses = self.$store.getters.sortedCourses[self.termId]
+
+            var firstLetter = ''
+            for (var subject in self.courses) {
+                firstLetter = subject.charAt(0)
+                if (typeof self.firstLetters[firstLetter] === 'undefined') {
+                    self.firstLetters[firstLetter] = []
+                }
+                self.firstLetters[firstLetter].push(subject)
+            }
+
             self.initReactive();
             self.availableGE = [].concat.apply([], Object.keys(self.courseInfo[self.termId]).map(function(courseNum) {
                 return self.courseInfo[self.termId][courseNum].ge;
