@@ -129,6 +129,11 @@ var self = module.exports = {
                !invalid.historicData ? 'lz-historicData' : null,
                !invalid.finalSchedule ? 'lz-finalSchedule' : null
            ]).spread(function(termsList, rmp, subjects, mm, historicData, finalSchedule) {
+               if (termsList !== null) {
+                   termsList = termsList.filter(function(term) {
+                       return typeof term.date !== 'undefined'
+                   })
+               }
                 return _.dispatch('saveBasicData', {
                     termsList: termsList,
                     rmp: rmp,
@@ -276,6 +281,11 @@ var self = module.exports = {
                 return results;
             }
         }).spread(function(termsList, rmp, subjects, mm, finalSchedule, historicData) {
+            if (termsList !== null) {
+                termsList = termsList.filter(function(term) {
+                    return typeof term.date !== 'undefined'
+                })
+            }
             return _.dispatch('saveBasicData', {
                 termsList: termsList,
                 rmp: rmp,
