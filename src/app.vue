@@ -31,6 +31,7 @@
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'explainText' }">What is SlugSurvival?</router-link>
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'explainPrivacy' }">Privacy Policy</router-link>
                         <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'openSource' }">Open Source</router-link>
+                        <router-link v-bind:class="'h6 bold btn ' + color" :to="{ name: 'donate' }">Donate</router-link>
                     </div>
                     <div class="clearfix muted black">
                         &copy; 2016-{{ currentYear}}, <a class="black" href="https://miragespace.com" target="_blank">miragespace</a>.

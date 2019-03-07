@@ -27,6 +27,11 @@ var router = new VueRouter({
             component: require('./views/bugzilla.vue')
         },
         {
+            path: '/donate',
+            name: 'donate',
+            component: require('./views/donate.vue')
+        },
+        {
             path: '/analytics',
             component: require('./views/analytics/index.vue'),
             children: [
