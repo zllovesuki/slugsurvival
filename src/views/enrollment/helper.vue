@@ -369,6 +369,20 @@ module.exports = {
                 }
             }catch(e) {}
 
+            if (self.courses.length + 1 > 4) {
+                self.alert.error('Cannot subscribe for more than 4 courses.')
+                if (self.$store.getters.Tracker !== null) {
+                    self.$store.getters.Tracker.trackEvent('enrollment', 'greedy');
+                }
+                return
+            }
+
+            if (self.courses.filter(function(obj) {
+                return obj.num === course.num
+            }).length > 0) {
+                return self.alert.error('Duplicate courses.')
+            }
+
             return self.$store.dispatch('getCourseDom', {
                 termId: self.termCode,
                 courseObj: course,
