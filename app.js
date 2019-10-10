@@ -41,9 +41,8 @@ module.exports = function() {
 
     html = html.replace(new RegExp('__JS__', 'g'), js)
 
-    app.get('/version', function(req, res, next) {
-        res.setHeader('content-type', 'text/plain');
-        return res.end(version);
+    app.get('/version.json', function(req, res, next) {
+        return res.json(version);
     });
 
     app.use('/*', function(req, res, next) {
