@@ -1415,9 +1415,9 @@ var self = module.exports = {
         return deadline.getTime() < today.getTime();
     },
     compareVersion: function(_) {
-        return request.get('/version')
+        return request.get('/version.json')
         .then(function(res) {
-            if (_.getters.version != res.text) return false
+            if (_.getters.version != res.body) return false
             else return true
         })
         .catch(function(e) {

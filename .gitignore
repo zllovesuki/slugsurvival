@@ -5,4 +5,9 @@ npm-debug.log
 public/*.js
 public/*.css
 public/*.map
+public/index.html
+public/version.json
 public/fonts
+dist/
+wrangler.toml
+workers-site/
