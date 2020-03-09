@@ -1,12 +1,13 @@
-// 'use strict'
+'use strict'
 
 const path = require('path')
 
 const webpack = require('webpack')
 const VueLoaderPlugin = require('vue-loader/lib/plugin')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
+const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+const TerserJSPlugin = require('terser-webpack-plugin');
 
 const isDev = process.env.NODE_ENV === 'development'
 
@@ -18,8 +19,8 @@ module.exports = {
     },
     context: path.resolve(__dirname),
     output: {
-        path: path.resolve(__dirname, 'dist'),
-        filename: 'bundle.js',
+        path: path.resolve(__dirname, 'public'),
+        filename: 'prod.js',
         publicPath: '/'
     },
     module: {
@@ -32,10 +33,14 @@ module.exports = {
             {
                 test: /\.css$/,
                 use: [
-                    'vue-style-loader',
+                    isDev ? 'vue-style-loader' : MiniCssExtractPlugin.loader,
                     'css-loader'
                 ]
-            }
+            },
+            {
+                test: /\.(txt)$/,
+                use: 'raw-loader',
+            },
         ]
     },
     resolve: {
@@ -45,27 +50,29 @@ module.exports = {
         }
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
+        // ...(isDev ? [new webpack.HotModuleReplacementPlugin()] : []),
         new CaseSensitivePathsPlugin(),
         new VueLoaderPlugin(),
-        new HtmlWebpackPlugin({
-            title: "SlugSurvival",
-            template: "./src/static/index.html"
-        }),
+        new MiniCssExtractPlugin({
+            filename: 'style2.min.css'
+        })
     ],
+    optimization: {
+        minimizer: [
+            // new TerserJSPlugin(),
+            // new OptimizeCSSAssetsPlugin()
+        ]
+    },
     devServer: {
         open: false,
         hot: true,
         port: 8080,
         compress: true,
-        historyApiFallback: true,
+        historyApiFallback: false,
         proxy: {
-            changeOrigin: true,
-            '/graphql': {
-                target: 'http://localhost:3000'
-            },
-            '/api': {
-                target: 'http://localhost:3000'
+            '/': {
+                target: 'http://localhost:3001',
+                changeOrigin: true
             }
         }
     }

@@ -1,5 +1,5 @@
 "use strict"
-var	Vue = require('vue'),
+var	Vue = require('vue').default,
     Vuex = require('vuex');
 
 Vue.use(Vuex);
