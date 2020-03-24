@@ -7,13 +7,24 @@ const VueLoaderPlugin = require('vue-loader/lib/plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const TerserJSPlugin = require('terser-webpack-plugin');
 
 const isDev = process.env.NODE_ENV === 'development'
 
+var plugins = [
+    new CaseSensitivePathsPlugin(),
+    new VueLoaderPlugin(),
+    new MiniCssExtractPlugin({
+        filename: 'style2.min.css'
+    })
+]
+
+if (isDev) {
+    plugins.push(new webpack.HotModuleReplacementPlugin())
+}
+
 module.exports = {
     mode: isDev ? 'development' : 'production',
-    devtool: 'cheap-module-eval-source-map',
+    devtool: isDev ? 'cheap-module-eval-source-map' : '',
     entry: {
         app: './src/main.js'
     },
@@ -36,11 +47,7 @@ module.exports = {
                     isDev ? 'vue-style-loader' : MiniCssExtractPlugin.loader,
                     'css-loader'
                 ]
-            },
-            {
-                test: /\.(txt)$/,
-                use: 'raw-loader',
-            },
+            }
         ]
     },
     resolve: {
@@ -49,18 +56,10 @@ module.exports = {
             vue$: 'vue/dist/vue.esm.js'
         }
     },
-    plugins: [
-        // ...(isDev ? [new webpack.HotModuleReplacementPlugin()] : []),
-        new CaseSensitivePathsPlugin(),
-        new VueLoaderPlugin(),
-        new MiniCssExtractPlugin({
-            filename: 'style2.min.css'
-        })
-    ],
-    optimization: {
+    plugins: plugins,
+    optimization: isDev ? {} : {
         minimizer: [
-            // new TerserJSPlugin(),
-            // new OptimizeCSSAssetsPlugin()
+            new OptimizeCSSAssetsPlugin()
         ]
     },
     devServer: {
@@ -68,11 +67,21 @@ module.exports = {
         hot: true,
         port: 8080,
         compress: true,
+        // we don't need historyApiFallback because app.js has
+        // it: (app.use('/*', ...))
         historyApiFallback: false,
         proxy: {
             '/': {
                 target: 'http://localhost:3001',
-                changeOrigin: true
+                pathRewrite: { '^/fonts': '/public/fonts' }
+                // bypass: function(req, res, proxyOptions) {
+                //     console.log(req.url)
+
+                //     // if (req.url === '/public/style2.min.css' || req.url === '/public/prod.js') {
+                //     //     console.log(proxyOptions)
+                //     //     return 'http://localhost:8080' + req.url
+                //     // }
+                // }
             }
         }
     }

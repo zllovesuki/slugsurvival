@@ -20,6 +20,8 @@ module.exports = function() {
     var html = fs.readFileSync(root).toString('utf-8');
     var analytics = '', drift = '';
 
+    // TODO: refactor this out to app.helper.js so it can be imported
+    // in webpack dev server (possibly beforeEach hook)
     if (config.analytics && config.analytics.piwik && config.analytics.piwik.enabled) {
         analytics = fs.readFileSync(__dirname + '/src/static/piwik.tmpl').toString('utf-8');
         analytics = analytics.replace(new RegExp('__ENDPOINT__', 'g'), config.analytics.piwik.endpoint);

@@ -2,7 +2,7 @@
   "name": "slugsurvival",
   "version": "3.30.0",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --progress",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --hot --progress",
     "prod": "cross-env NODE_ENV=production webpack --progress",
     "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
     "cf": "npm run prod && rm public/assets.js && wrangler publish --env production"
@@ -40,7 +40,6 @@
     "mini-css-extract-plugin": "^0.9.0",
     "mobile-detect": "^1.4.4",
     "optimize-css-assets-webpack-plugin": "^5.0.3",
-    "raw-loader": "^4.0.0",
     "simple-statistics": "^7.0.5",
     "stringify": "^5.2.0",
     "superagent": "^5.1.0",
