@@ -8,48 +8,51 @@ module.exports = function() {
 
     app.enable('trust proxy');
     app.set('trust proxy', 'loopback, linklocal, uniquelocal');
-
-    var root = __dirname + '/src/static/index.html', js = 'prod.js';
-
     app.use('/public', express.static(path.join(__dirname, 'public')));
+    app.use('/fonts', express.static(path.join(__dirname, 'public/fonts')));
 
     if (process.env.RDB_HOST) {
         js = 'app.js'
+
+        var root = __dirname + '/src/static/index.html'
+        var html = fs.readFileSync(path.join(__dirname, '/public/index.final.html'))
+        var html = fs.readFileSync(root).toString('utf-8');
+        var analytics = '', drift = '';
+
+        if (config.analytics && config.analytics.piwik && config.analytics.piwik.enabled) {
+            analytics = fs.readFileSync(__dirname + '/src/static/piwik.tmpl').toString('utf-8');
+            analytics = analytics.replace(new RegExp('__ENDPOINT__', 'g'), config.analytics.piwik.endpoint);
+            analytics = analytics.replace(new RegExp('__DOMAIN__', 'g'), config.analytics.piwik.domain);
+            analytics = analytics.replace(new RegExp('__SITEID__', 'g'), config.analytics.piwik.siteId);
+            html = html.replace('__ANALYTICS__', analytics);
+        }else{
+            html = html.replace('__ANALYTICS__', '');
+        }
+
+        if (config.analytics && config.analytics.drift) {
+            drift = fs.readFileSync(__dirname + '/src/static/drift.tmpl').toString('utf-8');
+            drift = drift.replace('__DRIFT_VERSION__', config.analytics.drift.version);
+            drift = drift.replace('__DRIFT_ID__', config.analytics.drift.id);
+            html = html.replace('__DRIFT__', drift);
+        }else{
+            html = html.replace('__DRIFT__', '');
+        }
+
+        html = html.replace(new RegExp('__JS__', 'g'), js)
+
+        app.use('/*', function (req, res, next) {
+            res.setHeader('content-type', 'text/html');
+            return res.sendFile(html);
+        });
+    } else {
+        app.use('/*', function (req, res, next) {
+            res.setHeader('content-type', 'text/html');
+            return res.sendFile(path.join(__dirname, 'public/index.html'));
+        });
     }
-
-    var html = fs.readFileSync(root).toString('utf-8');
-    var analytics = '', drift = '';
-
-    // TODO: refactor this out to app.helper.js so it can be imported
-    // in webpack dev server (possibly beforeEach hook)
-    if (config.analytics && config.analytics.piwik && config.analytics.piwik.enabled) {
-        analytics = fs.readFileSync(__dirname + '/src/static/piwik.tmpl').toString('utf-8');
-        analytics = analytics.replace(new RegExp('__ENDPOINT__', 'g'), config.analytics.piwik.endpoint);
-        analytics = analytics.replace(new RegExp('__DOMAIN__', 'g'), config.analytics.piwik.domain);
-        analytics = analytics.replace(new RegExp('__SITEID__', 'g'), config.analytics.piwik.siteId);
-        html = html.replace('__ANALYTICS__', analytics);
-    }else{
-        html = html.replace('__ANALYTICS__', '');
-    }
-
-    if (config.analytics && config.analytics.drift) {
-        drift = fs.readFileSync(__dirname + '/src/static/drift.tmpl').toString('utf-8');
-        drift = drift.replace('__DRIFT_VERSION__', config.analytics.drift.version);
-        drift = drift.replace('__DRIFT_ID__', config.analytics.drift.id);
-        html = html.replace('__DRIFT__', drift);
-    }else{
-        html = html.replace('__DRIFT__', '');
-    }
-
-    html = html.replace(new RegExp('__JS__', 'g'), js)
 
     app.get('/version.json', function(req, res, next) {
         return res.json(version);
-    });
-
-    app.use('/*', function(req, res, next) {
-        res.setHeader('content-type', 'text/html');
-        return res.end(html);
     });
 
     // production error handler

@@ -12,7 +12,7 @@
             <div class="clearfix mt3">
                 <div class="mb1 sm-flex center nowrap">
                     <div class="flex-auto block">
-                        <router-link class="inline h2 clickable" :to="{ name: 'mainPage' }" tag="span">SlugSurvivallllll | <small class="muted" >{{ title }}</small></router-link>
+                        <router-link class="inline h2 clickable" :to="{ name: 'mainPage' }" tag="span">SlugSurvival | <small class="muted" >{{ title }}</small></router-link>
                     </div>
                 </div>
 

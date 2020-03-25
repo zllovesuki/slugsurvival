@@ -1,25 +1,34 @@
 'use strict'
 
-const path = require('path')
+var path = require('path')
+var fs = require('fs');
 
-const webpack = require('webpack')
-const VueLoaderPlugin = require('vue-loader/lib/plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
-const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
-const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+var webpack = require('webpack')
+var HtmlWebpackPlugin = require('html-webpack-plugin');
+var VueLoaderPlugin = require('vue-loader/lib/plugin')
+var MiniCssExtractPlugin = require('mini-css-extract-plugin')
+var CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin')
+var OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 
-const isDev = process.env.NODE_ENV === 'development'
+var isDev = process.env.NODE_ENV === 'development'
 
 var plugins = [
     new CaseSensitivePathsPlugin(),
     new VueLoaderPlugin(),
     new MiniCssExtractPlugin({
-        filename: 'style2.min.css'
+        filename: 'public/style2.min.css'
+    }),
+    new HtmlWebpackPlugin({
+        template: './src/static/index.html'
     })
 ]
 
 if (isDev) {
     plugins.push(new webpack.HotModuleReplacementPlugin())
+}
+
+if (!isDev) {
+    plugins.push(new OptimizeCSSAssetsPlugin())
 }
 
 module.exports = {
@@ -30,8 +39,8 @@ module.exports = {
     },
     context: path.resolve(__dirname),
     output: {
-        path: path.resolve(__dirname, 'public'),
-        filename: 'prod.js',
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'public/prod.js',
         publicPath: '/'
     },
     module: {
@@ -57,31 +66,21 @@ module.exports = {
         }
     },
     plugins: plugins,
-    optimization: isDev ? {} : {
-        minimizer: [
-            new OptimizeCSSAssetsPlugin()
-        ]
-    },
     devServer: {
         open: false,
         hot: true,
         port: 8080,
         compress: true,
-        // we don't need historyApiFallback because app.js has
-        // it: (app.use('/*', ...))
-        historyApiFallback: false,
+        historyApiFallback: true,
         proxy: {
-            '/': {
-                target: 'http://localhost:3001',
+            "/public": {
+                target: "http://localhost:3001",
+            },
+            // i don't know what seems to be requesting `/fonts`,
+            // but it now redirects to `/public/fonts`
+            "/fonts": {
+                target: "http://localhost:3001",
                 pathRewrite: { '^/fonts': '/public/fonts' }
-                // bypass: function(req, res, proxyOptions) {
-                //     console.log(req.url)
-
-                //     // if (req.url === '/public/style2.min.css' || req.url === '/public/prod.js') {
-                //     //     console.log(proxyOptions)
-                //     //     return 'http://localhost:8080' + req.url
-                //     // }
-                // }
             }
         }
     }

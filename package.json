@@ -3,7 +3,7 @@
   "version": "3.30.0",
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack-dev-server --hot --progress",
-    "prod": "cross-env NODE_ENV=production webpack --progress",
+    "prod": "cross-env NODE_ENV=production webpack --progress && gulp prod",
     "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
     "cf": "npm run prod && rm public/assets.js && wrangler publish --env production"
   },
