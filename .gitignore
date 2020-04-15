@@ -8,6 +8,7 @@ public/*.map
 public/index.html
 public/version.json
 public/fonts
+src/static/index.html
 dist/
 wrangler.toml
 workers-site/

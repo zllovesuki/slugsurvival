@@ -29,7 +29,7 @@ module.exports = {
         }
     },
     components: {
-        chevronRight: require('../../lib/icons/chevron-right.vue')
+        chevronRight: require('../../lib/icons/chevron-right.vue').default
     }
 }
 </script>

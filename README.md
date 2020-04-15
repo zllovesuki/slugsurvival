@@ -84,7 +84,7 @@ pm2 start app.json --env dev
 
 Then,
 ```
-npm run watch
+npm run dev
 ```
 
 Entry file is `src/main.js`.
