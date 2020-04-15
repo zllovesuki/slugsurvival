@@ -1,9 +1,10 @@
 {
   "name": "slugsurvival",
-  "version": "3.30.0",
+  "version": "4.0.0",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --hot --progress",
-    "prod": "cross-env NODE_ENV=production webpack --progress && gulp prod",
+    "dev": "gulp && cross-env NODE_ENV=development webpack-dev-server --hot --progress",
+    "prod": "gulp && cross-env NODE_ENV=production webpack --progress && gulp prod",
+    "cf-site": "gulp && cross-env NODE_ENV=production webpack --progress && gulp cf-site",
     "test": "node node_modules/.bin/mocha --timeout 30000 --reporter spec",
     "cf": "npm run prod && rm public/assets.js && wrangler publish --env production"
   },
