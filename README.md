@@ -2,6 +2,10 @@
 
 This is a project aims to help new and continuing students with their Slug Life.
 
+## Contributors
+
+1. Edwin Kofler (@eankeen)
+
 ## Special Thanks
 
 SlugSurvival's development is not possible without the help and support of (no particular order):
