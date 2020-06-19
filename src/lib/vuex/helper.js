@@ -341,6 +341,7 @@ var self = module.exports = {
         if(as=== bs) return 0;
         a= as.toLowerCase().match(rx);
         b= bs.toLowerCase().match(rx);
+        if (a === null) return 0
         L= a.length;
         while(i<L){
             if(!b[i]) return 1;
