@@ -15,7 +15,6 @@ module.exports = function() {
         js = 'app.js'
 
         var root = __dirname + '/src/static/index.html'
-        var html = fs.readFileSync(path.join(__dirname, '/public/index.final.html'))
         var html = fs.readFileSync(root).toString('utf-8');
         var analytics = '', drift = '';
 
