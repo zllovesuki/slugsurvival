@@ -15,7 +15,7 @@
   "author": "Rachel Chen <me@rachelchen.me>",
   "license": "GPL-3.0",
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.3"
   },
   "devDependencies": {
     "bluebird": "^3.7.0",
